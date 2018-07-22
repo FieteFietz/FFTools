@@ -1,0 +1,208 @@
+Befehle und Abhängigkeiten
+
+Abrunde				1
+ACK					1
+Akademieverwalter	2
+Alchemist			10	(meldet nur an)
+AuraMaxWarnung      1
+Bauen				8 Baumanager
+					10 (vor MP)
+					100 (nach MP)
+Bauauftrag			8
+Beschreibung		159
+Burgenbau			8
+Checkhelpstatus		161
+Depot				2  (Anmeldung TM, alles requesten)
+					152 (nur Info, Silberdepotcheck)
+EnterBuilding       2  (nach AuramaxWarning)
+Eisen				50 (vor Lernfix)
+Forester			350 (vor letztem Matpool
+					430 (nach Matpool)
+Gebaude				8 (Anfordern Unterhalt)
+					40 (Unterhaltscheck)
+GibNix				2
+Goto				4
+Handeln				3	Anfordern
+					70  Verkaufen
+					152 Kann ich kaufen?
+Heldenregion		10
+ifNotRegion			1
+ifRegion			1
+ifUnit				1
+Lehren				8
+Lernen				6
+					155 nach MP, Lernsilber?
+Lernfix				62
+Liefere				160
+Lohn				4 Anforderung
+					100 Check
+Lumberjack			51 (vor Lernfix), 205 (nach MatPool)
+Material			3
+MyMonster			50
+OnTAC				15 - add
+					16 - info
+Pferde				2
+					36 nach MP1 (nur bei Zuechter, wenn genügend Pferde, dann züchten, sonst Lernfix)
+Rekrutieren			2 Geld beantragen
+					162 check + Befehl
+Request				10
+					100 (noch offen, unused!)
+RequestInfo			156
+Route				3
+Runde				1
+SailTo				4
+Schmieden			50 Bestellen
+					100 Produzieren oder Lernen
+SetKapa				2
+SetLernPLan			0
+SetTAC 				9     
+					38
+SetTrankOrder		0
+Trankeffekt			10
+					162 (Check)
+Transport			5  Register + Request Pferde + Wagen
+					36  recalc Kapa
+					130 TransporterRequests, sonst Lernen
+Treiben				15 Anmeldung Pool und Waffenrequest  , vorTreiberPool
+					25 Waffenanforderungen
+					35 Treiben oder Lernen
+Unterhalten			5 vor Zirkuspool
+					(6 der Zirkuspool)
+					7 nach Zirkuspool
+UseTAC				10
+Vorrat				10 vor
+					38 nach MP, wenn unerfüllt, TAH verständigen, addVorratScript
+
+Werft				58  nach 1. MP (20)
+					855 ganz zum Schluss
+					
+Akkademiemanager	135 (nicht impl)
+					147 (nicht impl)
+AlchemieManager		40
+Ausbildungsmanager	7 Vorlauf, Lernsilber anfordern 
+					135 vorlaufRequest, maximal verf Silber ermitteln
+					145 eigentlicher PoolLauf
+Baumanager			9 
+					105
+MatPoolManager		200
+					400
+					600
+					700
+TradeAreaHandler	8  vor Vorrat
+					12 nach Vorrat, vor MP, nach SetTradeAreaConnect, vor OnTAC
+					17 nach OnTAC
+					100 irgendwann nur islandinfo
+					
+Werftmanager		60
+					650
+					
+					
+------------------------------------------w o r k -------------------
+24.07.2016: (0.77)
+Overlord Skriptinfos
+1:Setauthcode
+10:Settrankorder
+11:Setlernplan
+12:Setkapa
+13->Manager:TradeAreaHandler
+14:Auramaxwarning
+15:Ifregion
+16:Ifnotregion
+17:Ifunit
+19:Ack
+20:Depot,Ifnotshipok,Ifshipok
+21:Trankeffekt
+22:Gibnix
+25:Enterbuilding
+26:Rekrutieren
+28:Pferde
+30:Material
+32:Handeln
+33:Settradeareaconnection
+34:Lohn
+40:Route
+42:Sailto
+44:Goto
+50:Transport,Mymonster
+51:Eisen,Steine,Lumberjack
+55->Manager:PferdeManager
+58:Werft
+60:Lernen
+60->Manager:WerftManager
+62:Lernfix
+70:Unterhalten
+74->Manager:CircusPoolManager
+78:Unterhalten
+79->Manager:CircusPoolManager
+80->Manager:AusbildungsManager
+82:Lehren
+86:Gebaeudeunterhalt
+90:Burgenbau
+92:Bauauftrag
+94:Bauen
+100->Manager:BauManager
+102:Bauen
+104:Usetradeareaconnection
+105->Manager:TradeAreaHandler
+106:Alchemist
+108:Request
+110:Ontradeareaconnection
+112:Treiben
+120:Ontradeareaconnection
+125->Manager:TradeAreaHandler
+135:Laen
+161:Checkhelpstatus
+190:Vorrat
+200->Manager:MatPoolManager
+205:Lumberjack
+210:Treiben
+220:Islandinfo
+250->Manager:TreiberPoolManager
+260:Treiben
+300:Transport
+310:Pferde
+320:Vorrat
+330:Settradeareaconnection
+340:Gebaeudeunterhalt
+345->Manager:AlchemistManager
+350:Forester,Schmieden
+360:Handeln
+400->Manager:MatPoolManager
+410:Request
+420:Lohn
+430:Forester,Schmieden
+440:Bauen
+450->Manager:BauManager
+500->Manager:TransportManager
+520:Transport
+550->Manager:AusbildungsManager
+600->Manager:MatPoolManager
+650->Manager:AusbildungsManager,WerftManager
+662:Akademie
+664->Manager:AkademieManager
+666->Manager:AkademieManager
+700->Manager:MatPoolManager
+710:Trankeffekt
+720:Rekrutieren
+730:Liefere
+800:Depot
+810:Handeln
+850:Lernen
+855:Werft
+860:Requestinfo
+862:Beschreibung
+864->Manager:TradeAreaHandler
+900:Statistik
+
+
+
+  /**
+   * START & END Code
+   */
+  public static void main(String args[]) {
+    try {
+      /* set the stderr to stdout while there is no log attached */
+      System.setErr(System.out);
+
+      /* Fiete 20151017: keep the old sorting, needed for FFTools */
+      System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");

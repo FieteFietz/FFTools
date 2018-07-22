@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="WINDOWS-1252" standalone="no"?>
+<jardesc>
+    <jar path="D:/Fiete/Eressea/Magellan/plugins/FFTools2.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/FFTools2Mag2/CreateFFTools2_FF.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="false" manifestLocation="/FFTools2Mag2/MANIFEST.MF" manifestVersion="1.0" reuseManifest="false" saveManifest="true" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+        <file path="/FFTools2Mag2/MANIFEST.MF"/>
+        <file path="/FFTools2Mag2/.project"/>
+        <javaElement handleIdentifier="=FFTools2Mag2/src"/>
+        <file path="/FFTools2Mag2/.cvsignore"/>
+        <file path="/FFTools2Mag2/.classpath"/>
+        <file path="/FFTools2Mag2/CreateFFTools2_sr.jardesc"/>
+    </selectedElements>
+</jardesc>
