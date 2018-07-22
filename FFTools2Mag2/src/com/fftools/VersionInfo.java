@@ -24,6 +24,7 @@ public class VersionInfo {
 	private static final String versionInfo = "0.85";
 
 	private static String toAdd = "";
+	
 	private static String FFTools2Path = "";
 	
 	/**
