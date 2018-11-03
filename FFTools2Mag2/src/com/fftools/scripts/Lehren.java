@@ -90,10 +90,10 @@ public class Lehren extends Script{
 		lernTalent = lernTalent.substring(0, 1).toUpperCase() + lernTalent.substring(1).toLowerCase();
 		SkillType skillType = super.gd_Script.rules.getSkillType(lernTalent);
 		if (skillType==null){
-			super.addComment("Ein Schüler hat kein erkanntes Lerntalent (" + unitNumber + ")",true);
+			super.addComment("Ein Schüler hat kein erkanntes Lerntalent (" + unitNumber + "): " + lernTalent,true);
 			super.addComment("Unit wurde durch LEHREN NICHT bestaetigt", true);
 			super.scriptUnit.doNotConfirmOrders();
-			addOutLine("X....Ein Schüler hat kein erkanntes Lerntalent (" + unitNumber + ") bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
+			addOutLine("X....Ein Schüler hat kein erkanntes Lerntalent (" + unitNumber + ", " + lernTalent + ") bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 			return -1;
 		}
 		// SkillVergleich
@@ -137,6 +137,11 @@ public class Lehren extends Script{
 					return erg;
 				}
 				erg = s.substring(i+1);
+				// falls auch da noch ein Leerzeichen drin ist, dahinter abschneiden
+				i = erg.indexOf(" ");
+				if (i>2) {
+					erg = erg.substring(0,i).trim();
+				}
 			}
 		}
 		return erg;

@@ -476,6 +476,7 @@ public class AusbildungsRelation {
 
 	/**
 	 * Gibt Lernkosten für teures Talent zurück
+	 * ToDo: Taverne: Kosten erhöht!
 	 *
 	 */
 	 public int getLernKosten(Skill _skill){

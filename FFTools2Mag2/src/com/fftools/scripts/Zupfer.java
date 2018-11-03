@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import com.fftools.utils.FFToolsOptionParser;
 
 import magellan.library.Faction;
 import magellan.library.Message;
+import magellan.library.Order;
+import magellan.library.Orders;
 import magellan.library.Skill;
 import magellan.library.rules.SkillType;
 
@@ -75,6 +75,8 @@ public class Zupfer extends MatPoolScript{
 		int menge = OP.getOptionInt("menge", 5);
 		this.addComment("erkanntes minTalent: " + unitMinLevel + ", erkannte Menge " + menge);
 		
+		int regionsBestand = -1; // in Prozent, -1 = unbekannt
+		
 		// finde Messages, wieviele Kräuter vorher gefunden wurden...
 		// wenn unter menge, hinweis bzw selbstständig reduzieren
 		int letzteProd=-1;
@@ -102,7 +104,7 @@ public class Zupfer extends MatPoolScript{
 		          }
 		    	
 		    	if (validM) {		    	
-			    	this.addComment("untersuche Nachricht: " + m.getText());
+			    	// this.addComment("untersuche Nachricht: " + m.getText());
 			    	/*
 			    	MESSAGETYPE 861989530
 			    	"\"$unit($unit) in $region($region) kann keine Kräuter finden.\"";text
@@ -110,6 +112,8 @@ public class Zupfer extends MatPoolScript{
 			    	if (m.getMessageType().getID().intValue()==861989530) {
 			    		letzteProd=0;
 			    		this.addComment("Nachricht gefunden MESSAGETYPE 861989530 ");
+			    		this.addComment("!!! Verdacht auf aufgebrauchten Kräuterbestand in dieser Region !!! (Zupfer unbestätigt");
+			    		this.doNotConfirmOrders();
 			    	}
 			    	
 			    	/*
@@ -120,6 +124,8 @@ public class Zupfer extends MatPoolScript{
 			    	if (m.getMessageType().getID().intValue()==1233714163) {
 			    		letzteProd=0;
 			    		this.addComment("Nachricht gefunden MESSAGETYPE 1233714163 ");
+			    		this.addComment("!!! Verdacht auf aufgebrauchten Kräuterbestand in dieser Region !!! (Zupfer unbestätigt");
+			    		this.doNotConfirmOrders();
 			    	}
 			    	/*
 			    	MESSAGETYPE 1511758069
@@ -136,10 +142,107 @@ public class Zupfer extends MatPoolScript{
 			    			this.addComment("Nachricht enthält keinen Wert für die Menge");
 			    		}
 			    	}
+			    	
+			    	/*
+			    	MESSAGETYPE 1349776898
+			    	"\"$unit($unit) in $region($region) stellt fest, dass es hier $localize($amount) $resource($herb,0) gibt.\"";text
+			    	*/
+			    	if (m.getMessageType().getID().intValue()==1349776898) {
+			    		this.addComment("Nachricht gefunden MESSAGETYPE 1349776898 (xxx stellt fest)");
+			    		Map<String,String> map = m.getAttributes();
+			    		if (map.containsKey("amount")) {
+			    			String anzahlStr = map.get("amount");
+			    			this.addComment("Nachricht enthält  Wert für die Menge: " + anzahlStr);
+			    			if (anzahlStr.equalsIgnoreCase("sehr viele")) {
+			    				regionsBestand = 90;
+			    			}
+			    			if (anzahlStr.equalsIgnoreCase("viele")) {
+			    				regionsBestand = 60;
+			    			}
+			    			if (anzahlStr.equalsIgnoreCase("relativ viele")) {
+			    				regionsBestand = 30;
+			    			}
+			    			if (anzahlStr.equalsIgnoreCase("wenige")) {
+			    				regionsBestand = 10;
+			    			}
+			    			if (anzahlStr.equalsIgnoreCase("sehr wenige")) {
+			    				regionsBestand = 0;
+			    			}
+			    			if (regionsBestand>=0) {
+			    				this.addComment("auszugehen ist von einem relativem Kräuterbestand von: " + regionsBestand + "%");
+			    			}
+			    		} else {
+			    			this.addComment("Nachricht enthält keinen Wert für die Menge");
+			    		}
+			    	}
+			    	
 		    	}
 		    }
 		} else {
-			this.addComment("Einheit hat keine Nachrichten");
+			this.addComment("Einheit hat keine Nachrichten?! Keine Suche nach Infos zur Produktion in der letzten Runde...");
+		}
+		
+		// haben wir in den Kommentaren eine Info über den SOLL-Zupfbetrag von letzter Runde??
+		int sollZupfBetrag = -1;
+		// form // Zupferinfo Runde=XXXX Sollmenge=YY
+		// aktuelle Runde:
+		int Runde=this.getOverlord().getScriptMain().gd_ScriptMain.getDate().getDate();
+		int VorRunde = Runde - 1;
+		int sollProdLetzteRunde = -1;
+		
+		if (this.scriptUnit.originalOrders_All.size()>0) {
+			this.addComment("Prüfe Befehle auf Zupferinfos aus der letzten Runde...");
+			for (String aOrder  : this.scriptUnit.originalOrders_All) {
+				if (aOrder.toLowerCase().startsWith("// zupferinfo")){
+					// this.addComment("untersuche zeile: " + aOrder);
+					String payLoad = aOrder.substring(14);
+					// this.addComment("untersuche payload: " + payLoad);
+					if (payLoad.length()>3) {
+						// zerlegen in durch space getrennte abschnitte
+						boolean actRunde = false;
+						int actValue=0;
+						String[] pairs = payLoad.split(" ");
+						for (int i=0;i<pairs.length;i++){
+							String s2 = pairs[i];
+							if (s2.indexOf("=")>0){
+								String[] pair = s2.split("=");
+								if (pair.length!=2){
+									outText.addOutLine("!!Zupfer - Optionenparser Fehler:" + s2 + " (" + this.scriptUnit.getUnit().toString(true) + ")");
+									return;
+								}
+								String key = pair[0];
+								String value = pair[1];
+								
+								if (key.equalsIgnoreCase("Runde")) {
+									if (Integer.parseInt(value)==VorRunde) {
+										actRunde=true;
+										this.addComment("passende Runde gefunden!!!");
+									}
+								}
+								
+								if (key.equalsIgnoreCase("Sollmenge")) {
+									actValue = Integer.parseInt(value);
+								}
+								
+							}
+						}
+						
+						if (actRunde) {
+							sollProdLetzteRunde = actValue;
+							this.addComment("setze Sollproduktion aus Runde " + VorRunde + " auf " + sollProdLetzteRunde + " Kräuter.");
+						}
+						
+					} else {
+						// this.addComment("skipping " + aOrder + ", no payload in comment");
+					}
+				}
+			}
+		}
+		
+		if (sollProdLetzteRunde==-1) {
+			// keine Info...wir gehen von menge aus
+			sollProdLetzteRunde = menge;
+			this.addComment("keine Information zur geplanten Zupfmenge aus letzter Runde vorhanden, gehe von " + sollProdLetzteRunde + " aus.");
 		}
 		
 		if (letzteProd>=0) {
@@ -148,6 +251,43 @@ public class Zupfer extends MatPoolScript{
 			this.addComment("keine Information über Produktion letzte Runde");
 		}
 		
+		if (regionsBestand==-1 && letzteProd>=0 && sollProdLetzteRunde>0) {
+			// regionsBestand berechnen
+			regionsBestand = (int) Math.round(((double)letzteProd/(double)sollProdLetzteRunde)*100);
+			this.addComment("Berechne aus den Zupfergebnissen den ungefähren Regionsbestand zu " + regionsBestand + "%");
+		}
+		
+		
+		// Jahreszeit / Monat / Woche herausfinden
+		
+		int RundenFromStart = Runde - 1;
+		int iWeek = (RundenFromStart % 3) + 1;
+		int iMonth = (RundenFromStart / 3) % 9;
+		// this.addComment("Datumsberechnung (aktuell): Runde " + Runde + ", Woche " + iWeek + ", Monat " + iMonth); 
+		
+		boolean nextTurnWinter = false;
+		// Herdfeuer oder Eiswind
+		if (iMonth==1 || iMonth==2) {
+			// Herdfeuer oder Eiswind
+			nextTurnWinter = true;
+		}
+		if (iMonth==3) {
+			// Schneebann, nur Wochen 1+2
+			if (iWeek==1 || iWeek==2) {
+				nextTurnWinter = true;
+			}
+		}
+		if (iMonth==0) {
+			// Sturmmond, nur Woche 3
+			if (iWeek==3) {
+				nextTurnWinter = true;
+			}
+		}
+		if (nextTurnWinter) {
+			this.addComment("Nächste Woche ist Winter!!! Kräuter wachsen im Winter nicht, somit ernten wir nicht.");
+		} else {
+			this.addComment("Nächste Woche ist kein Winter - normales Kräuterwachstum, wir können ernten.");
+		}
 		if (skillLevel<unitMinLevel){
 			// Lernen
 			this.addComment("Ergänze Lernfix Eintrag mit Talent=Kräuterkunde");
@@ -162,26 +302,145 @@ public class Zupfer extends MatPoolScript{
 			}
 			this.scriptUnit.addAScript(L);
 		} else {
-			// Zupfen
-			if (letzteProd>=0) {
-				// wenn wir mehr als 1 Stück weg liegen vom Soll, dann Meldung
-				if (menge==letzteProd) {
-					// alles schön, weitermachen
-					this.addOrder("machen " + menge + " Kräuter ;(script Zupfer, Prod der letzten Runde OK)", true);
+			// Wintercheck
+			boolean hasWinterpausenOrder = false;
+			if (nextTurnWinter) {
+				String ZupferWinterOption = reportSettings.getOptionString("ZupferWinterOption", this.region());
+				if (ZupferWinterOption.equalsIgnoreCase("Forschen")) {
+					if (skillLevel<7) {
+						this.addComment("ZupferWinterOption *Forschen* bewirkt Lernen von Kräuterkunde, da noch nicht T7");
+						// Lernen
+						this.addComment("Ergänze Lernfix Eintrag mit Talent=Kräuterkunde");
+						Script L = new Lernfix();
+						ArrayList<String> order = new ArrayList<String>();
+						order.add("Talent=Kräuterkunde");
+						L.setArguments(order);
+						L.setScriptUnit(this.scriptUnit);
+						L.setGameData(this.gd_Script);
+						if (this.scriptUnit.getScriptMain().client!=null){
+							L.setClient(this.scriptUnit.getScriptMain().client);
+						}
+						this.scriptUnit.addAScript(L);
+					} else {
+						this.addComment("ZupferWinterOption *Forschen* bewirkt Forschen");
+						this.addOrder("FORSCHE KRÄUTER", true);
+					}
+					hasWinterpausenOrder=true;
 				}
-				if (menge==(letzteProd + 1)) {
-					// Schwankung um 1 - 1 Runde aussetzen, Ausdauer Lernen
-					this.addOrder("Lerne Ausdauer ;(script Zupfer, Produktionsschwankung)", true);
+				
+				if (ZupferWinterOption.equalsIgnoreCase("Lernen")) {
+					this.addComment("ZupferWinterOption bewirkt Lernen von Kräuterkunde, da in Winterpause");
+					// Lernen
+					this.addComment("Ergänze Lernfix Eintrag mit Talent=Kräuterkunde");
+					Script L = new Lernfix();
+					ArrayList<String> order = new ArrayList<String>();
+					order.add("Talent=Kräuterkunde");
+					L.setArguments(order);
+					L.setScriptUnit(this.scriptUnit);
+					L.setGameData(this.gd_Script);
+					if (this.scriptUnit.getScriptMain().client!=null){
+						L.setClient(this.scriptUnit.getScriptMain().client);
+					}
+					this.scriptUnit.addAScript(L);
+					hasWinterpausenOrder=true;
 				}
-				if (menge>=(letzteProd + 2)) {
-					// Deutliche Abweichung, manueller Eingriff erforderlich
-					this.addOrder("Lerne Ausdauer ;(script Zupfer, Produktionsausfall)", true);
-					this.addComment("!!! Zupfer - Produktionsausfall!!!");
-					this.doNotConfirmOrders();
+				
+				if (ZupferWinterOption.equalsIgnoreCase("LernenForschen")) {
+					// immer Lernen, in der letzten Winterwoche Forschen
+					boolean vorletzteWinterwoche = false;
+					if (iMonth==3 && iWeek==2) {
+						// 2. Woche Schneebann
+						vorletzteWinterwoche=true;
+					}
+					
+					
+					if (skillLevel<7 || !vorletzteWinterwoche) {
+						if (skillLevel<7) {
+							this.addComment("ZupferWinterOption bewirkt Lernen von Kräuterkunde, da noch nicht T7");
+						} else {
+							this.addComment("ZupferWinterOption bewirkt Lernen von Kräuterkunde, da in Winterpause");
+						}
+						// Lernen
+						this.addComment("Ergänze Lernfix Eintrag mit Talent=Kräuterkunde");
+						Script L = new Lernfix();
+						ArrayList<String> order = new ArrayList<String>();
+						order.add("Talent=Kräuterkunde");
+						L.setArguments(order);
+						L.setScriptUnit(this.scriptUnit);
+						L.setGameData(this.gd_Script);
+						if (this.scriptUnit.getScriptMain().client!=null){
+							L.setClient(this.scriptUnit.getScriptMain().client);
+						}
+						this.scriptUnit.addAScript(L);
+					} else {
+						
+						this.addComment("ZupferWinterOption bewirkt Forschen, in 2 Wochen ist der Winter vorbei.");
+						this.addOrder("FORSCHE KRÄUTER", true);
+					}
+					hasWinterpausenOrder=true;
 				}
-			} else {
-				// ohne letzte Prod machen wir standard
-				this.addOrder("machen " + menge + " Kräuter ;(script Zupfer, ohne Prod der letzten Runde)", true);
+				
+				
+			}
+			
+			
+			if (!hasWinterpausenOrder) {
+				// Zupfen
+				
+				
+				int maxProdTotal = 18;  // ToDo: per ScripterOption setzen
+				int maxSkillMenge = skillLevel * this.getUnit().getModifiedPersons();
+				if (regionsBestand>=40) {
+					// genügend da, maximal zupfen
+					
+					if (maxSkillMenge<=maxProdTotal) {
+						this.addOrder("mache " + maxSkillMenge + " Kräuter", true);
+						this.addOrder("// Zupferinfo Runde=" + Runde + " Sollmenge=" + maxSkillMenge, true);
+					} else {
+						this.addOrder("mache " + maxProdTotal + " Kräuter ;maximale ProdMenge", true);
+						this.addOrder("// Zupferinfo Runde=" + Runde + " Sollmenge=" + maxProdTotal, true);
+					}
+				}
+				if (regionsBestand>=0 && regionsBestand<40) {
+					// Pausieren, Forschen oder Lernen
+					if (skillLevel>=7) {
+						// Forschen
+						this.addComment("Region hat wenig Kräuter, ich Forsche...");
+						this.addOrder("FORSCHE KRÄUTER ;Regionsbestand niedrig" , true);
+					} else {
+						this.addComment("Region hat wenig Kräuter, ich würde gerne Forschen, muss dafür aber noch lernen...");
+						// Lernen
+						Script L = new Lernfix();
+						ArrayList<String> order = new ArrayList<String>();
+						order.add("Talent=Kräuterkunde");
+						L.setArguments(order);
+						L.setScriptUnit(this.scriptUnit);
+						L.setGameData(this.gd_Script);
+						if (this.scriptUnit.getScriptMain().client!=null){
+							L.setClient(this.scriptUnit.getScriptMain().client);
+						}
+						this.scriptUnit.addAScript(L);
+					}
+				}
+				
+				if (regionsBestand==-1) {
+					// Keine Info verfügbar
+					// Pausieren, Forschen oder Lernen
+					if (skillLevel>=7) {
+						// Forschen
+						this.addComment("Region hat unbekannten Kräuterbestand, ich Forsche...");
+						this.addOrder("FORSCHE KRÄUTER ;Regionsbestand niedrig" , true);
+					} else {
+						int testZupfmenge= 8; // ToDo: setscripteroption konfigurierbar machen
+						if (maxSkillMenge<testZupfmenge) {
+							testZupfmenge=maxSkillMenge;
+						}
+						this.addComment("Region hat unbekannten Kräuterbestand, ich versuche testweise zu ernten.");
+						this.addOrder("mache " + testZupfmenge + " Kräuter ;Testmenge", true);
+						this.addOrder("// Zupferinfo Runde=" + Runde + " Sollmenge=" + testZupfmenge, true);
+						
+					}
+				}
 			}
 
 		}

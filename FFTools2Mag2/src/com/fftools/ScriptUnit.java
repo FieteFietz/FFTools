@@ -47,7 +47,8 @@ public class ScriptUnit {
 	private static final ReportSettings reportSettings = ReportSettings.getInstance();
 	private Unit unit = null;
 	private boolean NotNeededOrdersDeleted = false;
-	private ArrayList<String> originalScriptOrders = null;
+	public ArrayList<String> originalScriptOrders = null;
+	public ArrayList<String> originalOrders_All = new ArrayList<String>(0);
 	
 	private boolean builtfoundScriptList = false;
 	private ArrayList<Script> foundScriptList = null;
@@ -152,11 +153,14 @@ public class ScriptUnit {
 	public int deleteNotNeededOrders(){
 		int cnt =0;
 		if (this.unit == null) {NotNeededOrdersDeleted = false;return -1;}
+		int actRunde = getOverlord().getScriptMain().gd_ScriptMain.getDate().getDate();
 		ArrayList<Order> newOrders = new ArrayList<Order>(1);
 		for(Iterator<Order> iter = this.unit.getOrders2().iterator(); iter.hasNext();) {
 			Order o = (Order) iter.next();
 			String s = o.getText();
-			if (s.startsWith("//")){
+			if (s.toLowerCase().startsWith("// zupferinfo runde=" + actRunde)) {
+				cnt++;
+			} else if (s.startsWith("//")){
 				// Kommentare beibehalten
 				newOrders.add(this.getUnit().createOrder(s));
 			} else if (s.toLowerCase().indexOf("do_not_touch")>0 || s.toLowerCase().indexOf(";dnt")>0) {
@@ -252,6 +256,33 @@ public class ScriptUnit {
 		return cnt;
 	}
 	
+	/**
+	 * 
+	 * Loescht alle orderzeilen die mit ordersStartWith beginnen (inkl //)
+	 * 
+	 * @return int Anzahl der geloeschten orderzeilen
+	 */
+	
+	public int deleteSpecialOrder(String ordersStartWith){
+		int cnt =0;
+		if (this.unit == null) {return -1;}
+		ArrayList<Order> newOrders = new ArrayList<Order>(1);
+		for(Iterator<Order> iter = this.unit.getOrders2().iterator(); iter.hasNext();) {
+			Order o = (Order) iter.next();
+			String s = o.getText();
+			if (!(s.toLowerCase().startsWith(ordersStartWith.toLowerCase()))){
+				// orders, die nicht mit ordersStartWith beginnen
+				newOrders.add(this.getUnit().createOrder(s));
+			} else {
+				cnt++;
+			}
+		}
+		if (cnt>0){
+			this.unit.setOrders2(newOrders);
+		}
+		return cnt;
+	}
+	
 	
 	/**
 	 * 
@@ -294,6 +325,7 @@ public class ScriptUnit {
 				String s2 = s.substring(10);
 				originalScriptOrders.add(s2);
 			}
+			this.originalOrders_All.add(s);
 		}
 	}
 	
