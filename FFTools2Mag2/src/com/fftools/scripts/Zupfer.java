@@ -306,6 +306,10 @@ public class Zupfer extends MatPoolScript{
 			boolean hasWinterpausenOrder = false;
 			if (nextTurnWinter) {
 				String ZupferWinterOption = reportSettings.getOptionString("ZupferWinterOption", this.region());
+				if (ZupferWinterOption==null) {
+					// defaultwert
+					ZupferWinterOption="LernenForschen";
+				}
 				if (ZupferWinterOption.equalsIgnoreCase("Forschen")) {
 					if (skillLevel<7) {
 						this.addComment("ZupferWinterOption *Forschen* bewirkt Lernen von Kräuterkunde, da noch nicht T7");
@@ -388,7 +392,10 @@ public class Zupfer extends MatPoolScript{
 				// Zupfen
 				
 				
-				int maxProdTotal = 18;  // ToDo: per ScripterOption setzen
+				int maxProdTotal = 18;
+				if (menge>maxProdTotal) {
+					maxProdTotal = menge;
+				}
 				int maxSkillMenge = skillLevel * this.getUnit().getModifiedPersons();
 				if (regionsBestand>=40) {
 					// genügend da, maximal zupfen
