@@ -1,0 +1,10 @@
+Nummer	Monat 			Jahreszeit 	Sturmhäufigkeit
+7		Feldsegen 				Sommer 		0.5%
+8		Nebeltage 				Herbst 		3%
+0		Sturmmond 				Herbst 		4%
+1		Herdfeuer 				Winter 		2.5%
+2		Eiswind 				Winter 		1.5%
+3		Schneebann 				Winter 		3%
+4		Blütenregen 			Frühling 	3%
+5		Mond der milden Winde 	Frühling 	0.5%
+6		Sonnenfeuer 			Sommer 		3% 

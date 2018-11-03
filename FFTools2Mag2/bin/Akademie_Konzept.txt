@@ -1,0 +1,52 @@
+Konzept der Akademie
+
+- Akaverwalter - beliebige unit
+- legt fest, welche Akademie wieviele Plätze automatisch vergibt
+- legt weiterhin fest, welche Magiegebiete mit welcher prio wieviele plätze
+  belegen können.
+ 
+  
+- Alle Lernfix Einheiten mit <=20 Leuten bewerben sich um einene Akaplatz
+
+- Run erst nach dem LernPool, idealerweise vor dem letzten MatPool
+
+- Jede Aka poolt für sich
+  - geht die definierten Talente durch
+    - geht die Talentstufen durch, fängt oben an, Reihenfolge
+      - Besitzer als Lehrer
+      - Heldenlehrer
+      - Lehrer (max Talentstufe) - Schülerkombis, die reinpassen, zuerst
+      - dann selbstlerner
+      
+- nicht genutzte Plätze eines Talentes werden für das nächste Talent verwendet
+
+
+
+  
+  
+  
+  Befehle
+  // script AkaTalente aka=nummer [Talent:Anzahl] [Talent:Anzahl]
+  nummer = ID des Gebäudes
+  Reihenfolge gibt Prio an 
+  nur // script AkaTalente schaltet Auto ein mit Standard Talentreihenfolge
+  
+  Ablauf
+  - alle Lernfix Einheiten <=20 in eine Collection
+  
+  Ablauf des Pools
+  - Wieviele Plätze habe ich in meiner Aka?
+  - gehe meine Insassen durch, 24 - nicht-Lernfix = verfügbare Anzahl
+  
+  - schaffe leere collection mit den zukünftigen nutzern
+  
+  - Poole und fülle die Liste
+  
+  - alle auf der Liste, die noch nicht in der Aka sind, bekommen ein Betrete
+    und werden aus der GesamtCollection entfernt
+  
+  Abschluss
+  - alle Lernfixer durchgehen, die, die noch im Pool sind und in Aka bekommen
+    ein Verlassen
+  
+  
