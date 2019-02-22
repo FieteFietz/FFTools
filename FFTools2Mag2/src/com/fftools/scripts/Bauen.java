@@ -396,7 +396,7 @@ public void runScript(int scriptDurchlauf){
 			} else {
 				// nix ist OK
 				this.addComment("Bauen: beim Burgenbau MUSS eine Zielgrösse angegeben werden! (ziel=X)");
-				statusInfo+="Fehler: bei " + this.buildingType.getName() + " MUSS eine Zielgrösse angegeben werden! (ziel=X)";
+				statusInfo+="Fehler: zum Bauen einer Burg MUSS eine Zielgrösse angegeben werden! (ziel=X)";
 				this.doNotConfirmOrders();
 				return;
 			}

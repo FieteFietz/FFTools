@@ -173,7 +173,8 @@ public class AusbildungsRelation {
 	 */
 	
 	public void setDefaultGratisTalent(Skill _skill){
-		this.defaultGratisTalent=_skill;
+			this.defaultGratisTalent=_skill;
+			this.scriptUnit.addComment("(AR:) setze defaultGratisTalent auf: " + _skill.toString());
 		}
 		
 	/** 

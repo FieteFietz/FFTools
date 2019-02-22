@@ -59,6 +59,8 @@ public class Treiben extends TransportScript{
 	
 	private ArrayList<MatPoolRequest> requests = new ArrayList<MatPoolRequest>();
 	
+	private boolean unitIsLearning = false;
+	
 	// Konstruktor
 	public Treiben() {
 		super.setRunAt(this.runners);
@@ -174,6 +176,7 @@ public void runScript(int scriptDurchlauf){
 					this.addOrder("LERNEN Steuereintreiben", true);
 					this.doNotConfirmOrders();
 					this.noWeapons=true;
+					this.unitIsLearning=true;
 				}
 				
 				
@@ -232,11 +235,13 @@ public void runScript(int scriptDurchlauf){
 			} else {
 				// zu schlecht => lernen
 				this.lerneTalent("Mindesttalentwert " + mindestTalent + " unterschritten");
+				this.unitIsLearning=true;
 			}
 			
 		} else {
 			// Einheit kann garnicht Unterhalten!
 			this.lerneTalent("Mindesttalentwert " + mindestTalent + " unterschritten (Keine Fähigkeit gefunden)");
+			this.unitIsLearning=true;
 		}	
 	}	
 	
@@ -360,9 +365,9 @@ public void runScript(int scriptDurchlauf){
 	
 	private void nachTreiberPool(){
 	
-		
+		this.addComment("Debug: nach TreiberPool. Einheit lernt:" + this.unitIsLearning);
 		// Nimmt diese Einheit an einem Pool teil?
-		if (treiberPool != null){
+		if (treiberPool != null && !this.unitIsLearning){
 		
 			// Diverse Ausgaben 
 		    

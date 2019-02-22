@@ -21,6 +21,12 @@ public class Laen extends MatPoolScript{
 	
 	private int[] runners = {Durchlauf_1};
 	
+	/**
+	 * ab welchem Talent gehts erst mal los?
+	 */
+	private int minTalent = 1;
+	
+	
 	
 	
 	/**
@@ -58,6 +64,18 @@ public class Laen extends MatPoolScript{
 	 * bis die Talentstufe nicht mehr ausreicht
 	 */
 	private void start(){
+		
+		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Laen");
+		
+		int unitMinTalent = OP.getOptionInt("minTalent", -1);
+		if (unitMinTalent>this.minTalent){
+			this.minTalent = unitMinTalent;
+		}
+		unitMinTalent = OP.getOptionInt("mindestTalent", -1);
+		if (unitMinTalent>this.minTalent){
+			this.minTalent = unitMinTalent;
+		}
+		
 		// pre Check....werde ich im Bergwerk sein
 		Building b = this.scriptUnit.getUnit().getModifiedBuilding();
 		if (b==null || !b.getType().toString().equalsIgnoreCase("Bergwerk")){
@@ -82,17 +100,13 @@ public class Laen extends MatPoolScript{
 		} else {
 			this.addComment("!!! can not get SkillType Bergbau!");
 		}
-		if (skillLevel>0){
+		if (skillLevel>=this.minTalent){
 			// Regionslevel beziehen
 			Region R = this.scriptUnit.getUnit().getRegion();
 			ItemType IT = this.gd_Script.getRules().getItemType("Laen");
 			RegionResource RR = R.getResource(IT);
-			if (RR.getSkillLevel()<=skillLevel) {
-				// weiter machen
-				this.addComment("Laen in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
-				this.addOrder("machen Laen ;(script Laen)", true);
-			} else {
-				this.addComment("Laen in der Region bei T" + RR.getSkillLevel() + ", wir bauen NICHT weiter ab, ich kann ja nur T" + skillLevel);
+			if (RR == null) {
+				this.addComment("Region hat kein Laenvorkommen!!!");
 				this.addComment("Ergänze Lernfix Eintrag mit Talent=Bergbau");
 				// this.addOrder("Lernen Bergbau", true);
 				Script L = new Lernfix();
@@ -105,7 +119,7 @@ public class Laen extends MatPoolScript{
 					L.setClient(this.scriptUnit.getScriptMain().client);
 				}
 				this.scriptUnit.addAScript(L);
-				FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Laen");
+				
 				String modeSetting = OP.getOptionString("mode");
 				this.addComment("searching for automode setting, found: " + modeSetting);
 				if (modeSetting.equalsIgnoreCase("auto")){
@@ -114,10 +128,39 @@ public class Laen extends MatPoolScript{
 					this.addComment("no AUTOmode detected....pls confirm learning / adjust orders");
 					this.doNotConfirmOrders();
 				}
+			} else {
+				if (RR.getSkillLevel()<=skillLevel) {
+					// weiter machen
+					this.addComment("Laen in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
+					this.addOrder("machen Laen ;(script Laen)", true);
+				} else {
+					this.addComment("Laen in der Region bei T" + RR.getSkillLevel() + ", wir bauen NICHT weiter ab, ich kann ja nur T" + skillLevel);
+					this.addComment("Ergänze Lernfix Eintrag mit Talent=Bergbau");
+					// this.addOrder("Lernen Bergbau", true);
+					Script L = new Lernfix();
+					ArrayList<String> order = new ArrayList<String>();
+					order.add("Talent=Bergbau");
+					L.setArguments(order);
+					L.setScriptUnit(this.scriptUnit);
+					L.setGameData(this.gd_Script);
+					if (this.scriptUnit.getScriptMain().client!=null){
+						L.setClient(this.scriptUnit.getScriptMain().client);
+					}
+					this.scriptUnit.addAScript(L);
+					String modeSetting = OP.getOptionString("mode");
+					this.addComment("searching for automode setting, found: " + modeSetting);
+					if (modeSetting.equalsIgnoreCase("auto")){
+						this.addComment("AUTOmode detected....confirmed learning");
+					} else {
+						this.addComment("no AUTOmode detected....pls confirm learning / adjust orders");
+						this.doNotConfirmOrders();
+					}
+				}
 			}
 		} else {
 			this.addOrder("Lernen Bergbau", true);
-			this.doNotConfirmOrders();
+			// this.doNotConfirmOrders();
+			this.addComment("Lerne, weil mindestTalent nicht erreicht (" + this.minTalent + ")");
 		}
 		
 	}

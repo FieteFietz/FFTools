@@ -103,7 +103,7 @@ public class Goto extends Script implements WithGotoInfo{
 		// uns eventuell überlädt
 		if (this.scriptUnit.getUnit().getBuilding()!=null && this.scriptUnit.getUnit().getModifiedBuilding()==null){
 			this.addComment("Goto: VERLASSEN wird explizit gesetzt");
-			this.addOrder("VERLASSSEN ;von GOTO", true);
+			this.addOrder("VERLASSEN ;von GOTO", true);
 		}
 	}
 

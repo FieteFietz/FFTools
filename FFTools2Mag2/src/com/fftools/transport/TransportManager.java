@@ -1153,6 +1153,12 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 					offer.getRegion().getCoordinate(), request.getRegion().getCoordinate(), 
 						reitend);
 		
+		if (gotoInfo==null || gotoInfo.getNextHold()==null) {
+			// für die Fälle, indenen kein Weg gefunden werden konnte
+			return;
+		}
+		
+		
 		int distNextHold = FFToolsRegions.getPathDistLand(offer.getScriptUnit().getScriptMain().gd_ScriptMain, 
 				gotoInfo.getNextHold().getCoordinate(), request.getRegion().getCoordinate(), 
 					reitend);

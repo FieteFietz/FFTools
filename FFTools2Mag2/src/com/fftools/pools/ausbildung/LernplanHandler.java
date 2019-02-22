@@ -34,7 +34,7 @@ public class LernplanHandler implements OverlordInfo {
 	 */
 	private ArrayList<ScriptUnit> scriptedUnits = null;
 	
-	private final String scriptIdentifier = "setLernplan";
+	private final String scriptIdentifier = "// script setLernplan";
 	public static final String lernplanDetailSeparator = "%"; 
 	
 	
@@ -103,7 +103,7 @@ public class LernplanHandler implements OverlordInfo {
 		ArrayList<String> orders = new ArrayList<String>();
 		for (Order o:u.getUnit().getOrders2()){
 			String order = o.getText();
-			if (order.toLowerCase().indexOf(scriptIdentifier.toLowerCase())>0){
+			if (order.toLowerCase().indexOf(scriptIdentifier.toLowerCase())>=0){
 				orders.add(order);
 			}
 		}

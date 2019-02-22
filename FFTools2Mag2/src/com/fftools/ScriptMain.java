@@ -255,6 +255,7 @@ public class ScriptMain {
 			ScriptUnit scrU = (ScriptUnit)iter.next();
 			scrU.checkShipOK(); // 20160724 FF
 			scrU.checkNACHOK(); // 20161015 FF
+			scrU.checkOverallCommand(); // 20190216 FF
 			scrU.setFinalConfim();
 			// autoTags
 			scrU.autoTags();
@@ -309,6 +310,8 @@ public class ScriptMain {
 										for(Iterator<Order> iterO = u2.getOrders2().iterator(); iterO.hasNext();) {
 											Order o = (Order) iterO.next();
 											String s = o.getText();
+											// @entfernen
+											s = s.replace("@", "");
 											if (istAkademie){
 												// LERNE
 												if ((s.length()>=orderStartWith2.length()) &&  s.substring(0, orderStartWith2.length()).equalsIgnoreCase(orderStartWith2)){

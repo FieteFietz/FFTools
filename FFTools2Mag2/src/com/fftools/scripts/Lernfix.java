@@ -175,12 +175,17 @@ public class Lernfix extends MatPoolScript{
 	 */
       
 	  private HashMap<SkillType,Skill> erzeugeSkillList(Map<StringID,Skill> _m){
-		  HashMap<SkillType,Skill> liste = new HashMap<SkillType,Skill>();
+		HashMap<SkillType,Skill> liste = new HashMap<SkillType,Skill>();
+		if (_m==null || _m.values()==null) {
+			this.addComment("!!!Debug: erzeuge SkillList scheitert!!!");
+			this.doNotConfirmOrders();
+		} else {
 			for(Iterator<Skill> iter = _m.values().iterator();iter.hasNext();){
 				Skill skill =( Skill) iter.next();
 				liste.put(skill.getSkillType(), skill);	
 			}
-			return liste;
+		}
+		return liste;
 	  }
 
 

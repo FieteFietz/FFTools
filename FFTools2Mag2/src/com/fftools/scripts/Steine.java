@@ -34,6 +34,11 @@ public class Steine extends MatPoolScript{
 	private int myStandardSkillLevel = 0;
 	
 	/**
+	 * ab welchem Talent gehts erst mal los?
+	 */
+	private int minTalent = 1;
+	
+	/**
 	 * Parameterloser Constructor
 	 * Drinne Lassen fuer die Instanzierung des Objectes
 	 */
@@ -71,6 +76,17 @@ public class Steine extends MatPoolScript{
 	 * bis die Talentstufe nicht mehr ausreicht
 	 */
 	private void start(){
+		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Steine");
+		
+		int unitMinTalent = OP.getOptionInt("minTalent", -1);
+		if (unitMinTalent>this.minTalent){
+			this.minTalent = unitMinTalent;
+		}
+		unitMinTalent = OP.getOptionInt("mindestTalent", -1);
+		if (unitMinTalent>this.minTalent){
+			this.minTalent = unitMinTalent;
+		}
+		
 		// Eigene Talentstufe ermitteln
 		int skillLevel = 0;
 		SkillType skillType = this.gd_Script.rules.getSkillType("Steinbau", false);
@@ -84,19 +100,13 @@ public class Steine extends MatPoolScript{
 		} else {
 			this.addComment("!!! can not get SkillType Steinbau!");
 		}
-		if (skillLevel>0){
+		if (skillLevel>=this.minTalent){
 			// Regionslevel beziehen
 			Region R = this.scriptUnit.getUnit().getRegion();
 			ItemType IT = this.gd_Script.rules.getItemType("Steine");
 			RegionResource RR = R.getResource(IT);
-			if (RR.getSkillLevel()<=skillLevel) {
-				// weiter machen
-				this.addComment("Steine in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
-				// this.addOrder("machen Stein ;(script Steine)", true);
-				this.myStandardSkillLevel = skillLevel;
-				this.makeStein=true;
-			} else {
-				this.addComment("Steine in der Region bei T" + RR.getSkillLevel() + ", wir bauen NICHT weiter ab, ich kann ja nur T" + skillLevel);
+			if (RR == null) {
+				this.addComment("Region hat kein Steinvorkommen!!!");
 				this.addComment("Ergänze Lernfix Eintrag mit Talent=Steinbau");
 				// this.addOrder("Lernen Bergbau", true);
 				Script L = new Lernfix();
@@ -109,7 +119,7 @@ public class Steine extends MatPoolScript{
 					L.setClient(this.scriptUnit.getScriptMain().client);
 				}
 				this.scriptUnit.addAScript(L);
-				FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Steine");
+				
 				String modeSetting = OP.getOptionString("mode");
 				this.addComment("searching for automode setting, found: " + modeSetting);
 				if (modeSetting.equalsIgnoreCase("auto")){
@@ -118,10 +128,42 @@ public class Steine extends MatPoolScript{
 					this.addComment("no AUTOmode detected....pls confirm learning / adjust orders");
 					this.doNotConfirmOrders();
 				}
+			} else {
+				if (RR.getSkillLevel()<=skillLevel) {
+					// weiter machen
+					this.addComment("Steine in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
+					// this.addOrder("machen Stein ;(script Steine)", true);
+					this.myStandardSkillLevel = skillLevel;
+					this.makeStein=true;
+				} else {
+					this.addComment("Steine in der Region bei T" + RR.getSkillLevel() + ", wir bauen NICHT weiter ab, ich kann ja nur T" + skillLevel);
+					this.addComment("Ergänze Lernfix Eintrag mit Talent=Steinbau");
+					// this.addOrder("Lernen Bergbau", true);
+					Script L = new Lernfix();
+					ArrayList<String> order = new ArrayList<String>();
+					order.add("Talent=Steinbau");
+					L.setArguments(order);
+					L.setScriptUnit(this.scriptUnit);
+					L.setGameData(this.gd_Script);
+					if (this.scriptUnit.getScriptMain().client!=null){
+						L.setClient(this.scriptUnit.getScriptMain().client);
+					}
+					this.scriptUnit.addAScript(L);
+					String modeSetting = OP.getOptionString("mode");
+					this.addComment("searching for automode setting, found: " + modeSetting);
+					if (modeSetting.equalsIgnoreCase("auto")){
+						this.addComment("AUTOmode detected....confirmed learning");
+					} else {
+						this.addComment("no AUTOmode detected....pls confirm learning / adjust orders");
+						this.doNotConfirmOrders();
+					}
+				}
 			}
 		} else {
 			this.addOrder("Lernen Steinbau", true);
-			this.doNotConfirmOrders();
+			// this.doNotConfirmOrders();
+			this.makeStein=false;
+			this.addComment("Lerne, weil mindestTalent nicht erreicht (" + this.minTalent + ")");
 		}
 		
 	}
@@ -131,7 +173,7 @@ public class Steine extends MatPoolScript{
 			return;
 		}
 		
-int skillLevel = this.myStandardSkillLevel;
+		int skillLevel = this.myStandardSkillLevel;
 		
 		boolean isInSteinbruch = false;
 		

@@ -64,6 +64,9 @@ public class ScriptUnit {
 	// dann wird diese unit NICHT bestaetigt
 	private boolean unitOrders_may_confirm = true;
 	
+	// setOK {Runde}
+	private boolean unitOrders_confirm_anyway = false;
+	
 	// jedes script, welches einen Befehl vollständig erfolgreich umsetzt
 	// kann diesen Wert auf true setzen
 	// ist nach allen Scripten der Wert immer noch false
@@ -155,11 +158,21 @@ public class ScriptUnit {
 		if (this.unit == null) {NotNeededOrdersDeleted = false;return -1;}
 		int actRunde = getOverlord().getScriptMain().gd_ScriptMain.getDate().getDate();
 		ArrayList<Order> newOrders = new ArrayList<Order>(1);
+		// newOrders.add(this.getUnit().createOrder("; Debug Test delNotNeeO"));
 		for(Iterator<Order> iter = this.unit.getOrders2().iterator(); iter.hasNext();) {
 			Order o = (Order) iter.next();
 			String s = o.getText();
+			// newOrders.add(this.getUnit().createOrder("; Debug checking " + s + " (Runde " + actRunde + ")"));
 			if (s.toLowerCase().startsWith("// zupferinfo runde=" + actRunde)) {
 				cnt++;
+			} else if (s.toLowerCase().startsWith("// setok " + actRunde)){
+				cnt++;
+				// newOrders.add(this.getUnit().createOrder("; Debug setOK actRunde detected"));
+				this.unitOrders_confirm_anyway=true;
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toLowerCase().startsWith("// setok")){
+				cnt++;
+				// newOrders.add(this.getUnit().createOrder("; Debug setOK lastRunde detected"));
 			} else if (s.startsWith("//")){
 				// Kommentare beibehalten
 				newOrders.add(this.getUnit().createOrder(s));
@@ -207,8 +220,6 @@ public class ScriptUnit {
 					}
 				}
 			}
-			
-			
 		}
 		return cnt;
 	}
@@ -494,6 +505,10 @@ public class ScriptUnit {
 		    		 noScript = true;
 		    	 }
 		    	 
+		    	 if (scriptName.equalsIgnoreCase("setOK")){
+		    		 noScript = true;
+		    	 }
+		    	 
 		    	 if (!noScript){
 			    	 // Spannung...classe finden
 			    	 this.findScriptClass(scriptName, arguments,false);
@@ -551,6 +566,10 @@ public class ScriptUnit {
 			this.unit.setOrdersConfirmed(this.unitOrders_may_confirm);
 		} else {
 			this.unit.setOrdersConfirmed(false);
+		}
+		if (this.unitOrders_confirm_anyway) {
+			this.addComment("!!! Einheit wird durch setOK bestätigt!!!");
+			this.unit.setOrdersConfirmed(true);
 		}
 	}
 	
@@ -705,9 +724,6 @@ public class ScriptUnit {
 			if (s.toLowerCase().startsWith("// script setitemgroup")) {
 				String s2 = s.substring(23);
 				// ToDo: in ReportSettings verschieben
-			
-				
-				
 				StringTokenizer st = new StringTokenizer(s2);
 				int i = 0;
 				String catName = "";
@@ -1923,5 +1939,14 @@ public class ScriptUnit {
 	public void incRecruitedPersons(int recruitedPersons) {
 		this.recruitedPersons += recruitedPersons;
 	}
+	
+	public void checkOverallCommand() {
+		String s = reportSettings.getOptionString("allUnitOrder", this.getUnit().getRegion());
+		if (s!=null && s.length()>0) {
+			s= s.replace("_"," ");
+			this.addOrder(s + " ; scripterOption allUnitOrder", true);
+		}
+	}
+	
 	
 }

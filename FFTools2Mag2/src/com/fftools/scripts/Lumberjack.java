@@ -38,6 +38,10 @@ public class Lumberjack extends MatPoolScript{
 	private int skillLevel = 0;
 	private String Gut="Holz";
 	
+	/**
+	 * ab welchem Talent gehts erst mal los?
+	 */
+	private int minTalent = 1;
 	
 	/**
 	 * Parameterloser Constructor
@@ -78,6 +82,17 @@ public class Lumberjack extends MatPoolScript{
 	 * bis Holz alle oder minBestand erreicht oder minMenge nicht erreicht
 	 */
 	private void start(){
+		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Lumberjack");
+		
+		int unitMinTalent = OP.getOptionInt("minTalent", -1);
+		if (unitMinTalent>this.minTalent){
+			this.minTalent = unitMinTalent;
+		}
+		unitMinTalent = OP.getOptionInt("mindestTalent", -1);
+		if (unitMinTalent>this.minTalent){
+			this.minTalent = unitMinTalent;
+		}
+		
 		// Eigene Talentstufe ermitteln
 		this.skillLevel = 0;
 		SkillType skillType = this.gd_Script.getRules().getSkillType("Holzfällen", false);
@@ -91,7 +106,7 @@ public class Lumberjack extends MatPoolScript{
 		} else {
 			this.addComment("!!! can not get SkillType Holzfällen!");
 		}
-		if (skillLevel>0){
+		if (skillLevel>=this.minTalent){
 			// Regionslevel beziehen
 			Region R = this.scriptUnit.getUnit().getRegion();
 			int Menge=0;
@@ -159,7 +174,7 @@ public class Lumberjack extends MatPoolScript{
 			if (Menge>0){
 				this.addComment("Lumberjack: Arbeit ("+ Menge +") vorhanden.");
 				
-				FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Lumberjack");
+				
 				int minMenge=OP.getOptionInt("minMenge", 0);
 				int minBestand=OP.getOptionInt("minBestand", 0);
 				
@@ -209,7 +224,9 @@ public class Lumberjack extends MatPoolScript{
 			}
 		} else {
 			this.addOrder("Lernen Holzfällen", true);
-			this.doNotConfirmOrders();
+			this.isLearning=true;
+			// this.doNotConfirmOrders();
+			this.addComment("Lerne, weil mindestTalent nicht erreicht (" + this.minTalent + ")");
 		}
 		
 	}
