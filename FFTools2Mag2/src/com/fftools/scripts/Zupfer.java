@@ -19,6 +19,8 @@ public class Zupfer extends MatPoolScript{
 	int Durchlauf_1 = 51;
 	private int[] runners = {Durchlauf_1};
 	
+	private int MindestZupfBestandProzent=40;
+	
 	
 	
 	/**
@@ -70,17 +72,26 @@ public class Zupfer extends MatPoolScript{
 		}
 		
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Zupfer");
+		int neuerMindestZupfBestandProzent = OP.getOptionInt("MindestZupfBestandProzent", 0); 
+		if (neuerMindestZupfBestandProzent>0 && neuerMindestZupfBestandProzent<101) {
+			this.addComment("neuer Wert für MindestZupfBestandProzent erkannt, ändere von " + MindestZupfBestandProzent + "% auf " + neuerMindestZupfBestandProzent + "%");
+			this.MindestZupfBestandProzent = neuerMindestZupfBestandProzent;
+		}
+		
+		
 		int unitMinLevel = OP.getOptionInt("minTalent", 5);
 		int menge = OP.getOptionInt("menge", 5);
 		String talent=OP.getOptionString("LernTalent");
+		if (talent.length()<2) {
+			talent=OP.getOptionString("Talent");
+		}
 		SkillType LernTalentSkillType = null;
 		
 		if (talent.length()>1) {
 			talent = talent.substring(0, 1).toUpperCase() + talent.substring(1).toLowerCase();
 			LernTalentSkillType = super.gd_Script.getRules().getSkillType(talent);
 			if (LernTalentSkillType == null) {
-				super.addComment("!!! ungueltiges Zupfer-Lerntalent bei " + this.unitDesc(), true);
-				super.scriptUnit.doNotConfirmOrders();
+				super.scriptUnit.doNotConfirmOrders ("!!! ungueltiges Zupfer-Lerntalent bei " + this.unitDesc());
 				addOutLine("!!! ungueltiges Lerntalent bei " + this.unitDesc());
 			}
 		}
@@ -91,12 +102,39 @@ public class Zupfer extends MatPoolScript{
 			this.addComment("erkanntes LernTalent: " + LernTalentSkillType.toString());
 		}
 		
+		
+		String GratisTalent=OP.getOptionString("GratisTalent");
+		
+		if (GratisTalent.length()<=2) {
+			GratisTalent = reportSettings.getOptionString("ZupferGratisTalent", this.scriptUnit.getUnit().getRegion());
+			if (GratisTalent==null) {
+				GratisTalent="";
+			}
+		}
+		
+		
+		SkillType GratisTalentSkillType = null;
+		
+		if (GratisTalent.length()>1) {
+			GratisTalent = GratisTalent.substring(0, 1).toUpperCase() + GratisTalent.substring(1).toLowerCase();
+			GratisTalentSkillType = super.gd_Script.getRules().getSkillType(GratisTalent);
+			if (GratisTalentSkillType == null) {
+				super.scriptUnit.doNotConfirmOrders ("!!! ungueltiges Zupfer-Gratistalent bei " + this.unitDesc());
+				addOutLine("!!! ungueltiges Gratistalent bei " + this.unitDesc());
+			}
+		}
+		
+		if (GratisTalentSkillType!=null) {
+			this.addComment("erkanntes GratisTalent: " + GratisTalentSkillType.toString());
+		}
+		
+		
+		
 		String LernPlan = OP.getOptionString("Lernplan");
 		if (LernPlan.length()>1) {
 			AusbildungsRelation AR = super.getOverlord().getLernplanHandler().getAusbildungsrelation(this.scriptUnit, LernPlan);
 			if (AR==null) {
-				this.addComment("!!! Lernplan liefert keine Aufgabe mehr");
-				this.scriptUnit.doNotConfirmOrders();
+				this.scriptUnit.doNotConfirmOrders("!!! Lernplan liefert keine Aufgabe mehr");
 				// default ergänzen - keine Ahnung, was, eventuell kan
 				// die einheit ja nix..
 				LernPlan = "";
@@ -106,6 +144,9 @@ public class Zupfer extends MatPoolScript{
 		if (LernPlan.length()>1) {
 			this.addComment("erkannter LernPlan: " + LernPlan);
 		}
+		
+		
+		
 		
 		int regionsBestand = -1; // in Prozent, -1 = unbekannt
 		
@@ -144,8 +185,7 @@ public class Zupfer extends MatPoolScript{
 			    	if (m.getMessageType().getID().intValue()==861989530) {
 			    		letzteProd=0;
 			    		this.addComment("Nachricht gefunden MESSAGETYPE 861989530 ");
-			    		this.addComment("!!! Verdacht auf aufgebrauchten Kräuterbestand in dieser Region !!! (Zupfer unbestätigt");
-			    		this.doNotConfirmOrders();
+			    		this.doNotConfirmOrders("!!! Verdacht auf aufgebrauchten Kräuterbestand in dieser Region !!! (Zupfer unbestätigt)");
 			    	}
 			    	
 			    	/*
@@ -156,8 +196,7 @@ public class Zupfer extends MatPoolScript{
 			    	if (m.getMessageType().getID().intValue()==1233714163) {
 			    		letzteProd=0;
 			    		this.addComment("Nachricht gefunden MESSAGETYPE 1233714163 ");
-			    		this.addComment("!!! Verdacht auf aufgebrauchten Kräuterbestand in dieser Region !!! (Zupfer unbestätigt");
-			    		this.doNotConfirmOrders();
+			    		this.doNotConfirmOrders("!!! Verdacht auf aufgebrauchten Kräuterbestand in dieser Region !!! (Zupfer unbestätigt)");
 			    	}
 			    	/*
 			    	MESSAGETYPE 1511758069
@@ -201,7 +240,7 @@ public class Zupfer extends MatPoolScript{
 			    				regionsBestand = 0;
 			    			}
 			    			if (regionsBestand>=0) {
-			    				this.addComment("auszugehen ist von einem relativem Kräuterbestand von: " + regionsBestand + "%");
+			    				this.addComment("auszugehen ist von einem relativem Kräuterbestand von: " + regionsBestand + "% (gezupft wird ab " + MindestZupfBestandProzent + "%)");
 			    			}
 			    		} else {
 			    			this.addComment("Nachricht enthält keinen Wert für die Menge");
@@ -215,7 +254,6 @@ public class Zupfer extends MatPoolScript{
 		}
 		
 		// haben wir in den Kommentaren eine Info über den SOLL-Zupfbetrag von letzter Runde??
-		int sollZupfBetrag = -1;
 		// form // Zupferinfo Runde=XXXX Sollmenge=YY
 		// aktuelle Runde:
 		int Runde=this.getOverlord().getScriptMain().gd_ScriptMain.getDate().getDate();
@@ -249,6 +287,10 @@ public class Zupfer extends MatPoolScript{
 									if (Integer.parseInt(value)==VorRunde) {
 										actRunde=true;
 										this.addComment("passende Runde gefunden!!!");
+									}
+									if (Integer.parseInt(value)<(VorRunde-9)) {
+										this.addComment("entferne ZupferInfo aus Runde " + value);
+										this.scriptUnit.deleteSpecialOrder(aOrder);
 									}
 								}
 								
@@ -286,7 +328,7 @@ public class Zupfer extends MatPoolScript{
 		if (regionsBestand==-1 && letzteProd>=0 && sollProdLetzteRunde>0) {
 			// regionsBestand berechnen
 			regionsBestand = (int) Math.round(((double)letzteProd/(double)sollProdLetzteRunde)*100);
-			this.addComment("Berechne aus den Zupfergebnissen den ungefähren Regionsbestand zu " + regionsBestand + "%");
+			this.addComment("Berechne aus den Zupfergebnissen den ungefähren Regionsbestand zu " + regionsBestand + "% (gezupft wird ab " + MindestZupfBestandProzent + "%)");
 		}
 		
 		
@@ -326,6 +368,10 @@ public class Zupfer extends MatPoolScript{
 			Script L = new Lernfix();
 			ArrayList<String> order = new ArrayList<String>();
 			order.add("Talent=Kräuterkunde");
+			if (GratisTalentSkillType!=null) {
+				order.add("Gratistalent=" + GratisTalentSkillType.toString());
+				this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
+			}
 			L.setArguments(order);
 			L.setScriptUnit(this.scriptUnit);
 			L.setGameData(this.gd_Script);
@@ -351,6 +397,10 @@ public class Zupfer extends MatPoolScript{
 						Script L = new Lernfix();
 						ArrayList<String> order = new ArrayList<String>();
 						order.add("Talent=Kräuterkunde");
+						if (GratisTalentSkillType!=null) {
+							order.add("Gratistalent=" + GratisTalentSkillType.toString());
+							this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
+						}
 						L.setArguments(order);
 						L.setScriptUnit(this.scriptUnit);
 						L.setGameData(this.gd_Script);
@@ -381,6 +431,10 @@ public class Zupfer extends MatPoolScript{
 						Script L = new Lernfix();
 						ArrayList<String> order = new ArrayList<String>();
 						order.add("Talent=" + LernTalentName);
+						if (GratisTalentSkillType!=null) {
+							order.add("Gratistalent=" + GratisTalentSkillType.toString());
+							this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
+						}
 						L.setArguments(order);
 						L.setScriptUnit(this.scriptUnit);
 						L.setGameData(this.gd_Script);
@@ -395,6 +449,10 @@ public class Zupfer extends MatPoolScript{
 						Script L = new Lernfix();
 						ArrayList<String> order = new ArrayList<String>();
 						order.add("Lernplan=" + LernPlan);
+						if (GratisTalentSkillType!=null) {
+							order.add("Gratistalent=" + GratisTalentSkillType.toString());
+							this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
+						}
 						L.setArguments(order);
 						L.setScriptUnit(this.scriptUnit);
 						L.setGameData(this.gd_Script);
@@ -425,6 +483,10 @@ public class Zupfer extends MatPoolScript{
 							Script L = new Lernfix();
 							ArrayList<String> order = new ArrayList<String>();
 							order.add("Talent=" + LernTalentName);
+							if (GratisTalentSkillType!=null) {
+								order.add("Gratistalent=" + GratisTalentSkillType.toString());
+								this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
+							}
 							L.setArguments(order);
 							L.setScriptUnit(this.scriptUnit);
 							L.setGameData(this.gd_Script);
@@ -443,6 +505,10 @@ public class Zupfer extends MatPoolScript{
 								Script L = new Lernfix();
 								ArrayList<String> order = new ArrayList<String>();
 								order.add("Talent=" + LernTalentName);
+								if (GratisTalentSkillType!=null) {
+									order.add("Gratistalent=" + GratisTalentSkillType.toString());
+									this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
+								}
 								L.setArguments(order);
 								L.setScriptUnit(this.scriptUnit);
 								L.setGameData(this.gd_Script);
@@ -457,6 +523,10 @@ public class Zupfer extends MatPoolScript{
 								Script L = new Lernfix();
 								ArrayList<String> order = new ArrayList<String>();
 								order.add("Lernplan=" + LernPlan);
+								if (GratisTalentSkillType!=null) {
+									order.add("Gratistalent=" + GratisTalentSkillType.toString());
+									this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
+								}
 								L.setArguments(order);
 								L.setScriptUnit(this.scriptUnit);
 								L.setGameData(this.gd_Script);
@@ -487,7 +557,7 @@ public class Zupfer extends MatPoolScript{
 					maxProdTotal = menge;
 				}
 				int maxSkillMenge = skillLevel * this.getUnit().getModifiedPersons();
-				if (regionsBestand>=40) {
+				if (regionsBestand>=MindestZupfBestandProzent) {
 					// genügend da, maximal zupfen
 					
 					if (maxSkillMenge<=maxProdTotal) {
@@ -498,7 +568,7 @@ public class Zupfer extends MatPoolScript{
 						this.addOrder("// Zupferinfo Runde=" + Runde + " Sollmenge=" + maxProdTotal, true);
 					}
 				}
-				if (regionsBestand>=0 && regionsBestand<40) {
+				if (regionsBestand>=0 && regionsBestand<MindestZupfBestandProzent) {
 					// Pausieren, Forschen oder Lernen
 					if (skillLevel>=7) {
 						// Forschen
@@ -509,6 +579,10 @@ public class Zupfer extends MatPoolScript{
 							Script L = new Lernfix();
 							ArrayList<String> order = new ArrayList<String>();
 							order.add("Talent=" + LernTalentName);
+							if (GratisTalentSkillType!=null) {
+								order.add("Gratistalent=" + GratisTalentSkillType.toString());
+								this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
+							}
 							L.setArguments(order);
 							L.setScriptUnit(this.scriptUnit);
 							L.setGameData(this.gd_Script);
@@ -522,6 +596,10 @@ public class Zupfer extends MatPoolScript{
 							Script L = new Lernfix();
 							ArrayList<String> order = new ArrayList<String>();
 							order.add("Lernplan=" + LernPlan);
+							if (GratisTalentSkillType!=null) {
+								order.add("Gratistalent=" + GratisTalentSkillType.toString());
+								this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
+							}
 							L.setArguments(order);
 							L.setScriptUnit(this.scriptUnit);
 							L.setGameData(this.gd_Script);
@@ -541,6 +619,10 @@ public class Zupfer extends MatPoolScript{
 						Script L = new Lernfix();
 						ArrayList<String> order = new ArrayList<String>();
 						order.add("Talent=Kräuterkunde");
+						if (GratisTalentSkillType!=null) {
+							order.add("Gratistalent=" + GratisTalentSkillType.toString());
+							this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
+						}
 						L.setArguments(order);
 						L.setScriptUnit(this.scriptUnit);
 						L.setGameData(this.gd_Script);

@@ -85,8 +85,7 @@ public void runScript(int scriptDurchlauf){
 			if (actDest!=null){
 				this.getBauManager().setCentralHomeDest(actDest, this.scriptUnit);
 			} else {
-				this.addComment("!!! HOME Angabe nicht erkannt!");
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("!!! HOME Angabe nicht erkannt!");
 			}
 		}
 		
@@ -99,8 +98,7 @@ public void runScript(int scriptDurchlauf){
 				TABM.setLernplanname(Lernplanname);
 				this.addComment("Lernplan " + Lernplanname + " gesetzt für automatische Bauarbeiter im TA " + TA.getName());
 			} else {
-				this.addComment("TA in Range not found ?! - could not set Lernplan");
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("TA in Range not found ?! - could not set Lernplan");
 			}
 		}
 		

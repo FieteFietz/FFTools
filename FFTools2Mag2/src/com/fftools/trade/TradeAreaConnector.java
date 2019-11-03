@@ -286,8 +286,7 @@ public class TradeAreaConnector {
 	 */
 	public void addMover(Ontradeareaconnection onTAC){
 		if (this.movers.contains(onTAC)){
-			onTAC.doNotConfirmOrders();
-			onTAC.addComment("!!!TAC:addMovver: bereits eingetragen!->unbestätigt");
+			onTAC.doNotConfirmOrders("!!!TAC:addMovver: bereits eingetragen!->unbestätigt");
 			return;
 		}
 		this.movers.add(onTAC);
@@ -455,13 +454,11 @@ public class TradeAreaConnector {
 		outText.addNewLine();
 		
 		if (kapa_soll>kapa_ist){
-			this.SU1.doNotConfirmOrders();
-			this.SU1.addComment("!!! TAC " + this.Name + " fehlt Kapa: nur " + kapa_ist + " von " + kapa_soll + " verfügbar!");
+			this.SU1.doNotConfirmOrders("!!! TAC " + this.Name + " fehlt Kapa: nur " + kapa_ist + " von " + kapa_soll + " verfügbar!");
 		}
 		
 		if (kapa_soll==0 && this.movers.size()>this.maxNumberOfMoversIfIdle){
-			this.SU1.doNotConfirmOrders();
-			this.SU1.addComment("!!! TAC " + this.Name + " nutzt " + this.movers.size() + " Schiffe, obwohl derzeit kein Bedarf existiert! (max " + this.maxNumberOfMoversIfIdle + ")");
+			this.SU1.doNotConfirmOrders("!!! TAC " + this.Name + " nutzt " + this.movers.size() + " Schiffe, obwohl derzeit kein Bedarf existiert! (max " + this.maxNumberOfMoversIfIdle + ")");
 		}
 		
 		

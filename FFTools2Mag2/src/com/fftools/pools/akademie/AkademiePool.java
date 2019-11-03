@@ -110,8 +110,7 @@ public class AkademiePool {
 			ArrayList<AusbildungsRelation> actRel = new ArrayList<AusbildungsRelation>();
 			for (AusbildungsRelation AR:this.relevantRelations){
 				if (AR.getOrderedSkillType()==null){
-					AR.getScriptUnit().doNotConfirmOrders();
-					AR.getScriptUnit().addComment("!!!Unbekanntes Talent!!!");
+					AR.getScriptUnit().doNotConfirmOrders("!!!Unbekanntes Talent!!!");
 				} else {
 					if (AR.getAkademieFromAM()==null && AR.getOrderedSkillType().equals(AT.getSkillType())){
 						if (!AR.isSchueler()){

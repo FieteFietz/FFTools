@@ -23,9 +23,8 @@ public class Avoidregion extends Script {
 		// hier code fuer GoTo
 		// addOutLine("....start GoTo mit " + super.getArgCount() + " Argumenten");
 		if (super.getArgCount()<1) {
-			super.addComment("Das Ziel fehlt beim Aufruf von AvoidRegion!",true);
+			super.scriptUnit.doNotConfirmOrders("Das Ziel fehlt beim Aufruf von AvoidRegion!");
 			super.addComment("Unit wurde durch AvoidRegion nicht bestaetigt", true);
-			super.scriptUnit.doNotConfirmOrders();
 			addOutLine("X....fehlende Region bei AvoidRegion bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 		} else {
 			// wir haben zumindest ein Ziel
@@ -52,9 +51,8 @@ public class Avoidregion extends Script {
 	}
 	
 	private void zielParseFehler() {
-		super.addComment("Ungueltiges Ziel beim Aufruf von AvoidRegion!",true);
+		super.scriptUnit.doNotConfirmOrders("Ungueltiges Ziel beim Aufruf von AvoidRegion!");
 		super.addComment("Unit wurde durch AvoidRegion NICHT bestaetigt", true);
-		super.scriptUnit.doNotConfirmOrders();
 		addOutLine("X....ungültiges AvoidRegion bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 	}
 	

@@ -58,8 +58,7 @@ public class Enterbuilding extends MatPoolScript{
 		String target = OP.getOptionString("target");
 		// target angegeben ?
 		if (target==""){
-			this.addComment("!!! EnterBuilding: Building NOT given !!!");
-			this.doNotConfirmOrders();
+			this.doNotConfirmOrders("!!! EnterBuilding: Building NOT given !!!");
 			return;
 		}
 		
@@ -78,8 +77,7 @@ public class Enterbuilding extends MatPoolScript{
 		}
 		
 		if (!isOK){
-			this.addComment("!!! EnterBuilding: Building NOT in region !!! : " + target);
-			this.doNotConfirmOrders();
+			this.doNotConfirmOrders("!!! EnterBuilding: Building NOT in region !!! : " + target);
 			return;
 		}
 		

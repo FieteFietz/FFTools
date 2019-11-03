@@ -44,6 +44,12 @@ public class Schmieden extends MatPoolScript{
 	private int holzPrio = 500;
 	
 	/**
+	 * basisPrio zur Anforderung von Steinen
+	 */
+	private int steinPrio = 500;
+	
+	
+	/**
 	 * Anzahl Vorratsrunden
 	 */
 	private int vorratsRunden = 3;
@@ -67,6 +73,12 @@ public class Schmieden extends MatPoolScript{
 	 * Holzrequest für diese Runde
 	 */
 	private MatPoolRequest holzRequest = null;
+	
+	/**
+	 * Steinrequest für diese Runde
+	 */
+	private MatPoolRequest steinRequest = null;
+	
 	
 	/**
 	 * SkillType benötigt für Herstellung der Ware
@@ -108,13 +120,11 @@ public void runScript(int scriptDurchlauf){
 		// Optionen lesen und Prüfen
 		// Ware
 		String warenName = OP.getOptionString("Ware");
-		ItemType actItemType = this.gd_Script.rules.getItemType(warenName, false);
+		ItemType actItemType = this.gd_Script.getRules().getItemType(warenName, false);
 		if (actItemType!=null){
 			this.itemType = actItemType;
 		} else {
-			this.addComment("!!! Schmieden: Ware nicht erkannt (" + warenName + ") !");
-			outText.addOutLine("!!! Schmieden: Ware nicht erkannt (" + warenName + ") !)" + this.unitDesc(), true);
-			this.scriptUnit.doNotConfirmOrders();
+			this.scriptUnit.doNotConfirmOrders("!!! Schmieden: Ware nicht erkannt (" + warenName + ") !");
 		}
 		
 		// Prios
@@ -122,6 +132,7 @@ public void runScript(int scriptDurchlauf){
 		if (prio>0) {
 			this.eisenPrio = prio;
 			this.holzPrio = prio;
+			this.steinPrio = prio;
 		}
 		
 		prio=OP.getOptionInt("holzPrio",0);
@@ -131,6 +142,11 @@ public void runScript(int scriptDurchlauf){
 		prio=OP.getOptionInt("eisenPrio",0);
 		if (prio>0){
 			this.eisenPrio=prio;
+		}
+		
+		prio=OP.getOptionInt("steinPrio",0);
+		if (prio>0){
+			this.steinPrio=prio;
 		}
 		
 		// Vorratsrunden
@@ -146,9 +162,7 @@ public void runScript(int scriptDurchlauf){
 				this.minAuslastung = setMinAuslastung;
 			} else {
 				// Fehler
-				this.addComment("!!! Schmieden: minAuslastung fehlerhaft!");
-				outText.addOutLine("!!! Schmieden: minAuslastung fehlerhaft!" + this.unitDesc(), true);
-				this.scriptUnit.doNotConfirmOrders();
+				this.scriptUnit.doNotConfirmOrders("!!! Schmieden: minAuslastung fehlerhaft!");
 			}
 		}
 		
@@ -173,8 +187,7 @@ public void runScript(int scriptDurchlauf){
 		}
 		
 		if (prodPoints==0){
-			this.addComment("Keine Produktion möglich - keine Talentpunke.(modSkill:" + actSkillLevel +", modCount:" + this.scriptUnit.getUnit().getModifiedPersons() +",modSkill2:" + actSkillLevel_old + ")");
-			this.scriptUnit.doNotConfirmOrders();
+			this.scriptUnit.doNotConfirmOrders("Keine Produktion möglich - keine Talentpunke.(modSkill:" + actSkillLevel +", modCount:" + this.scriptUnit.getUnit().getModifiedPersons() +",modSkill2:" + actSkillLevel_old + ")");
 			return;
 		}
 		
@@ -194,14 +207,13 @@ public void runScript(int scriptDurchlauf){
 		if (warenLevel>0){
 			maxMachenWare = (int)Math.floor((double)prodPoints/(double)warenLevel);
 		} else {
-			this.addComment("Keine Produktion möglich - kann benötigten Level nicht finden.");
-			this.scriptUnit.doNotConfirmOrders();
+			this.scriptUnit.doNotConfirmOrders("Keine Produktion möglich - kann benötigten Level nicht finden.");
 			return;
 		}
 	
 
 		// RdF
-		ItemType rdfType=this.gd_Script.rules.getItemType("Ring der flinken Finger",false);
+		ItemType rdfType=this.gd_Script.getRules().getItemType("Ring der flinken Finger",false);
 		if (rdfType!=null){
 			Item rdfItem = this.scriptUnit.getModifiedItem(rdfType);
 			if (rdfItem!=null && rdfItem.getAmount()>0){
@@ -228,8 +240,7 @@ public void runScript(int scriptDurchlauf){
 		
 		
 		if (maxMachenWare<=0){
-			this.addComment("Schmieden: Keine Produktion möglich - ungenügendes Talent.");
-			this.scriptUnit.doNotConfirmOrders();
+			this.scriptUnit.doNotConfirmOrders("Schmieden: Keine Produktion möglich - ungenügendes Talent.");
 			return;
 		} else {
 			this.addComment("Schmieden: Maximal mögliche Anzahl:" + maxMachenWare + " " + this.itemType.getName());
@@ -247,12 +258,12 @@ public void runScript(int scriptDurchlauf){
 		}
 		
 		int actEisenPrio = this.eisenPrio + actSkillLevel;
-		if (this.isInSchmiede){
-			actEisenPrio += this.schmiedeBonus;
-		}
 		int actHolzPrio = this.holzPrio + actSkillLevel;
+		int actSteinPrio = this.steinPrio + actSkillLevel;
 		if (this.isInSchmiede){
 			actHolzPrio += this.schmiedeBonus;
+			actEisenPrio += this.schmiedeBonus;
+			actSteinPrio += this.schmiedeBonus;
 		}
 		
 		// benötigte Materialien erfassen
@@ -261,7 +272,7 @@ public void runScript(int scriptDurchlauf){
 			boolean isKnownItem = false;
 			int anzahl = actItem.getAmount() * maxMachenWare;
 			// für diese Runde
-			if (actItem.getItemType().getName().equalsIgnoreCase("Eisen") || actItem.getItemType().getName().equalsIgnoreCase("Laen")){
+			if (actItem.getItemType().getName().equalsIgnoreCase("Eisen")){
 				// wenn in Schmiede, Anzahl halbieren (Schmiedebonus)
 				if (this.isInSchmiede){
 					anzahl = (int)Math.ceil((double)anzahl/(double)2);
@@ -270,14 +281,29 @@ public void runScript(int scriptDurchlauf){
 				this.addMatPoolRequest(this.eisenRequest);
 				isKnownItem=true;
 			}
+			
+			if ( actItem.getItemType().getName().equalsIgnoreCase("Laen")){
+				// wenn in Schmiede, Anzahl halbieren (Schmiedebonus) !!! nicht für Laen!!
+				if (this.isInSchmiede){
+					anzahl = (int)Math.ceil((double)anzahl/(double)1);
+				}
+				this.eisenRequest = new MatPoolRequest(this,anzahl,actItem.getItemType().getName(),actEisenPrio,"Schmieden diese Runde");
+				this.addMatPoolRequest(this.eisenRequest);
+				isKnownItem=true;
+			}
+			
 			if (actItem.getItemType().getName().equalsIgnoreCase("Holz") || actItem.getItemType().getName().equalsIgnoreCase("Mallorn")){
 				this.holzRequest = new MatPoolRequest(this,anzahl,actItem.getItemType().getName(),actHolzPrio,"Schmieden diese Runde");
 				this.addMatPoolRequest(this.holzRequest);
 				isKnownItem=true;
 			}
+			if (actItem.getItemType().getName().equalsIgnoreCase("Stein")){
+				this.steinRequest = new MatPoolRequest(this,anzahl,actItem.getItemType().getName(),actSteinPrio,"Schmieden diese Runde");
+				this.addMatPoolRequest(this.steinRequest);
+				isKnownItem=true;
+			}
 			if (!isKnownItem){
-				this.addComment("Schmieden: unbekannte Zutat: " +  actItem.getItemType().getName());
-				this.scriptUnit.doNotConfirmOrders();
+				this.scriptUnit.doNotConfirmOrders("Schmieden: unbekannte Zutat: " +  actItem.getItemType().getName());
 			}
 		}
 		
@@ -298,6 +324,14 @@ public void runScript(int scriptDurchlauf){
 					// Holz
 					this.setPrioParameter(this.holzRequest.getPrio(), -0.5, 0,1);
 					MatPoolRequest myMPR = new MatPoolRequest(this.holzRequest);
+					myMPR.setPrio(this.getPrio(i));
+					myMPR.setKommentar("Schmiederessource in " + i);
+					this.addMatPoolRequest(myMPR);
+				}
+				if (this.steinRequest!=null){
+					// Stein
+					this.setPrioParameter(this.steinRequest.getPrio(), -0.5, 0,1);
+					MatPoolRequest myMPR = new MatPoolRequest(this.steinRequest);
 					myMPR.setPrio(this.getPrio(i));
 					myMPR.setKommentar("Schmiederessource in " + i);
 					this.addMatPoolRequest(myMPR);
@@ -333,20 +367,41 @@ public void runScript(int scriptDurchlauf){
 			Item actItem = (Item)iter.next();
 			int resAnzahl = 0;
 			// für diese Runde
-			if (actItem.getItemType().getName().equalsIgnoreCase("Eisen") || actItem.getItemType().getName().equalsIgnoreCase("Laen")){
+			if (actItem.getItemType().getName().equalsIgnoreCase("Eisen")){
 				resAnzahl = this.eisenRequest.getBearbeitet();
 				if (this.isInSchmiede){
 					resAnzahl *= 2;
 				}
 				int detProd = (int)Math.floor((double)resAnzahl/(double)actItem.getAmount());
 				if (detProd<actProduction){
+					this.addComment("Produktionsmenge reduziert von " + actProduction + " auf " + detProd + " wegen Menge Eisen");
 					actProduction = detProd;
 				}
 			}
+			
+			if (actItem.getItemType().getName().equalsIgnoreCase("Laen")){
+				resAnzahl = this.eisenRequest.getBearbeitet();
+				int detProd = (int)Math.floor((double)resAnzahl/(double)actItem.getAmount());
+				if (detProd<actProduction){
+					this.addComment("Produktionsmenge reduziert von " + actProduction + " auf " + detProd + " wegen Menge Laen");
+					actProduction = detProd;
+				}
+			}
+			
+			
 			if (actItem.getItemType().getName().equalsIgnoreCase("Holz") || actItem.getItemType().getName().equalsIgnoreCase("Mallorn")){
 				resAnzahl = this.holzRequest.getBearbeitet();
 				int detProd = (int)Math.floor((double)resAnzahl/(double)actItem.getAmount());
 				if (detProd<actProduction){
+					this.addComment("Produktionsmenge reduziert von " + actProduction + " auf " + detProd + " wegen Menge Holz/Mallorn");
+					actProduction = detProd;
+				}
+			}
+			if (actItem.getItemType().getName().equalsIgnoreCase("Stein")){
+				resAnzahl = this.steinRequest.getBearbeitet();
+				int detProd = (int)Math.floor((double)resAnzahl/(double)actItem.getAmount());
+				if (detProd<actProduction){
+					this.addComment("Produktionsmenge reduziert von " + actProduction + " auf " + detProd + " wegen Menge Stein");
 					actProduction = detProd;
 				}
 			}

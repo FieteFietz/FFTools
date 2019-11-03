@@ -38,7 +38,7 @@ public class Bauen extends MatPoolScript implements Cloneable{
 	
 	
 	// private static final ReportSettings reportSettings = ReportSettings.getInstance();
-	private int Durchlauf_Baumanager = 94;
+	private int Durchlauf_Baumanager = 59;
 	private int Durchlauf_vorMatPool = 102;
 	private int Durchlauf_nachMatPool = 440;
 	
@@ -212,6 +212,8 @@ public class Bauen extends MatPoolScript implements Cloneable{
 	
 	private int minAuslastung = 75;
 	
+	private String LernfixOrder = "Talent=Burgenbau";
+	
 	
 	
 	
@@ -246,13 +248,7 @@ public void runScript(int scriptDurchlauf){
 	 * 
 	 */
 	private void BauManager(){
-		if (!this.isInPlaningMode()){
-			super.addVersionInfo();
-			
-			// eintragen
-			this.getBauManager().addBauScript(this);
-			
-		}
+		super.addVersionInfo();
 		
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit);
 		OP.addOptionList(this.getArguments());
@@ -280,14 +276,20 @@ public void runScript(int scriptDurchlauf){
 			if (actDest!=null){
 				this.homeDest=actDest;
 			} else {
-				this.addComment("!!! HOME Angabe nicht erkannt!");
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("!!! HOME Angabe nicht erkannt!");
 			}
 		}
 		
 		// spec
-		if (OP.getOptionString("spec").equalsIgnoreCase("Strassenbau") || OP.getOptionString("spec").equalsIgnoreCase("Strasse")){
+		if (OP.getOptionString("spec").equalsIgnoreCase("Strassenbau") 
+			|| OP.getOptionString("spec").equalsIgnoreCase("Strasse")
+			|| OP.getOptionString("spec").equalsIgnoreCase("Straﬂe")
+			|| OP.getOptionString("spec").equalsIgnoreCase("Straﬂenbau")
+			){
 			this.spec=Bauen.STRASSE;
+			this.lernTalent="Straﬂenbau";
+			this.LernfixOrder="Talent=Straﬂenbau";
+			this.addComment("debug: Baumanager-Setup hat spec=Straﬂe erkannt");
 		}
 		
 		// minTalent
@@ -297,25 +299,63 @@ public void runScript(int scriptDurchlauf){
 		
 		if (this.spec==Bauen.STRASSE){
 			if (this.scriptUnit.getSkillLevel("Strassenbau")<this.minStassenbauTalent){
+				this.addComment("Bauen: minTalent Strassenbau nicht erreicht, ich sollte lernen.");
 				this.lernTalent="Strassenbau";
 				this.setFinalStatusInfo("Min Strassenbau. ");
 				this.setAutomode_hasPlan(true);
 				isLearning=true;
+				this.LernfixOrder="Talent=Straﬂenbau";
+				this.Lerne();
+			} else {
+				this.addComment("Bauen: minTalent Strassenbau ist erreicht, ich suche Arbeit.");
 			}
 		} else {
 			if (this.scriptUnit.getSkillLevel("Burgenbau")<this.minBurgenbauTalent){
+				this.addComment("Bauen: minTalent Burgenbau nicht erreicht, ich sollte lernen.");
 				this.lernTalent="Burgenbau";
 				this.setFinalStatusInfo("Min Burgenbau. ");
 				this.setAutomode_hasPlan(true);
 				isLearning=true;
+				this.LernfixOrder="Talent=Burgenbau";
+				this.Lerne();
+			} else {
+				this.addComment("Bauen: minTalent Burgenbau ist erreicht, ich suche Arbeit.");
 			}
 		}
 		
-		
+		if (!this.isInPlaningMode() && !this.isLearning){
+			
+			// eintragen
+			this.getBauManager().addBauScript(this);
+			
+		} else {
+			this.addComment("Bauen: keine Eintragung beim Baumanager.");
+		}
 	}
 
 
 	public void vorMatPool(){
+		
+		this.actTyp = Bauen.BUILDING;
+		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit);
+		OP.addOptionList(this.getArguments());
+		// Typbestimmung
+		if (OP.getOptionString("Typ").equalsIgnoreCase("Strasse") || OP.getOptionString("Type").equalsIgnoreCase("Strasse")
+				|| OP.getOptionString("Typ").equalsIgnoreCase("Road")
+				|| OP.getOptionString("Type").equalsIgnoreCase("Road")
+				|| OP.getOptionString("Typ").equalsIgnoreCase("Straﬂe")
+				){
+			this.actTyp = Bauen.STRASSE;
+			this.lernTalent="Straﬂenbau";
+			this.addComment("debug: vorMatpool-Setup hat spec=Straﬂe erkannt");
+		}
+		
+		if (OP.getOptionString("Typ").equalsIgnoreCase("Burg") || OP.getOptionString("Type").equalsIgnoreCase("Burg")
+				|| OP.getOptionString("Typ").equalsIgnoreCase("Castle")
+				|| OP.getOptionString("Type").equalsIgnoreCase("Castle")){
+			this.actTyp = Bauen.BURG;
+		}
+		
 		
 		if (this.isAutomode()){
 			return;
@@ -326,25 +366,7 @@ public void runScript(int scriptDurchlauf){
 		}
 		
 		this.parseOK = false;
-		
-		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit);
-		OP.addOptionList(this.getArguments());
-		
-		this.actTyp = Bauen.BUILDING;
-		
-		// Typbestimmung
-		if (OP.getOptionString("Typ").equalsIgnoreCase("Strasse") || OP.getOptionString("Type").equalsIgnoreCase("Strasse")
-				|| OP.getOptionString("Typ").equalsIgnoreCase("Road")
-				|| OP.getOptionString("Type").equalsIgnoreCase("Road")){
-			this.actTyp = Bauen.STRASSE;
-		}
-		
-		if (OP.getOptionString("Typ").equalsIgnoreCase("Burg") || OP.getOptionString("Type").equalsIgnoreCase("Burg")
-				|| OP.getOptionString("Typ").equalsIgnoreCase("Castle")
-				|| OP.getOptionString("Type").equalsIgnoreCase("Castle")){
-			this.actTyp = Bauen.BURG;
-		}
-		
+
 		if (this.actTyp == Bauen.BUILDING){
 			// Typ muss Geb‰udeType enthalten
 			String s = OP.getOptionString("Typ");
@@ -354,9 +376,8 @@ public void runScript(int scriptDurchlauf){
 			this.buildingType = this.gd_Script.getRules().getBuildingType(s,false);
 			if (this.buildingType==null){
 				// Abbruch
-				this.addComment("Bauen: unbekanntes Geb‰ude: " + s);
 				statusInfo+="Fehler: unbekanntes Geb‰ude: " + s;
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("Bauen: unbekanntes Geb‰ude: " + s);
 				return;
 			}
 			
@@ -375,9 +396,8 @@ public void runScript(int scriptDurchlauf){
 					this.targetSize=i;
 				} else {
 					// nix ist OK
-					this.addComment("Bauen: bei " + this.buildingType.getName() + " MUSS eine Zielgrˆsse angegeben werden! (ziel=X)");
 					statusInfo+="Fehler: bei " + this.buildingType.getName() + " MUSS eine Zielgrˆsse angegeben werden! (ziel=X)";
-					this.doNotConfirmOrders();
+					this.doNotConfirmOrders("Bauen: bei " + this.buildingType.getName() + " MUSS eine Zielgrˆsse angegeben werden! (ziel=X)");
 					return;
 				}
 			}
@@ -395,9 +415,8 @@ public void runScript(int scriptDurchlauf){
 				this.targetSize=i;
 			} else {
 				// nix ist OK
-				this.addComment("Bauen: beim Burgenbau MUSS eine Zielgrˆsse angegeben werden! (ziel=X)");
 				statusInfo+="Fehler: zum Bauen einer Burg MUSS eine Zielgrˆsse angegeben werden! (ziel=X)";
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("Bauen: beim Burgenbau MUSS eine Zielgrˆsse angegeben werden! (ziel=X)");
 				return;
 			}
 		}
@@ -416,16 +435,14 @@ public void runScript(int scriptDurchlauf){
 				this.dirLocal = changer.getOrder(Locales.getOrderLocale(), this.dir.getId());
 			} catch (IllegalArgumentException e){
 				this.dir=null;
-				this.addComment("Bauen: Strassenrichtung nicht erkannt: " + s);
 				statusInfo+="Fehler: Strassenrichtung nicht erkannt: " + s;
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("Bauen: Strassenrichtung nicht erkannt: " + s);
 				return;
 			}
 			if (this.dir.getDirCode()==Direction.DIR_INVALID){
 				this.dir=null;
-				this.addComment("Bauen: Strassenrichtung nicht erkannt: " + s);
 				statusInfo+="Fehler: Strassenrichtung nicht erkannt: " + s;
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("Bauen: Strassenrichtung nicht erkannt: " + s);
 				return;
 			}
 			
@@ -443,9 +460,8 @@ public void runScript(int scriptDurchlauf){
 				this.prioSilber = i;
 				this.prioSteine = i;
 			} else {
-				this.addComment("Bauen: Prio nicht erkannt: " + i);
 				statusInfo+="Fehler: Prio nicht erkannt: " + i;
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("Bauen: Prio nicht erkannt: " + i);
 			}
 		}
 		// Silberprio
@@ -454,8 +470,7 @@ public void runScript(int scriptDurchlauf){
 			if (i>0 && i<10000){
 				this.prioSilber = i;
 			} else {
-				this.addComment("Bauen: SilberPrio nicht erkannt: " + i);
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("Bauen: SilberPrio nicht erkannt: " + i);
 			}
 		}
 		// Eisenprio
@@ -464,8 +479,7 @@ public void runScript(int scriptDurchlauf){
 			if (i>0 && i<10000){
 				this.prioEisen = i;
 			} else {
-				this.addComment("Bauen: EisenPrio nicht erkannt: " + i);
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("Bauen: EisenPrio nicht erkannt: " + i);
 			}
 		}
 		// Holzprio
@@ -474,8 +488,7 @@ public void runScript(int scriptDurchlauf){
 			if (i>0 && i<10000){
 				this.prioHolz = i;
 			} else {
-				this.addComment("Bauen: HolzPrio nicht erkannt: " + i);
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("Bauen: HolzPrio nicht erkannt: " + i);
 			}
 		}
 		// Steinprio
@@ -484,8 +497,7 @@ public void runScript(int scriptDurchlauf){
 			if (i>0 && i<10000){
 				this.prioSteine = i;
 			} else {
-				this.addComment("Bauen: SteinPrio nicht erkannt: " + i);
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("Bauen: SteinPrio nicht erkannt: " + i);
 			}
 		}
 		
@@ -524,9 +536,8 @@ public void runScript(int scriptDurchlauf){
 			}
 			if (!foundNummber){
 				// problem
-				this.addComment("Bauen: " + s + " kann nicht gefunden werden.");
 				statusInfo+="Fehler: " + s + " kann nicht gefunden werden.";
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("Bauen: " + s + " kann nicht gefunden werden.");
 				return;
 			}
 		}
@@ -1191,7 +1202,7 @@ public void runScript(int scriptDurchlauf){
 		} else {
 			erg = statusInfo;
 			if (this.getPrioSteine()>0){
-				erg = "(Prio " + this.getPrioSteine() + ") " + erg;
+				erg = "(Stein-Prio " + this.getPrioSteine() + ") " + erg;
 			}
 		}
 		return erg;
@@ -1284,14 +1295,18 @@ public void runScript(int scriptDurchlauf){
 				// wir sind noch nicht da
 				// ja, hinreiten und pferde requesten
 				GotoInfo gotoInfo = FFToolsRegions.makeOrderNACH(this.scriptUnit, this.region().getCoordinate(), this.homeDest, true,"autoLearn");
-				this.addComment("unterwegs in die HOME-Region");
-				this.addComment("ETA: " + gotoInfo.getAnzRunden() + " Runden.");
-				// Pferde requesten...
-				if (this.scriptUnit.getSkillLevel("Reiten")>0){
-					MatPoolRequest MPR = new MatPoolRequest(this,this.scriptUnit.getUnit().getModifiedPersons(), "Pferd", 21, "Bauarbeiter unterwegs" );
-					this.addMatPoolRequest(MPR);
+				if (gotoInfo != null) {
+					this.addComment("unterwegs in die HOME-Region");
+					this.addComment("ETA: " + gotoInfo.getAnzRunden() + " Runden.");
+					// Pferde requesten...
+					if (this.scriptUnit.getSkillLevel("Reiten")>0){
+						MatPoolRequest MPR = new MatPoolRequest(this,this.scriptUnit.getUnit().getModifiedPersons(), "Pferd", 21, "Bauarbeiter unterwegs" );
+						this.addMatPoolRequest(MPR);
+					}
+					this.finalStatusInfo="going HOME";
+				} else {
+					this.doNotConfirmOrders("!!! ung¸ltiger GOTO-Befehl?! ggf HOME-Region nicht im TradeArea?");
 				}
-				this.finalStatusInfo="going HOME";
 				return;
 			} else {
 				this.addComment("bereits in dier HOME-Region");
@@ -1319,8 +1334,7 @@ public void runScript(int scriptDurchlauf){
 				}
 			} else {
 				// keine AR -> Lernplan beendet ?!
-				this.addComment("Lernplan liefert keine Aufgabe mehr");
-				this.scriptUnit.doNotConfirmOrders();
+				this.scriptUnit.doNotConfirmOrders("Lernplan liefert keine Aufgabe mehr");
 				// default erg‰nzen - keine Ahnung, was, eventuell kan
 				// die einheit ja nix..
 				this.lerneTalent(this.lernTalent, true);
@@ -1330,6 +1344,7 @@ public void runScript(int scriptDurchlauf){
 		} else {
 			this.lerneTalent(this.lernTalent, true);
 			this.finalStatusInfo="ABM: LERNEN";
+			this.addComment("debug: autoLearn bestimmt Lerntalent");
 		}
 		
 	}
@@ -1620,5 +1635,17 @@ public void runScript(int scriptDurchlauf){
 		this.bauBefehl = bauBefehl;
 		// this.addComment("DEBUG neuer Baubefehl: " + bauBefehl + " (" + this.scriptUnit.getMainDurchlauf() + ", " + OriginInfo + ", " + this.isInPlaningMode() + ")");
 	}
-	
+	private void Lerne() {
+		this.scriptUnit.addComment("Lernfix wird initialisiert mit dem Parameter: " + this.LernfixOrder);
+		Script L = new Lernfix();
+		ArrayList<String> order = new ArrayList<String>();
+		order.add(this.LernfixOrder);
+		L.setArguments(order);
+		L.setScriptUnit(this.scriptUnit);
+		L.setGameData(this.scriptUnit.getScriptMain().gd_ScriptMain);
+		if (this.scriptUnit.getScriptMain().client!=null){
+			L.setClient(this.scriptUnit.getScriptMain().client);
+		}
+		this.scriptUnit.addAScript(L);
+	}
 }

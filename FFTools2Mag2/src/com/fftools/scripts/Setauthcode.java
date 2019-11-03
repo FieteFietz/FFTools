@@ -103,8 +103,7 @@ public class Setauthcode extends Script implements ScriptInterface,OverlordInfo{
 				reportSettings.parseOption("authcode="+code, this.getUnit(),false);
 				this.addComment("authcode: code wurde bereits generiert:" + code);
 			} else {
-				this.addComment("!!! authcode: code nicht erkannt für Runde " + runde);
-				this.doNotConfirmOrders();
+				this.scriptUnit.doNotConfirmOrders("!!! authcode: code nicht erkannt für Runde " + runde);
 			}
 			
 		} else {
@@ -300,12 +299,7 @@ public class Setauthcode extends Script implements ScriptInterface,OverlordInfo{
 		return erg;
 	}
 	
-	/**
-	 * short cut 
-	 */
-	public void doNotConfirmOrders(){
-		this.scriptUnit.doNotConfirmOrders();
-	}
+	
 	
 	/**
 	 * wenn beim start im client regionen selected sind, dann nur die

@@ -112,7 +112,7 @@ public class FFToolsRunScript extends InternationalizedDialog implements Runnabl
 			}
 		}
 		*/
-		
+		outText.addOutLine("Extracting script units");
 		scriptMain.extractScriptUnits();
 		
 		

@@ -113,8 +113,8 @@ public class FFToolsUnits {
 	}
 	
 	/**
-	 * ?berpr?ft, ob einheit Kapitän eines schiffes
-	 * versucht, das shiff zu setzen (wird für pathbuilding en?tigt)
+	 * Überprüft, ob einheit Kapitän eines schiffes
+	 * versucht, das shiff zu setzen (wird für pathbuilding benötigt)
 	 * wenn beides OK -> true, sonst false
 	 * @return
 	 */
@@ -142,6 +142,7 @@ public class FFToolsUnits {
 		return false;
 	}
 	
+	
 	/*
 	 * Ware kann Name von itemtype sein, oder catgory
 	 */
@@ -163,8 +164,7 @@ public class FFToolsUnits {
 			if (isCat){
 				requestesTypes.addAll(reportSettings.getItemTypes(Ware));
 			} else {
-				su.addComment("!!! Ware war keine Gegenstand und keine Kategorie!!! (" + Ware + ")");
-				su.doNotConfirmOrders();
+				su.doNotConfirmOrders("!!! Ware war keine Gegenstand und keine Kategorie!!! (" + Ware + ")");
 			}
 		}
 		

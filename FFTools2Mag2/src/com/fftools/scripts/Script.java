@@ -259,8 +259,8 @@ public class Script implements ScriptInterface,OverlordInfo{
 	/**
 	 * short cut 
 	 */
-	public void doNotConfirmOrders(){
-		this.scriptUnit.doNotConfirmOrders();
+	public void doNotConfirmOrders(String reason){
+		this.scriptUnit.doNotConfirmOrders(reason);
 	}
 	
 	/**

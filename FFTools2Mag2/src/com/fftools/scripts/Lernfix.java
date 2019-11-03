@@ -87,8 +87,7 @@ public class Lernfix extends MatPoolScript{
 					// nicht mehr lernfixen...
 					// soll user entscheiden..zumindest nicht bestätigen
 					// und Kommentar setzen
-					this.scriptUnit.doNotConfirmOrders();
-					this.addComment("Talentwert nicht unter Ziellevel (" + talentName + ": " + talentZiel + ")");
+					this.scriptUnit.doNotConfirmOrders("Talentwert nicht unter Ziellevel (" + talentName + ": " + talentZiel + ")");
 				}
 			}
 			
@@ -148,8 +147,7 @@ public class Lernfix extends MatPoolScript{
 				}
 			} else {
 				// keine AR -> Lernplan beendet ?!
-				this.addComment("Lernplan liefert keine Aufgabe mehr");
-				this.scriptUnit.doNotConfirmOrders();
+				this.scriptUnit.doNotConfirmOrders("Lernplan liefert keine Aufgabe mehr");
 				// default ergänzen - keine Ahnung, was, eventuell kan
 				// die einheit ja nix..
 				this.addOrder("Lernen Ausdauer", true);
@@ -177,8 +175,7 @@ public class Lernfix extends MatPoolScript{
 	  private HashMap<SkillType,Skill> erzeugeSkillList(Map<StringID,Skill> _m){
 		HashMap<SkillType,Skill> liste = new HashMap<SkillType,Skill>();
 		if (_m==null || _m.values()==null) {
-			this.addComment("!!!Debug: erzeuge SkillList scheitert!!!");
-			this.doNotConfirmOrders();
+			this.doNotConfirmOrders("!!!Debug: erzeuge SkillList scheitert!!!");
 		} else {
 			for(Iterator<Skill> iter = _m.values().iterator();iter.hasNext();){
 				Skill skill =( Skill) iter.next();
@@ -205,8 +202,7 @@ public class Lernfix extends MatPoolScript{
 		  
 		  if (actSkillType==null){
 			  // Screibweise falsch?!
-			  addComment("!!!Lernfix: Talent nicht erkannt");
-			  doNotConfirmOrders();
+			  doNotConfirmOrders("!!!Lernfix: Talent nicht erkannt");
 			  outText.addOutLine("!!!Lernfix Talent nicht erkannt: " + this.unitDesc());
 		  } else {
 			  Skill actSkill = this.scriptUnit.getUnit().getModifiedSkill(actSkillType);
@@ -220,9 +216,7 @@ public class Lernfix extends MatPoolScript{
 				  
 				  magieType = this.scriptUnit.getScriptMain().gd_ScriptMain.rules.getSkillType(this.scriptUnit.getUnit().getFaction().getSpellSchool(), true);
 				  if (magieType==null){
-					  this.addComment("!!!Für diese Einheit konnte das Magiegebiet nicht erkannt werden!!!");
-					  this.addComment("!!!Lernfix scheitert!!!");
-					  this.doNotConfirmOrders();
+					  this.doNotConfirmOrders("!!!Für diese Einheit konnte das Magiegebiet nicht erkannt werden!!!");
 				  } else {
 					  this.addComment("Lernfix: (debug) SillType-Name generiert mit :" + this.scriptUnit.getUnit().getFaction().getSpellSchool());
 					  this.addComment("Lernfix: (debug) SillType to String liefert 1:" + magieType.toString());

@@ -63,8 +63,7 @@ public class Request extends MatPoolScript{
 		//		 falls kein parameter bzw zu viele
 		if (super.getArgCount()< 2){
 			addOutLine(super.scriptUnit.getUnit().toString(true) + ": request...unpassende Anzahl Parameter");
-			super.addComment("Request...unpassende Anzahl Parameter -> Unit unbestaetigt", true);
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Request...unpassende Anzahl Parameter -> Unit unbestaetigt");
 			return;
 		}
 		
@@ -91,8 +90,7 @@ public class Request extends MatPoolScript{
 		}
 		if (anzahl == 0){
 			addOutLine(super.scriptUnit.getUnit().toString(true) + ": Request...unpassende Anzahl");
-			super.addComment("Request...unpassende Anzahl -> Unit unbestaetigt", true);
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Request...unpassende Anzahl -> Unit unbestaetigt");
 			return;
 		}
 		
@@ -113,8 +111,7 @@ public class Request extends MatPoolScript{
 		}
 		if (itemType == null && !isCat){
 			addOutLine("!!!:Request...WAS? ...kein Gegenstand und keine Kategorie:" + itemName + " " + this.unitDesc());
-			super.addComment("Request...WAS? ...kein Gegenstand und keine Kategorie -> Unit unbestaetigt (" + itemName +")", true);
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Request...WAS? ...kein Gegenstand und keine Kategorie -> Unit unbestaetigt (" + itemName +")");
 			return;
 		}
 		
@@ -128,8 +125,7 @@ public class Request extends MatPoolScript{
 			} catch (NumberFormatException e){}
 			if (test==0){
 				addOutLine("!!! " + super.scriptUnit.getUnit().toString(true) + ": Request...keine gültige Prio");
-				super.addComment(": Request...keine gültige Prio -> Unit unbestaetigt", true);
-				super.scriptUnit.doNotConfirmOrders();
+				super.scriptUnit.doNotConfirmOrders(": Request...keine gültige Prio -> Unit unbestaetigt");
 				return;
 			}
 			Prio = test;
@@ -204,8 +200,7 @@ public class Request extends MatPoolScript{
 		// validation
 		if (OP.getOptionBoolean("region", false) && specsString.length()>2){
 			// in der region only und trotzdem transporterSpecs ?!
-			this.scriptUnit.doNotConfirmOrders();
-			this.addComment("!!! Region=ja und TransporterDefs gesetzt !!!");
+			this.scriptUnit.doNotConfirmOrders("!!! Region=ja und TransporterDefs gesetzt !!!");
 			outText.addOutLine("!!! Region=ja und TransporterDefs gesetzt !!! (" + this.unitDesc() + ")", true);		
 		}
 		

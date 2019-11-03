@@ -402,7 +402,7 @@ private MatPool matPool = null;
  					 this.maxAktuelleAuslastung=this.maxAuslastung;
  					 this.minAkteulleAuslastung=this.minAuslastung;
  				 }
-                 this.verboseOutText("benutze Auslastungen: max" + this.maxAktuelleAuslastung*100 + "%, min:" + this.minAkteulleAuslastung*100 + "%");
+                 this.verboseOutText("benutze Auslastungen: max: " + this.maxAktuelleAuslastung*100 + "%, min: " + this.minAkteulleAuslastung*100 + "%");
                  
                     for (int schuelerStufe=0;schuelerStufe<=aktuellerSkill.getLevel();schuelerStufe++){
                     	 this.verboseOutText("untersuche schuelerStufe " + schuelerStufe);
@@ -613,18 +613,20 @@ private MatPool matPool = null;
 	    	for (int n = _position; n<quellArray.length;n++){
 	    		// liste erreicht die geforderte länge
 		    	// 
-	    		/*
+	    		
 	    		// Debug:
 	    		String s = "Rekursion: " + this.teachRekursion + ", ";
 	    		s += "Position geg:" + _position + ", act:" + n + ",";
-	    		s += "quelle:" + quellArray[n].getTeachPlaetze() + ", min:" + _minLaenge;
-	    		s += "aktuelle:" + _aktuelleLaenge + ", maxLaenge:" + _maxLaenge + ", idealLaenge:" + _idealeLaenge;
-	    		// this.verboseOutText(s);
-	    		 * */
+	    		s += "quelle:" + quellArray[n].getTeachPlaetze() + ", minLaenge:" + _minLaenge;
+	    		s += ", aktuelle:" + _aktuelleLaenge + ", maxLaenge:" + _maxLaenge + ", idealLaenge:" + _idealeLaenge;
+	    		this.verboseOutText(s);
+	    		 
 		    	if (((quellArray[n].getTeachPlaetze() +_aktuelleLaenge) >= _minLaenge)&&(quellArray[n].getTeachPlaetze() +_aktuelleLaenge) <= _maxLaenge){
 		    	   		
 		    		// ist die neue liste näher an der geforderten länge?
-		    	   if (Math.abs((quellArray[n].getTeachPlaetze() +_aktuelleLaenge - _idealeLaenge)) < this.bestTeacherFitting){
+		    	   int actTeacherFitting = Math.abs((quellArray[n].getTeachPlaetze() +_aktuelleLaenge - _idealeLaenge));
+		    	   this.verboseOutText("actual Fitting: " + actTeacherFitting + ", best until now: " + this.bestTeacherFitting);
+		    	   if (actTeacherFitting < this.bestTeacherFitting){
 		    		   if ((this.highestTeacherValue<quellArray[n].getTeachPlaetze() + _aktuelleLaenge)&&(quellArray[n].getTeachPlaetze() + _aktuelleLaenge<=_idealeLaenge)){
 			        	   this.highestTeacherValue=quellArray[n].getTeachPlaetze() + _aktuelleLaenge;
 			        	}
@@ -940,15 +942,11 @@ private MatPool matPool = null;
 				outText.addOutLine("AusbildungsPool: ("
 						+ relation.getScriptUnit().getUnit().getID()
 						+ ") keine Aufgabe gepoolt");
-				relation.getScriptUnit().addComment(
-						"AusbildungsPool: Keine Aufgabe zugewiesen");
-				relation.getScriptUnit().doNotConfirmOrders();
+				relation.getScriptUnit().doNotConfirmOrders("AusbildungsPool: Keine Aufgabe zugewiesen");
 			} else{
 				// lernkosten wahrscheinlich nicht gedeckt
 				outText.addOutLine("AusbildungsPool: Einheit "+ relation.getScriptUnit().getUnit().getID()+ " benötigt "+ relation.getLernKosten(relation.getDefaultTalent())+ " Silber für " + relation.getDefaultTalent().getName()+" oder ein kostenfreis Lernfach");
-				relation.getScriptUnit().addComment(
-						"AusbildungsPool: Nicht genug Silber für " + relation.getDefaultTalent().getName());
-				relation.getScriptUnit().doNotConfirmOrders();
+				relation.getScriptUnit().doNotConfirmOrders("AusbildungsPool: Nicht genug Silber für " + relation.getDefaultTalent().getName());
 				
 			}
 		}
@@ -981,8 +979,7 @@ private MatPool matPool = null;
 					relation.getScriptUnit().addOrder("LEHREN " + schuelerId,true);
 				} else { // PooldedRelations ist null!
 					outText.addOutLine("AusbildungsPool: Lehrer (" + relation.getScriptUnit().getUnit().getID()+") ohne Schüler");
-					relation.getScriptUnit().addComment("AusbildungsPool: Lehrer ohne Schüler!");
-					relation.getScriptUnit().doNotConfirmOrders();
+					relation.getScriptUnit().doNotConfirmOrders("AusbildungsPool: Lehrer ohne Schüler!");
 				}
 				relation.setOrdererdSchüleranzahl(anzSchueler);
 			}
@@ -1094,8 +1091,7 @@ private MatPool matPool = null;
 						if (b.getOwnerUnit().equals(u)){
 							su.addComment("!(Warnung-Akabesitzer) Schüler nicht in Aka: " + wrongSchueler, true);
 						} else {
-							su.doNotConfirmOrders();
-							su.addComment("!!!Schüler nicht in Aka: " + wrongSchueler, true);
+							su.doNotConfirmOrders("!!!Schüler nicht in Aka: " + wrongSchueler);
 						}
 					}
 				}
@@ -1301,11 +1297,13 @@ private MatPool matPool = null;
 	        	
 	        	 for (Iterator<AusbildungsRelation> iter = schueler.iterator();iter.hasNext();){
 	        		 kandidat = (AusbildungsRelation) iter.next();
+	        		 // kandidat.getScriptUnit().addComment("AP: untersuche Kanidat auf Talente...");
 	        		 if (kandidat.getLernKosten(kandidat.getStudyRequest().get(_lernTalent.getSkillType()))>0){
 	        			 schuelerKandidatTeuer.add(kandidat);
-	        		 }else
-	        		 { 
-	        			 schuelerKandidatGratis.add(kandidat); 
+	        			 // kandidat.getScriptUnit().addComment("AP: ist in teuere Talente einsortiert");
+	        		 } else { 
+	        			 schuelerKandidatGratis.add(kandidat);
+	        			 // kandidat.getScriptUnit().addComment("AP: ist in Gratis Talente einsortiert");
 	        		 }
 	        	  }
 	        	 
@@ -1528,9 +1526,15 @@ private MatPool matPool = null;
 	    
 	   for (Iterator<AusbildungsRelation> iter = autoDidakten.iterator();iter.hasNext();){
 	    	AusbildungsRelation kandidat = (AusbildungsRelation) iter.next();
-
+	    	// kandidat.getScriptUnit().addComment("AP: prüfe Autodidakten");
+	    	if (kandidat.getDefaultTalent()!=null) {
+	    		// kandidat.getScriptUnit().addComment("AP: Autodidakt, defaultTalent = " + kandidat.getDefaultTalent().toString());
+	    	} else {
+	    		// kandidat.getScriptUnit().addComment("AP: kandidat hat kein defaultTalent");
+	    	}
 	      	// Genug Silber da 
 	    	if (kandidat.getDefaultTalent()!=null && kandidat.getLernKosten(kandidat.getDefaultTalent())<=this.LernSilber){
+	    		// kandidat.getScriptUnit().addComment("AP: Autodidakt: genug Silber vorhanden");
 	      		// Subject zuweisen...
 	      		kandidat.addSubject(kandidat.getDefaultTalent().getSkillType(),kandidat.getDefaultTalent());
 	      	    
@@ -1550,10 +1554,16 @@ private MatPool matPool = null;
 	      		}
 	        }
 	    	// Nicht genug Silber da aber Notfalltalent...
+	    	// kandidat.getScriptUnit().addComment("AP: Autodidakt Lernsilberstatus=" + this.LernSilber + ", Kosten default: " + kandidat.getLernKosten(kandidat.getDefaultTalent()) + "Silber");
+	    	if (kandidat.getDefaultGratisTalent()==null) {
+	    		// kandidat.getScriptUnit().addComment("AP: Autodidakt getDefaultGratis ist NULL!");
+	    	}
 	    	if ((kandidat.getLernKosten(kandidat.getDefaultTalent())>this.LernSilber)&&(kandidat.getDefaultGratisTalent()!=null)){
+	    		// kandidat.getScriptUnit().addComment("AP: Autodidakt kann teures Talent nicht lernen");
 	      		// Subject zuweisen...
 	      		if (kandidat.getLernKosten(kandidat.getDefaultGratisTalent())==0){
-	    		  kandidat.addSubject(kandidat.getDefaultGratisTalent().getSkillType(),kandidat.getDefaultTalent());
+	      			// kandidat.getScriptUnit().addComment("AP: Autodidaktenhat GratisTalent und setzt dieses...");
+	      			kandidat.addSubject(kandidat.getDefaultGratisTalent().getSkillType(),kandidat.getDefaultGratisTalent());
 	      		}
 	      		
 	       	}

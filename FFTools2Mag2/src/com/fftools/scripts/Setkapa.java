@@ -92,25 +92,21 @@ public class Setkapa extends Script {
 						this.addComment("setKapa Schiff auf: " + benutzerWeight + " GE");
 						this.scriptUnit.setIncludeSailorsWeight(true);
 					} else {
-						this.addComment("!!! setkapa -> Schiff: Schiff hat ungültige Kapazität (" + benutzerWeight + ")");
-						this.doNotConfirmOrders();
+						this.doNotConfirmOrders("!!! setkapa -> Schiff: Schiff hat ungültige Kapazität (" + benutzerWeight + ")");
 					}
 				} else {
 					// Kein Kapitän
-					this.addComment("!!! setkapa -> Schiff: unit ist nicht Kapitän");
-					this.doNotConfirmOrders();
+					this.doNotConfirmOrders("!!! setkapa -> Schiff: unit ist nicht Kapitän");
 				}
 			} else {
 				// ist gar nicht auf einem Schiff
-				this.addComment("!!! setkapa -> Schiff: unit ist nicht auf einem Schiff");
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("!!! setkapa -> Schiff: unit ist nicht auf einem Schiff");
 			}
 		}
 		
 		
 		if (kapaPolicy==MatPoolRequest.KAPA_unbenutzt){
-			this.addComment("!!Vermuteter Fehler: setKapa und keine Kapa erkannt!");
-			this.doNotConfirmOrders();
+			this.doNotConfirmOrders("!!Vermuteter Fehler: setKapa und keine Kapa erkannt!");
 		} else {
 			this.scriptUnit.setSetKapaPolicy(kapaPolicy);
 			this.kapa = this.scriptUnit.getFreeKapaMatPool2(kapaPolicy, kapaUser);

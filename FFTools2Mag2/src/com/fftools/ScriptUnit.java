@@ -81,9 +81,11 @@ public class ScriptUnit {
 	// Referenz auf den Client
 	private Client c = null; 
 
-	// Sondereinsetllung für MatPool: darf Einheit was von sich weg geben?
+	// Sondereinstellung für MatPool: darf Einheit was von sich weg geben?
 	private boolean gibNix = false;
 	
+	// neu, bei jedem doNotConfirm muss ein Grund geliefert werden, der wird am Ende der Kommentare // am Anfang noch mit ergänzt
+	private ArrayList<String> NoConfirmReasonList = null;
 	
 	
 	// wenn scripte andere scripte aufrufen, können die nicht 
@@ -124,6 +126,16 @@ public class ScriptUnit {
 	private boolean isDepotUnit = false;
 	private boolean setDepotStatus = false;
 	
+	private boolean isInClientSelectedRegions = false;
+	
+	public boolean isInClientSelectedRegions() {
+		return isInClientSelectedRegions;
+	}
+
+	public void setInClientSelectedRegions(boolean isInClientSelectedRegions) {
+		this.isInClientSelectedRegions = isInClientSelectedRegions;
+	}
+
 	public ScriptUnit(Unit _u,ScriptMain _scriptMain) {
 		this.unit = _u;
 		this.scriptMain = _scriptMain;
@@ -181,6 +193,9 @@ public class ScriptUnit {
 				newOrders.add(this.getUnit().createOrder(s));
 			} else if (s.startsWith("@")){
 				// permanente orders...
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.startsWith("!@")){
+				// permanente orders mit Fehlerunterdrückung
 				newOrders.add(this.getUnit().createOrder(s));
 			} else {
 				cnt++;
@@ -354,6 +369,9 @@ public class ScriptUnit {
 	 */
 	
 	public void runScripts(int scriptDurchlauf){
+
+		long time1 = System.currentTimeMillis();
+		
 		
 		if (this.unit==null){
 			return;
@@ -361,12 +379,33 @@ public class ScriptUnit {
 		if (this.getOverlord().isDeleted(this)){
 			return;
 		}
+		
+	
 		if (!NotNeededOrdersDeleted){deleteNotNeededOrders();}
+		long timeX=System.currentTimeMillis();
+		long tDiffX =0;
+		tDiffX = timeX - time1;
+		this.getOverlord().Zeitsumme1+=tDiffX;
+		
+		
+		/*
 		if (this.getOverlord().isDeleted(this)){
 			return;
 		}
+		*/
+		
 		if (originalScriptOrders==null){saveOriginalScriptOrders();}
+		timeX=System.currentTimeMillis();
+		tDiffX =0;
+		tDiffX = timeX - time1;
+		this.getOverlord().Zeitsumme2+=tDiffX;
+		
+		
 		if (!builtfoundScriptList) {builtScriptList();}
+		timeX=System.currentTimeMillis();
+		tDiffX =0;
+		tDiffX = timeX - time1;
+		this.getOverlord().Zeitsumme3+=tDiffX;
 		
 		
 		
@@ -377,12 +416,40 @@ public class ScriptUnit {
 		
 		for (Iterator<Script> iter = this.foundScriptList.iterator();iter.hasNext();){
 			Script sc = (Script)iter.next();
-			if (isInRegionSelected(this.unit.getRegion()) || isAllwaysRunScript(sc)){
+			timeX=System.currentTimeMillis();
+			tDiffX =0;
+			tDiffX = timeX - time1;
+			this.getOverlord().Zeitsumme6+=tDiffX;	
+			// boolean b1 = isInRegionSelected(this.unit.getRegion());
+			boolean b1 = this.isInClientSelectedRegions;
+			timeX=System.currentTimeMillis();
+			tDiffX =0;
+			tDiffX = timeX - time1;
+			this.getOverlord().Zeitsumme7+=tDiffX;
+			boolean b2 = isAllwaysRunScript(sc);
+			timeX=System.currentTimeMillis();
+			tDiffX =0;
+			tDiffX = timeX - time1;
+			this.getOverlord().Zeitsumme8+=tDiffX;
+			if (b1 || b2){
+				timeX=System.currentTimeMillis();
+				tDiffX =0;
+				tDiffX = timeX - time1;
+				this.getOverlord().Zeitsumme9+=tDiffX;	
 			   if (sc.shouldRun(scriptDurchlauf)){	
 				   sc.runScript(scriptDurchlauf);
-			   }
+			   } 
+			} else {
+				timeX=System.currentTimeMillis();
+				tDiffX =0;
+				tDiffX = timeX - time1;
+				this.getOverlord().Zeitsumme10+=tDiffX;
 			}
 		}
+		timeX=System.currentTimeMillis();
+		tDiffX =0;
+		tDiffX = timeX - time1;
+		this.getOverlord().Zeitsumme4+=tDiffX;
 		
 		// Iterator ist durch..jetzt eventuelle script anhängen
 		if (this.addScriptList!=null && this.addScriptList.size()>0){
@@ -390,7 +457,15 @@ public class ScriptUnit {
 			this.addScriptList.clear();
 		}
 		
+		timeX=System.currentTimeMillis();
+		tDiffX =0;
+		tDiffX = timeX - time1;
+		this.getOverlord().Zeitsumme5+=tDiffX;
+		
+		
 		this.checkOrderRefresh();
+		
+		
 	}
 	
 	/**
@@ -471,6 +546,11 @@ public class ScriptUnit {
 		if (this.unit==null){
 			return;
 		}
+		
+		if (builtfoundScriptList) {
+			return;
+		}
+		
 		if (originalScriptOrders==null){saveOriginalScriptOrders();}
 		for (Iterator<String> i2 = originalScriptOrders.iterator();i2.hasNext();){
 			String order = (String)i2.next();
@@ -541,8 +621,15 @@ public class ScriptUnit {
 		builtfoundScriptList = true;
 	}
 	
-	public void doNotConfirmOrders() {
+	public void doNotConfirmOrders(String reason) {
 		this.unitOrders_may_confirm = false;
+		if (this.NoConfirmReasonList==null) {
+			this.NoConfirmReasonList=new ArrayList<String>(0);
+		}
+		if (!this.NoConfirmReasonList.contains(reason)) {
+			this.NoConfirmReasonList.add(reason);
+		}
+		this.addComment(reason);
 	}
 	
 	public void ordersHaveChanged() {
@@ -558,10 +645,8 @@ public class ScriptUnit {
 	 */
 	public void setFinalConfim() {
 		// gibts lange befehle mit ;dnt
-		// nur prüfen wenn notwendig // immer!
-		// if (!this.unitOrders_adjusted){
-			this.checkForLongOrder();
-		// }
+		
+		this.checkForLongOrder();
 		if (this.unitOrders_adjusted) {
 			this.unit.setOrdersConfirmed(this.unitOrders_may_confirm);
 		} else {
@@ -570,6 +655,22 @@ public class ScriptUnit {
 		if (this.unitOrders_confirm_anyway) {
 			this.addComment("!!! Einheit wird durch setOK bestätigt!!!");
 			this.unit.setOrdersConfirmed(true);
+		}
+	}
+	
+	// falls Gründe vorliegen, die die Einheit als unbestätigt markieren, die ganz an den Anfang setzen....
+	public void informDoNotConfirmReason() {
+		if (this.NoConfirmReasonList!=null && this.NoConfirmReasonList.size()>0) {
+			
+			if (this.NoConfirmReasonList.size()>1) {
+				this.addComment("****** GRÜNDE FÜR UNBESTÄTIGT: ******");
+			} else {
+				this.addComment("****** GRUND FÜR UNBESTÄTIGT: ******");
+			}
+			for (String s : NoConfirmReasonList) {
+				this.addComment(s,false);
+			}
+			
 		}
 	}
 	
@@ -589,8 +690,7 @@ public class ScriptUnit {
 						// ok, wir wollen prüfen....
 						if (s.getModifiedLoad()>s.getMaxCapacity()){
 							// Problem
-							this.doNotConfirmOrders();
-							this.addComment("!!! Schiff ÜBERLADEN !!!");
+							this.doNotConfirmOrders("!!! Schiff ÜBERLADEN !!!");
 						}
 					}
 				}
@@ -622,8 +722,7 @@ public class ScriptUnit {
 					EresseaMovementEvaluator EMV = (EresseaMovementEvaluator) ME;
 					if (!EMV.canWalk(this.unit)){
 						// Problem
-						this.doNotConfirmOrders();
-						this.addComment("!!! Einheit ÜBERLADEN !!!");
+						this.doNotConfirmOrders("!!! Einheit ÜBERLADEN !!!");
 						this.addComment("Load: " + EMV.getModifiedLoad(this.unit));
 						this.addComment("Max: " + EMV.getPayloadOnFoot(this.unit));
 					}
@@ -690,8 +789,7 @@ public class ScriptUnit {
 			this.setUnitOrders_adjusted(true);
 		} else {
 			// im Zweifel hier abbrechen
-			this.addComment("KEIN langer Befehl erkannt!");
-			this.doNotConfirmOrders();
+			this.doNotConfirmOrders("KEIN langer Befehl erkannt!");
 		}
 	}
 	
@@ -1436,7 +1534,7 @@ public class ScriptUnit {
 	 */
 	private int countActHorses(){
 		int erg = 0;
-		ItemType horseType = this.getScriptMain().gd_ScriptMain.rules.getItemType("Pferd",false);
+		ItemType horseType = this.getScriptMain().gd_ScriptMain.getRules().getItemType("Pferd",false);
 		Item i = this.getModfiedItemMatPool2(horseType);
 		if(i != null) {
 			erg = i.getAmount();
@@ -1463,7 +1561,6 @@ public class ScriptUnit {
 	 * carts are also already considered. The calculation also takes into account that trolls can
 	 * tow carts.
 	 *
-	 * @param unit TODO: DOCUMENT ME!
 	 *
 	 * @return the payload in GE  100, CAP_UNSKILLED if the unit is not sufficiently skilled in
 	 * 		   horse riding to travel on horseback.
@@ -1711,15 +1808,13 @@ public class ScriptUnit {
 		int erg = 0;
 		Ship ship = this.getUnit().getModifiedShip();
 		if (ship==null){
-			this.addComment("!!! Insassen des Schiffes sollen berücksichtigt werden, aber wir sind nicht auf einem Schiff!!");
-			this.doNotConfirmOrders();
+			this.doNotConfirmOrders("Insassen des Schiffes sollen berücksichtigt werden, aber wir sind nicht auf einem Schiff!!");
 			return 0;
 		}
 		// Liste der Insassen
 		Collection<Unit> insassen = ship.modifiedUnits();
 		if (insassen==null || insassen.isEmpty()){
-			this.addComment("!!! Insassen des Schiffes sollen berücksichtigt werden, aber es gibt keine Insassen!!");
-			this.doNotConfirmOrders();
+			this.doNotConfirmOrders("!!! Insassen des Schiffes sollen berücksichtigt werden, aber es gibt keine Insassen!!");
 			return 0;
 		}
 		for (Unit u:insassen){
@@ -1758,8 +1853,7 @@ public class ScriptUnit {
 				} else {
 					// Wir haben eine Unit an Board, die nicht Crew ist...
 					// dass kann schief gehen
-					this.addComment("!!! Hinweis: " + u.toString(true) + " ist an Bord und wurde nicht bei Kapa-Berechnung berücksichtigt.");
-					this.doNotConfirmOrders();
+					this.doNotConfirmOrders("!!! Hinweis: " + u.toString(true) + " ist an Bord und wurde nicht bei Kapa-Berechnung berücksichtigt.");
 				}
 			}
 		}
@@ -1805,24 +1899,6 @@ public class ScriptUnit {
 	public Item getModifiedItem(ItemType itemType){
 		return this.getModfiedItemMatPool2(itemType);
 	}
-	
-	private boolean isInRegionSelected(Region r){
-		boolean erg = true;
-		
-		if (this.scriptMain.client==null){
-			return true;
-		}
-		
-		Client c = this.scriptMain.client;
-		
-		if (c.getSelectedRegions()!=null && c.getSelectedRegions().size()>0){
-			if (!c.getSelectedRegions().values().contains(r)){
-				erg=false;
-			}
-		}
-		
-		return erg;
-	}
 
 	/**
 	 * @return the setKapaPolicy
@@ -1854,7 +1930,7 @@ public class ScriptUnit {
 	public int getSkillLevel(String TalentName){
 		int erg=0;
 		
-		SkillType sT = this.scriptMain.gd_ScriptMain.rules.getSkillType(TalentName, false);
+		SkillType sT = this.scriptMain.gd_ScriptMain.getRules().getSkillType(TalentName, false);
 		if (sT!=null){
 			Skill skill = this.unit.getModifiedSkill(sT);
 			if (skill!=null){

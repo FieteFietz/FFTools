@@ -68,21 +68,18 @@ public class Settradeareaconnection extends TradeAreaScript{
 		// Zielunit
 		String targetUnitName = OP.getOptionString("ziel");
 		if (targetUnitName.length()==0){
-			this.doNotConfirmOrders();
-			this.addComment("!!! setTAC: ziel fehlt! -> Unbestaetigt!!");
+			this.doNotConfirmOrders("!!! setTAC: ziel fehlt! -> Unbestaetigt!!");
 			return;
 		}
 		
 		ScriptUnit scu = this.scriptUnit.getScriptMain().getScriptUnit(targetUnitName);
 		if (scu==null){
-			this.doNotConfirmOrders();
-			this.addComment("!!! setTAC: ziel nicht gefunden! -> Unbestaetigt!!");
+			this.doNotConfirmOrders("!!! setTAC: ziel nicht gefunden! -> Unbestaetigt!!");
 			return;
 		}
 		String Name = OP.getOptionString("name");
 		if (Name.length()<2){
-			this.doNotConfirmOrders();
-			this.addComment("!!! setTAC: Name fehlt!!! -> unbestaetigt");
+			this.doNotConfirmOrders("!!! setTAC: Name fehlt!!! -> unbestaetigt");
 			return;
 		}
 		
@@ -93,15 +90,13 @@ public class Settradeareaconnection extends TradeAreaScript{
 		
 		String erg = super.getTradeAreaHandler().addTradeAreaConnector(this.scriptUnit,scu, Name,maxNumberOfMoversIfIdle,speed);
 		if (erg!=""){
-			this.doNotConfirmOrders();
-			this.addComment("!!! setTAC gescheitert: " + erg);
+			this.doNotConfirmOrders("!!! setTAC gescheitert: " + erg);
 			return;
 		} else {
 			this.addComment("setTAC erfolgreich (" + Name + ")");
 			TradeAreaConnector actTAC = super.getTradeAreaHandler().getTAC(Name);
 			if (actTAC==null || !actTAC.isValid()){
-				this.doNotConfirmOrders();
-				this.addComment("!!! ein TAC " + Name + " konnte nicht gefunden werden! -> nicht bestätigt");
+				this.doNotConfirmOrders("!!! ein TAC " + Name + " konnte nicht gefunden werden! -> nicht bestätigt");
 			} else {
 				this.myTAC = actTAC;
 			}
@@ -119,8 +114,7 @@ public class Settradeareaconnection extends TradeAreaScript{
 			this.addComment("GE zugeordnet: " + allMovers + " GE ");
 			if (allMovers<allWeight) {
 				// Problem, oder?!
-				this.addComment("!!! Dem TAC " + this.myTAC.getName() + " ist zu wenig Kapazität zugeodnet!!! (daher unbestätigt)");
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("!!! Dem TAC " + this.myTAC.getName() + " ist zu wenig Kapazität zugeodnet!!! (daher unbestätigt)");
 			}
 		}
 	}

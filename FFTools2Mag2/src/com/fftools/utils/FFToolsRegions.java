@@ -1,12 +1,18 @@
 package com.fftools.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import com.fftools.OutTextClass;
+import com.fftools.ReportSettings;
+import com.fftools.ScriptMain;
+import com.fftools.ScriptUnit;
 
 import magellan.library.Border;
 import magellan.library.Building;
@@ -18,6 +24,7 @@ import magellan.library.Region;
 import magellan.library.Rules;
 import magellan.library.Skill;
 import magellan.library.Unit;
+import magellan.library.gamebinding.EresseaConstants;
 import magellan.library.gamebinding.EresseaMapMetric;
 import magellan.library.rules.CastleType;
 import magellan.library.rules.ItemType;
@@ -27,12 +34,6 @@ import magellan.library.utils.Direction;
 import magellan.library.utils.Regions;
 import magellan.library.utils.Umlaut;
 import magellan.library.utils.logging.Logger;
-
-import com.fftools.OutTextClass;
-import com.fftools.ReportSettings;
-import com.fftools.ScriptMain;
-import com.fftools.ScriptUnit;
-import com.sun.xml.internal.bind.v2.schemagen.xmlschema.ExplicitGroup;
 
 /**
  * Regionenhandling analog zu com.eressea.utils.Regions
@@ -57,6 +58,8 @@ public class FFToolsRegions {
 	 */
 
 	private static HashMap<String,CoordinateID> regionMap = null;
+	
+	public static Region nextShipStop = null;
 	
 	
 	/**
@@ -323,8 +326,7 @@ public class FFToolsRegions {
 		//	FF 20070103: eingebauter check, ob es actDest auch gibt?!
 		if (!isInRegions(u.getScriptMain().gd_ScriptMain.getRegions(), dest)){
 			// Problem  actDest nicht im CR -> abbruch
-			u.addComment("Goto Ziel nicht im CR",true);
-			u.doNotConfirmOrders();
+			u.doNotConfirmOrders("Goto Ziel nicht im CR");
 			outText.addOutLine("!!! Goto Ziel nicht im CR: " + u.unitDesc());
 			return null;
 		} 
@@ -377,9 +379,7 @@ public class FFToolsRegions {
 			}
 		} else {
 			// path nicht gefunden
-			u.addComment("Einheit durch GOTO NICHT bestätigt.",true);
-			u.addComment("Es konnte kein Weg gefunden werden.",true);
-			u.doNotConfirmOrders();
+			u.doNotConfirmOrders("Es konnte kein Weg gefunden werden. (GOTO)");
 			outText.addOutLine("X....kein Weg gefunden für " + u.unitDesc());
 		}
 		return erg;
@@ -756,6 +756,8 @@ public class FFToolsRegions {
 	 */
 	public static int getShipPathSizeTurns_Virtuell_Ports(CoordinateID from, Direction returnDirection, CoordinateID to,GameData data, int speed, Logger log){
 		
+		FFToolsRegions.nextShipStop=null;
+		
 		Region fromR = data.getRegion(from);
 		if (fromR==null){return -1;}
 		
@@ -767,6 +769,7 @@ public class FFToolsRegions {
 		int runden=0;
 		int actDist=0;
 		// nun mal doch druchgehen und mitzählen, bei Landkontakt endet die Runde
+		Region lastRegion = null;
 		for (Region r:pathL){
 			if (r.getCoordinate().equals(from)){
 				// Startpunkt: nix machen
@@ -786,6 +789,9 @@ public class FFToolsRegions {
 			if (actDist>speed){
 				actDist=1;
 				runden++;
+				if (lastRegion!=null && runden==2) {
+					FFToolsRegions.nextShipStop=lastRegion;
+				}
 				if (log!=null){
 					log.info("getShipPathSize: reached speed, actDist to 1, Runden: " + runden);
 				}
@@ -797,14 +803,21 @@ public class FFToolsRegions {
 					// wir kommen an land...und sind nicht am Ziel -> Hafen (?)
 					actDist=0;
 					runden++;
+					if (lastRegion!=null && runden==2) {
+						FFToolsRegions.nextShipStop=r;
+					}
 					if (log!=null){
 						log.info("getShipPathSize: reached LAND, actDist to 0, Runden: " + runden);
 					}
 				}
 			}
+			lastRegion = r;
 		}
 		if (log!=null){
 			log.info("getShipPathSize: finished. Runden: " + runden);
+		}
+		if (runden==1) {
+			FFToolsRegions.nextShipStop=lastRegion;
 		}
 		return runden;
 	}
@@ -821,6 +834,67 @@ public class FFToolsRegions {
 		if (!Regions.excludedRegions.contains(r)){
 			Regions.excludedRegions.add(r);
 		}
+	}
+	
+	/**
+	 * Bewertet die Einheiten in der Region, ob feindlich gesinnte dabei sind
+	 * freindlich sind
+	 * 	- Monster, ausser eigene (aus dem Report bekannt oder zu einer trusted faction gehörend)
+	 *  - Spione
+	 *  - alle anderen Einheiten, die nicht zu den trusted factions gehören
+	 * @param r
+	 * @return the number of the enemy-unit or "" of no enemy present
+	 */
+	public static String isEnemyInRegion(Region r, ScriptUnit su, boolean guardingOnly) {
+		String erg = "";
+		
+		String[] trustedFactions = null;
+		ReportSettings reportSettings = ReportSettings.getInstance();
+		String tF = reportSettings.getOptionString("TrustedFactions", r);
+		if (tF==null) tF = "";
+		if (su!=null) su.addComment("isEnemyInRegion: TrustedFactions=" + tF);
+		trustedFactions = tF.split(",");
+		List<String> trustedFactionList = Arrays.asList(trustedFactions);
+		
+		
+		for (Unit u : r.units()) {
+			if (su!=null) su.addComment("isEnemyInRegion: checking " + u.toString(),false);
+			// wir kennen den Kampfstatus - kann nicht feindlich sein
+			if (u.getCombatStatus() != -1) {
+				if (su!=null) su.addComment("isEnemyInRegion: own unit ("  + u.getCombatStatus() + ")",false);
+				continue;
+			}
+			
+			// wenn nicht bewacht, aber nur bewachende Zählen sollen....
+			if (guardingOnly && !(u.getGuard()>0)) {
+				continue;
+			}
+			
+			// Monster
+			if (u.getFaction()!=null && u.getFaction().getID().toString().equals("ii")) {
+				erg=u.toString(true);
+				if (su!=null) su.addComment("isEnemyInRegion: Monster!",false);
+				break;
+			}
+			// Spion
+			if (u.isSpy() && u.getCombatStatus() == EresseaConstants.CS_INIT) {
+				if (su!=null) su.addComment("isEnemyInRegion: Spy!",false);
+				erg=u.toString(true);
+				break;
+			}
+			
+			String actF = u.getFaction().getID().toString().toLowerCase();
+			// Do we trust this faction?
+			if (!trustedFactionList.contains(actF)) {
+				erg=u.toString(true);
+				if (su!=null) su.addComment("isEnemyInRegion: not trusted faction: " + actF,false);
+				break;
+			} else {
+				if (su!=null) su.addComment("isEnemyInRegion: a trusted faction: " + actF,false);
+			}
+		}
+		if (su!=null) su.addComment("isEnemyInRegion: returning=" + erg,false);
+		return erg;
 	}
 	
 }

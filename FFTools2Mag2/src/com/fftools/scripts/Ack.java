@@ -80,9 +80,7 @@ public class Ack extends Script {
 						// Wenn confirmUnitl >= null war
 						// der confirm-parameter eine gültige zahl.
 						if (confirmUntil >= 0) {
-							super
-									.addComment("Unbestätigt durch Script ACK: Laufzeit abgelaufen");
-							super.scriptUnit.doNotConfirmOrders();
+							super.scriptUnit.doNotConfirmOrders("Unbestätigt durch Script ACK: Laufzeit abgelaufen");
 						}
 
 					}
@@ -119,8 +117,7 @@ public class Ack extends Script {
 				// check, ob Laufzeit angegeben wurde, dann Fehler
 				if (Orderline.toLowerCase().indexOf("laufzeit")>0){
 					//	ein = bedeutet einen Tippfehler in Laufzeit=Parameter
-					super.scriptUnit.doNotConfirmOrders();
-					super.addComment("Einheit unbestätigt durch ACK: unbekannte Laufzeit.");
+					super.scriptUnit.doNotConfirmOrders("Einheit unbestätigt durch ACK: unbekannte Laufzeit.");
 				} else {
 					// Jetzt setze die Order!
 					// alt: super.addOrder(Orderline + " ; ACK", true);
@@ -135,8 +132,7 @@ public class Ack extends Script {
 		else {
 			super.addOutLine("Skript ACK ohne Parameter: "
 					+ super.scriptUnit.getUnit().getID());
-			super.addComment("Unbestätigt durch ACK: Keine Parameter!");
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Unbestätigt durch ACK: Keine Parameter!");
 		}
 
 	}

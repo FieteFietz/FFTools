@@ -81,8 +81,7 @@ public class LernplanTalent {
 		if (_talentZiel==null || _talentZiel.length()==0){
 			// keine Angabe
 			outText.addOutLine("!!! LernplanTalent:Lernziel nicht angegeben! " + u.unitDesc() , true);
-			u.addComment("!!! LernplanTalent:Lernziel nicht angegeben!");
-			u.doNotConfirmOrders();
+			u.doNotConfirmOrders("!!! LernplanTalent:Lernziel nicht angegeben!");
 			return;
 		}
 		
@@ -109,8 +108,7 @@ public class LernplanTalent {
 		if (!talentZielOK){
 			// Problem beim erkennen des LernZieles
 			outText.addOutLine("!!! LernplanTalent:Lernziel nicht erkannt! " + u.unitDesc() , true);
-			u.addComment("!!! LernplanTalent:Lernziel nicht erkannt!");
-			u.doNotConfirmOrders();
+			u.doNotConfirmOrders("!!! LernplanTalent:Lernziel nicht erkannt!");
 			return;
 		}
 	}
@@ -156,8 +154,7 @@ public class LernplanTalent {
 		if (!(lernverlauf.indexOf(LernplanHandler.lernplanDetailSeparator)>0)){
 			// kein seperator drinne...dat ist ne Fehlermeldung wert
 			outText.addOutLine("!!! LernplanTalent:Lernverlauf unkorrekt! " + u.unitDesc() + ":" + lernverlauf , true);
-			u.addComment("!!! LernplanTalent:Lernverlauf unkorrekt!!");
-			u.doNotConfirmOrders();
+			u.doNotConfirmOrders("!!! LernplanTalent:Lernverlauf unkorrekt!!");
 			return;
 		}
 		
@@ -171,8 +168,7 @@ public class LernplanTalent {
 		if (actSkillType==null){
 			// Talent nicht erkannt -> Fehler
 			outText.addOutLine("!!! LernplanTalent:Lernverlauf Talent nicht erkannt: (" + talentName + ") " + u.unitDesc() , true);
-			u.addComment("LernplanTalent:Lernverlauf Talent nicht erkannt: (" + talentName + ") ");
-			u.doNotConfirmOrders();
+			u.doNotConfirmOrders("LernplanTalent:Lernverlauf Talent nicht erkannt: (" + talentName + ") ");
 			return;
 		}
 		
@@ -198,8 +194,7 @@ public class LernplanTalent {
 			// Die Ristriktioin wurde nich erkannt oder ist ausserhalb 
 			// des sinnvollen bereiches -> Fehlermeldung
 			outText.addOutLine("!!! LernplanTalent:Lernverlauf TalentAbhängigkeit nicht erkannt: (" + restriktionString + ") " + u.unitDesc() , true);
-			u.addComment("LernplanTalent:Lernverlauf TalentAbhängigkeit nicht erkannt: (" + restriktionString + ") ");
-			u.doNotConfirmOrders();
+			u.doNotConfirmOrders("LernplanTalent:Lernverlauf TalentAbhängigkeit nicht erkannt: (" + restriktionString + ") ");
 			return;
 		}
 		
@@ -271,8 +266,7 @@ public class LernplanTalent {
                         AB.addStudyRequest(magieType, magieSkill);
                         
 					}else{
-						u.doNotConfirmOrders();
-						u.addComment("Lernfix: Lernplan fordert Magie, es ist aber kein Magiegebiet gesetzt!");
+						u.doNotConfirmOrders("Lernfix: Lernplan fordert Magie, es ist aber kein Magiegebiet gesetzt!");
 					}
 					
 				}else{

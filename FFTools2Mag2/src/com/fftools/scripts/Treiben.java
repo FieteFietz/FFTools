@@ -61,6 +61,8 @@ public class Treiben extends TransportScript{
 	
 	private boolean unitIsLearning = false;
 	
+	private String UnterBeschäftigung="Treiben";
+	
 	// Konstruktor
 	public Treiben() {
 		super.setRunAt(this.runners);
@@ -94,6 +96,11 @@ public void runScript(int scriptDurchlauf){
 			this.mindestTalent = reportMinLevel;
 		}
 		
+		String rUnterBeschäftigung = reportSettings.getOptionString("TreiberUnterBeschäftigung", region());
+		if (rUnterBeschäftigung!=null && rUnterBeschäftigung.length()>1) {
+			this.UnterBeschäftigung=rUnterBeschäftigung;
+		}
+		
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Treiben");
 		int unitMinLevel = OP.getOptionInt("minTalent", -1);
 		if (unitMinLevel>this.mindestTalent){
@@ -102,6 +109,18 @@ public void runScript(int scriptDurchlauf){
 		unitMinLevel = OP.getOptionInt("mindestTalent", -1);
 		if (unitMinLevel>this.mindestTalent){
 			this.mindestTalent=unitMinLevel;
+		}
+		
+		rUnterBeschäftigung = OP.getOptionString("UnterBeschäftigung");
+		if (rUnterBeschäftigung.length()>1) {
+			this.UnterBeschäftigung=rUnterBeschäftigung;
+		}
+		
+		if (this.UnterBeschäftigung.equalsIgnoreCase("Treiben") || this.UnterBeschäftigung.equalsIgnoreCase("Lernen")) {
+			this.addComment("Treiber-Einstellung - bei Unterbeschäftigung: " + this.UnterBeschäftigung);
+		} else {
+			this.addComment("Treiber-Einstellung - bei Unterbeschäftigung hat KEINEN gültigen Wert!");
+			this.doNotConfirmOrders("Treiber-Einstellung - bei Unterbeschäftigung hat KEINEN gültigen Wert!");
 		}
 		
 		
@@ -166,15 +185,13 @@ public void runScript(int scriptDurchlauf){
 				
 				if (waffenanzahl>this.scriptUnit.getUnit().getModifiedPersons()){
 					waffenanzahl = this.scriptUnit.getUnit().getModifiedPersons();
-					this.addComment("!!! Zu viele Waffen beim Treiber?!");
-					this.doNotConfirmOrders();
+					this.doNotConfirmOrders("!!! Zu viele Waffen beim Treiber?!");
 				}
 				
 				treiberPoolRelation.setPersonenZahl(waffenanzahl);
 				if (waffenanzahl<=0){
-					this.addComment("Keine Waffen für Treiber gefunden.");
 					this.addOrder("LERNEN Steuereintreiben", true);
-					this.doNotConfirmOrders();
+					this.doNotConfirmOrders("Keine Waffen für Treiber gefunden.");
 					this.noWeapons=true;
 					this.unitIsLearning=true;
 				}
@@ -213,24 +230,58 @@ public void runScript(int scriptDurchlauf){
 				if (this.confirmIfunemployed){
 					this.addComment("Treiben: Einheit wird auf Benutzerwunsch nicht unbestätigt bleiben.");
 				}
+
 				
-				// mode
-				if (OP.getOptionString("mode").equalsIgnoreCase("kepler") || 
-						(reportSettings.getOptionString("TreiberMode",this.region())!=null && 
-								reportSettings.getOptionString("TreiberMode",this.region()).equalsIgnoreCase("Kepler"))){
-					if (treiberPool!=null){
+				// Settings mode
+				if (treiberPool!=null) {
+					if (reportSettings.getOptionString("TreiberMode",this.region())!=null) {
+						if (reportSettings.getOptionString("TreiberMode",this.region()).equalsIgnoreCase("Kepler")){
+							treiberPool.setKeplerMode(true);
+							treiberPool.keplerRegionMaxTreiben();
+						}
+						if (reportSettings.getOptionString("TreiberMode",this.region()).equalsIgnoreCase("Kepler2")){
+							treiberPool.setKeplerMode(true);
+							treiberPool.maxTreibsilberFreigabe();
+						}
+						if (reportSettings.getOptionString("TreiberMode",this.region()).equalsIgnoreCase("Kepler3")){
+							treiberPool.setKeplerMode(true);
+							treiberPool.maxTreibsilberFreigabe_Kepler3();
+						}
+						if (reportSettings.getOptionString("TreiberMode",this.region()).equalsIgnoreCase("none")){
+							treiberPool.setKeplerMode(false);
+						}
+						if (reportSettings.getOptionString("TreiberMode",this.region()).equalsIgnoreCase("aus")){
+							treiberPool.setKeplerMode(false);
+						}
+						if (reportSettings.getOptionString("TreiberMode",this.region()).equalsIgnoreCase("normal")){
+							treiberPool.setKeplerMode(false);
+						}
+					}
+					
+					if (OP.getOptionString("mode").equalsIgnoreCase("kepler")) {
 						treiberPool.setKeplerMode(true);
 						treiberPool.keplerRegionMaxTreiben();
 					}
-				}
-				if (OP.getOptionString("mode").equalsIgnoreCase("kepler2") || 
-						(reportSettings.getOptionString("TreiberMode",this.region())!=null && 
-								reportSettings.getOptionString("TreiberMode",this.region()).equalsIgnoreCase("Kepler2"))){
-					if (treiberPool!=null){
+					if (OP.getOptionString("mode").equalsIgnoreCase("kepler2")) {
 						treiberPool.setKeplerMode(true);
 						treiberPool.maxTreibsilberFreigabe();
 					}
+					if (OP.getOptionString("mode").equalsIgnoreCase("kepler3")) {
+						treiberPool.setKeplerMode(true);
+						treiberPool.maxTreibsilberFreigabe_Kepler3();
+					}
+					if (OP.getOptionString("mode").equalsIgnoreCase("none")) {
+						treiberPool.setKeplerMode(false);
+					}
+					if (OP.getOptionString("mode").equalsIgnoreCase("aus")) {
+						treiberPool.setKeplerMode(false);
+					}
+					if (OP.getOptionString("mode").equalsIgnoreCase("normal")) {
+						treiberPool.setKeplerMode(false);
+					}
 				}
+				
+				
 				
 			} else {
 				// zu schlecht => lernen
@@ -239,7 +290,7 @@ public void runScript(int scriptDurchlauf){
 			}
 			
 		} else {
-			// Einheit kann garnicht Unterhalten!
+			// Einheit kann garnicht Treiben!
 			this.lerneTalent("Mindesttalentwert " + mindestTalent + " unterschritten (Keine Fähigkeit gefunden)");
 			this.unitIsLearning=true;
 		}	
@@ -251,7 +302,7 @@ public void runScript(int scriptDurchlauf){
 	 */
 	private void vorMatPool(){
 		
-        //		 Hurra! Ein Kandidat für den CircusPool! Aber welcher ist zuständig?
+        //		 Hurra! Ein Kandidat für den TreiberPool! Aber welcher ist zuständig?
 		// Registrieren läuft gleich mit durch Manager
 		treiberPool = super.scriptUnit.getScriptMain().getOverlord().getTreiberPoolManager().getTreiberPool(super.scriptUnit);
 					
@@ -288,8 +339,10 @@ public void runScript(int scriptDurchlauf){
 						if (sk!=null){
 							SkillType sT = sk.getSkillType();
 							sk=this.getUnit().getSkill(sT);
-							if (sk.getLevel()>0){
-								myWeapons=true;
+							if (sk!=null) {
+								if (sk.getLevel()>0){
+									myWeapons=true;
+								}
 							}
 						}
 					}
@@ -349,8 +402,7 @@ public void runScript(int scriptDurchlauf){
 					}
 				}
 				if (!didSomething){
-					this.addComment("Treiben: keine Waffenanforderung! - kein Waffentalent?!");
-					this.doNotConfirmOrders();
+					this.doNotConfirmOrders("Treiben: keine Waffenanforderung! - kein Waffentalent?!");
 				}
 			}
 		} else {
@@ -406,22 +458,32 @@ public void runScript(int scriptDurchlauf){
 					if (treiberPoolRelation.getDoTreiben() < 0 ){
 						this.lerneTalent("Warnung: Überzählige Treiber Einheit!");
 						if (!this.confirmIfunemployed){
-							super.scriptUnit.doNotConfirmOrders();
-						}
+							super.scriptUnit.doNotConfirmOrders("Warnung: Überzählige Treiber Einheit!");
+						} 
 					} else{
 						
 						// postiv aber nicht ausgelastet!
 						super.addComment("Warnung: Einheit ist NICHT ausgelastet!");
-						super.addComment("" + Math.round((treiberPoolRelation.getVerdienst()-treiberPoolRelation.getDoTreiben())/treiberPoolRelation.getProKopfVerdienst()) + " Treiber überflüssig");		
-						super.addOrder("TREIBEN " + treiberPoolRelation.getDoTreiben(), true);			
-						
+						super.addComment("" + Math.round((treiberPoolRelation.getVerdienst()-treiberPoolRelation.getDoTreiben())/treiberPoolRelation.getProKopfVerdienst()) + " Treiber überflüssig");
 						double auslastung = ((double)treiberPoolRelation.getDoTreiben()/(double)treiberPoolRelation.getVerdienst());
 						
 						// unter 90% auslastung unbestätigt. 
 						if ( auslastung < ((double)this.mindestAuslastung/100)){
-							if (!this.confirmIfunemployed){
-								super.scriptUnit.doNotConfirmOrders();
+							
+							if (this.UnterBeschäftigung.equalsIgnoreCase("Treiben")) {
+								super.addOrder("TREIBEN " + treiberPoolRelation.getDoTreiben(), true);
 							}
+							if (this.UnterBeschäftigung.equalsIgnoreCase("Lernen")) {
+								this.addComment("vorgesehener Betrag zum Eintreiben für mich: " + treiberPoolRelation.getDoTreiben() + " Silber, da LERNE ich lieber....");
+								this.lerneTalent("Warnung: Einheit ist nicht ausgelastet!");
+								
+							}
+							if (!this.confirmIfunemployed){
+								super.scriptUnit.doNotConfirmOrders("Warnung: Einheit ist NICHT ausgelastet!" + Math.round((treiberPoolRelation.getVerdienst()-treiberPoolRelation.getDoTreiben())/treiberPoolRelation.getProKopfVerdienst()) + " Treiber überflüssig");
+							}
+						} else {
+							// nicht voll ausgelastet, aber oberhalb min Auslastung
+							super.addOrder("TREIBEN " + treiberPoolRelation.getDoTreiben(), true);
 						}
 						
 						// FF: unter 100% angabe
@@ -432,7 +494,7 @@ public void runScript(int scriptDurchlauf){
 					}
 		
 				} else {
-				 super.addOrder("TREIBEN " + treiberPoolRelation.getDoTreiben(), true);
+				   super.addOrder("TREIBEN " + treiberPoolRelation.getDoTreiben(), true);
 				}
 			}
 		}	

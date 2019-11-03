@@ -133,8 +133,7 @@ public class AlchemistManager implements OverlordRun,OverlordInfo {
 			actPool.krautDepot = alchi;
 		} else {
 			// schon besetzt!
-			alchi.addComment("!!!kann nicht als KrautDepot verwendet werden. Krautdepot ist bereits: " + actPool.krautDepot.unitDesc());
-			alchi.scriptUnit.doNotConfirmOrders();
+			alchi.scriptUnit.doNotConfirmOrders("!!!kann nicht als KrautDepot verwendet werden. Krautdepot ist bereits: " + actPool.krautDepot.unitDesc());
 			outText.addOutLine("!!!doppelter Eintrag als KrautDepot: " + alchi.unitDesc(), true);
 		}
 	}

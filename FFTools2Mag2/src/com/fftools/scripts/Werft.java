@@ -31,6 +31,8 @@ public class Werft extends MatPoolScript{
 	
 	public boolean hasLernfixOrder = false;
 	
+	private int BauPunkte = 0;
+	
 	
 	/**
 	 * Parameterloser Constructor
@@ -73,8 +75,7 @@ public class Werft extends MatPoolScript{
 			// sind am ende der runde noch andere an Bord?
 			if (s.modifiedUnits().size()==0){
 				// scheinbar nicht
-				this.doNotConfirmOrders();
-				this.addComment("!!! Schiff verbleibt unbesetzt !!!");
+				this.doNotConfirmOrders("!!! Schiff verbleibt unbesetzt !!!");
 			}
 		}
 	}
@@ -85,9 +86,10 @@ public class Werft extends MatPoolScript{
 		WM.addWerftUnit(this);
 		
 		// Berechnen, wieviel Baupunkte wir an einer Trireme bauen *könnten*
+		// warum Trireme, der kann doch auch Langboot bauen wollen... 
 		int TalentLevel = this.scriptUnit.getSkillLevel("Schiffbau");
 		int AnzahlPersonen = this.getUnit().getModifiedPersons();
-		int BauPunkte = TalentLevel * AnzahlPersonen ;
+		this.BauPunkte = TalentLevel * AnzahlPersonen ;
 		
 		
 		ItemType rdfType=this.gd_Script.getRules().getItemType("Ring der flinken Finger",false);
@@ -119,9 +121,13 @@ public class Werft extends MatPoolScript{
 		
 		
 		
-		int HolzBedarf = (int) (Math.ceil(BauPunkte/4));
+		int HolzBedarf = (int) (Math.ceil(BauPunkte));
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit);
 		OP.addOptionList(this.getArguments());
+		
+		// Vorbereiteter BauLevel abfragen, sonst 1
+		int Baulevel = OP.getOptionInt("BauLevel", 1);
+		HolzBedarf = (int) (Math.ceil(BauPunkte / Baulevel));
 		
 		if (HolzBedarf>0){
 			// Prio bestimmen
@@ -132,9 +138,9 @@ public class Werft extends MatPoolScript{
 				Prio=setPrio;
 			}
 			
-			this.MPR = new MatPoolRequest(this, HolzBedarf, "Holz", Prio, "Holzbedarf für Werft");
+			this.MPR = new MatPoolRequest(this, HolzBedarf, "Holz", Prio, "Holzbedarf für Werft, BauLevel=" + Baulevel);
 			this.addMatPoolRequest(this.MPR);
-			this.addComment("Fordere " + HolzBedarf + " Holz mit Prio " + Prio + "an.");
+			this.addComment("Fordere " + HolzBedarf + " Holz mit Prio " + Prio + "an. Ergibt sich aus dem Baulevel von " + Baulevel);
 		} else {
 			// keine Chance...wir lernen
 			this.addComment("Kann noch nix Bauen...setze Lernfix mit Talent=" + this.LernTalent);
@@ -183,6 +189,21 @@ public class Werft extends MatPoolScript{
 		return erg;
 	}
 	
+	/*
+	 * liefert finale Leistungsbereitschaft für einen Schiffstyp
+	 */
+	public int getBauPunkteMitHolz(ShipType sT){
+		int erg = 0;
+		
+		int TalentStufe = sT.getBuildSkillLevel();
+		if (TalentStufe>0) {
+			int TalentBP = (int) Math.floor(this.BauPunkte / TalentStufe);
+			return Math.min(TalentBP, this.getBauPunkteMitHolz());
+		}
+		return erg;
+
+	}
+	
 	
 	/**
 	 * sollte falsch liefern, wenn nur jeweils einmal pro scriptunit
@@ -200,7 +221,6 @@ public class Werft extends MatPoolScript{
 		}
 		return erg;
 	}
-	
 	
 	
 }

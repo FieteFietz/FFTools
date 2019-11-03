@@ -405,8 +405,7 @@ public class MatPoolRequest extends MatPoolRelation  implements Comparable<MatPo
 			// daher keine Spezialanforderung
 			// sollte also hier niemals auftauchen!
 			mengeNachKapa = 0;
-			this.getScriptUnit().addComment("!!scriptFehler in Berechnung der benötigten Pferde!!", true);
-			this.getScriptUnit().doNotConfirmOrders();
+			this.getScriptUnit().doNotConfirmOrders("!!scriptFehler in Berechnung der benötigten Pferde!!");
 			break;
 		}
 		

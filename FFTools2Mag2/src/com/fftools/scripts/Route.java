@@ -24,9 +24,8 @@ public class Route extends Script{
 		// hier code fuer Route
 		// addOutLine("....start Route mit " + super.getArgCount() + " Argumenten");
 		if (super.getArgCount()<2) {
-			super.addComment("Ein Ziel fehlt beim Aufruf von ROUTE!",true);
 			super.addComment("Unit wurde durch ROUTE NICHT bestaetigt", true);
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Ein Ziel fehlt beim Aufruf von ROUTE!");
 			addOutLine("X....fehlendes ROUTE Ziel bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 		} else {
 			// wir haben zumindest ein Ziel
@@ -75,9 +74,7 @@ public class Route extends Script{
 						}
 		 			} else {
 		 				// irgendetwas beim ersetzen ist schief gegangen
-		 				super.addComment("Fehler beim setzen der nächsten // script GOTO Anweisung",true);
-		 				super.addComment("Unit wurde durch GOTO NICHT bestaetigt", true);
-		 				super.scriptUnit.doNotConfirmOrders();
+		 				super.scriptUnit.doNotConfirmOrders("Fehler beim setzen der nächsten // script GOTO Anweisung");
 		 				addOutLine("X....Fehler beim setzen der nächsten // script GOTO Anweisung bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 		 			}
 						
@@ -94,9 +91,7 @@ public class Route extends Script{
 	}
 	
 	private void zielParseFehler() {
-		super.addComment("Ungueltiges Ziel beim Aufruf von ROUTE!",true);
-		super.addComment("Unit wurde durch ROUTE NICHT bestaetigt", true);
-		super.scriptUnit.doNotConfirmOrders();
+		super.scriptUnit.doNotConfirmOrders("Ungueltiges Ziel beim Aufruf von ROUTE!");
 		addOutLine("X....ungültiges ROUTE Ziel bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 	}
 	

@@ -12,10 +12,13 @@ import com.fftools.demo.actions.MenuAction;
 import com.fftools.demo.actions.temp.BauarbeiterAction;
 import com.fftools.demo.actions.temp.DepotWahrnehmerAction;
 import com.fftools.demo.actions.temp.HandelAction;
+import com.fftools.demo.actions.temp.MatrosenKaravelleAction;
+import com.fftools.demo.actions.temp.MatrosenTriremeAction;
 import com.fftools.demo.actions.temp.PferdeAction;
 import com.fftools.demo.actions.temp.ScoutAction;
 import com.fftools.demo.actions.temp.SoldatenFrontAction;
 import com.fftools.demo.actions.temp.SoldatenRearAction;
+import com.fftools.demo.actions.temp.TaktikerAktion;
 import com.fftools.demo.actions.temp.TarnDepotAction;
 import com.fftools.demo.actions.temp.TarnerAction;
 import com.fftools.demo.actions.temp.TransporterAction;
@@ -49,6 +52,9 @@ public class TempSubMenu extends JMenu {
 		addMenuItem(this,new tempZupferAction(selectionObserver));
 		addMenuItem(this,new PferdeAction(selectionObserver));
 		addMenuItem(this,new ScoutAction(selectionObserver));
+		addMenuItem(this,new MatrosenTriremeAction(selectionObserver));
+		addMenuItem(this,new MatrosenKaravelleAction(selectionObserver));
+		addMenuItem(this,new TaktikerAktion(selectionObserver));
 
 	}
 	

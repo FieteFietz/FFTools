@@ -129,8 +129,7 @@ public class LernplanHandler implements OverlordInfo {
 		if (name.length()<2){
 			// name nicht vorhanden oder 1 Zeichen lang -> ablehnen
 			outText.addOutLine("!!! LernplanName nicht erkannt! " + u.unitDesc() , true);
-			u.addComment("!!! Lernplanname nicht erkannt");
-			u.doNotConfirmOrders();
+			u.doNotConfirmOrders("!!! Lernplanname nicht erkannt");
 			return;
 		}
 		
@@ -153,8 +152,7 @@ public class LernplanHandler implements OverlordInfo {
 		if (actLP==null){
 			// nix dazu gefunden....
 			outText.addOutLine("!!! Lernplan mit diesem Namen nicht gefunden! " + u.unitDesc() , true);
-			u.addComment("!!! Lernplan mit diesem Namen nicht gefunden! ");
-			u.doNotConfirmOrders();
+			u.doNotConfirmOrders("!!! Lernplan mit diesem Namen nicht gefunden! ");
 			return null;
 		}
 		
@@ -175,15 +173,13 @@ public class LernplanHandler implements OverlordInfo {
 				if (maxLevel<1){
 					// dumm
 					outText.addOutLine("!!! Lernplan: gewünschte Stufe fehlerhaft: " + u.unitDesc() , true);
-					u.addComment("!!! Lernplan: gewünschte Stufe fehlerhaft");
-					u.doNotConfirmOrders();
+					u.doNotConfirmOrders("!!! Lernplan: gewünschte Stufe fehlerhaft");
 					return null;
 				}
 			} catch (NumberFormatException e){
 				// dumm....
 				outText.addOutLine("!!! Lernplan: gewünschte Stufe fehlerhaft: " + u.unitDesc() , true);
-				u.addComment("!!! Lernplan: gewünschte Stufe fehlerhaft");
-				u.doNotConfirmOrders();
+				u.doNotConfirmOrders("!!! Lernplan: gewünschte Stufe fehlerhaft");
 				return null;
 			}
 		}

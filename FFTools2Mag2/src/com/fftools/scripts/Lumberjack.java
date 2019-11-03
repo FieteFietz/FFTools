@@ -25,7 +25,7 @@ public class Lumberjack extends MatPoolScript{
 	 */
 	int Durchlauf_2 = 205;
 	/*
-	 * 08.10.0217 neu, damit wir wissen, ob wir RdfF // Schaffenstrunk bekommen
+	 * 08.10.2017 neu, damit wir wissen, ob wir RdfF // Schaffenstrunk bekommen
 	 * 
 	 */
 	
@@ -42,6 +42,9 @@ public class Lumberjack extends MatPoolScript{
 	 * ab welchem Talent gehts erst mal los?
 	 */
 	private int minTalent = 1;
+	
+	private String LernfixOrder = "Talent=Holzfällen";
+	
 	
 	/**
 	 * Parameterloser Constructor
@@ -194,39 +197,21 @@ public class Lumberjack extends MatPoolScript{
 				if (Menge<minMenge){
 					addComment("Lumberjack: zu schlagende Menge (" + Menge + ") ist unter Mindestmenge (" + minMenge + ")...keine Arbeit.");
 					this.addComment("Lumberjack: kein Einschlag. Lerne.");
-					Script L = new Lernfix();
-					ArrayList<String> order = new ArrayList<String>();
-					order.add("Talent=Holzfällen");
-					L.setArguments(order);
-					L.setScriptUnit(this.scriptUnit);
-					L.setGameData(this.gd_Script);
-					if (this.scriptUnit.getScriptMain().client!=null){
-						L.setClient(this.scriptUnit.getScriptMain().client);
-					}
-					this.scriptUnit.addAScript(L);
+					this.Lerne();
 					this.isLearning=true;
 				}	
 			} 
 			
 			if (Menge<=0) {
 				this.addComment("nix zum Schlagen gefunden, muss lernen...");
-				Script L = new Lernfix();
-				ArrayList<String> order = new ArrayList<String>();
-				order.add("Talent=Holzfällen");
-				L.setArguments(order);
-				L.setScriptUnit(this.scriptUnit);
-				L.setGameData(this.gd_Script);
-				if (this.scriptUnit.getScriptMain().client!=null){
-					L.setClient(this.scriptUnit.getScriptMain().client);
-				}
-				this.scriptUnit.addAScript(L);
+				this.Lerne();
 				this.isLearning=true;
 			}
 		} else {
-			this.addOrder("Lernen Holzfällen", true);
 			this.isLearning=true;
 			// this.doNotConfirmOrders();
 			this.addComment("Lerne, weil mindestTalent nicht erreicht (" + this.minTalent + ")");
+			this.Lerne();
 		}
 		
 	}
@@ -311,6 +296,7 @@ public class Lumberjack extends MatPoolScript{
 		
 		
 		// 20171008: im Sägewerk, gerade Menge berücksichtigen
+		boolean notImportantChange=false;
 		if (imSägewerk){
 			// checken, ob Menge durch 2 Teilbar ist.
 			int Teiler=2;
@@ -319,6 +305,7 @@ public class Lumberjack extends MatPoolScript{
 				addComment("Arbeiten im Sägewerk erkannt, aber keine Anpassung auf gerade Produktionsmenge nötig, es bleibt bei " + mengeResult);
 			} else {
 				addComment("Arbeiten im Sägewerk erkannt, Anpassung auf gerade Produktionsmenge erfolgt, Änderung von " + Menge + " auf " + mengeResult);
+				notImportantChange=true;
 			}
 			Menge=mengeResult;
 		}
@@ -326,9 +313,29 @@ public class Lumberjack extends MatPoolScript{
 		if (Menge>0){
 			this.addOrder("MACHE " + Menge + " " + this.Gut, true);
 		} else {
-			addComment("!!! Lumberjack: unerwartete zu produzierende Menge ist 0 !!! (Einheit unbestätigt)");
-			this.doNotConfirmOrders();
+			if (notImportantChange) {
+				// zu spät für Lernfix
+				this.addOrder("Lernen Holzfällen", true);
+				this.addComment("Lernen ohne Lernpool - zu spät entschieden");
+				this.isLearning=true;
+			} else {
+				this.doNotConfirmOrders("!!! Lumberjack: unerwartete zu produzierende Menge ist 0 !!! (Einheit unbestätigt)");
+			}
 		}
+	}
+	
+	private void Lerne() {
+		this.scriptUnit.addComment("Lernfix wird initialisiert mit dem Parameter: " + this.LernfixOrder);
+		Script L = new Lernfix();
+		ArrayList<String> order = new ArrayList<String>();
+		order.add(this.LernfixOrder);
+		L.setArguments(order);
+		L.setScriptUnit(this.scriptUnit);
+		L.setGameData(this.scriptUnit.getScriptMain().gd_ScriptMain);
+		if (this.scriptUnit.getScriptMain().client!=null){
+			L.setClient(this.scriptUnit.getScriptMain().client);
+		}
+		this.scriptUnit.addAScript(L);
 	}
 
 }

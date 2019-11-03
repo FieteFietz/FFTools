@@ -22,9 +22,7 @@ public class Lehren extends Script{
 		// hier code fuer Lehren
 		// addOutLine("....start Lehren mit " + super.getArgCount() + " Argumenten");
 		if (super.getArgCount()<1) {
-			super.addComment("Das Ziel fehlt beim Aufruf von LEHREN!",true);
-			super.addComment("Unit wurde durch LEHREN NICHT bestaetigt", true);
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Das Ziel fehlt beim Aufruf von LEHREN!");
 			addOutLine("!!!fehlendes LEHRE - Ziel bei " + this.unitDesc());
 		} else {
 			// wir haben zumindest einen Schüler, eventuell mehrere
@@ -44,9 +42,7 @@ public class Lehren extends Script{
 			}
 			// zu viele Schööler ?
 			if (allPupilOK && countPupils>(super.scriptUnit.getUnit().getModifiedPersons()*10)){
-				super.addComment("Zu viele Schüler beim Aufruf von LEHREN!",true);
-				super.addComment("Unit wurde durch LEHREN NICHT bestaetigt", true);
-				super.scriptUnit.doNotConfirmOrders();
+				super.scriptUnit.doNotConfirmOrders("Zu viele Schüler beim Aufruf von LEHREN!");
 				allPupilOK = false;
 				addOutLine("!!!.Zu viele Schüler beim Aufruf von LEHREN bei " + this.unitDesc());
 			}
@@ -66,33 +62,26 @@ public class Lehren extends Script{
 	private int checkNumber(String unitNumber){
 		Unit u = super.scriptUnit.findUnitInSameRegion(unitNumber);
 		if (u==null){
-			super.addComment("Ein Schüler konnte nicht in der Region gefunden werden!",true);
-			super.addComment("Unit wurde durch LEHREN NICHT bestaetigt", true);
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Ein Schüler konnte nicht in der Region gefunden werden!");
 			addOutLine("X....Ein Schüler konnte nicht in der Region gefunden werden bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 			return -1;
 		}
 		if (u.getModifiedPersons()==0){
-			super.addComment("Ein Schüler hat keine Personen mehr",true);
 			super.addComment("Unit wurde durch LEHREN NICHT bestaetigt", true);
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Ein Schüler hat keine Personen mehr");
 			addOutLine("X....Ein Schüler hat keine Personen mehr bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 			return -1;
 		}
 		String lernTalent = getLearnSkillName(u);
 		if (lernTalent.length()<2){
-			super.addComment("Ein Schüler hat kein gefundenes Lerntalent (" + unitNumber + ")",true);
-			super.addComment("Unit wurde durch LEHREN NICHT bestaetigt", true);
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Ein Schüler hat kein gefundenes Lerntalent (" + unitNumber + ")");
 			addOutLine("X....Ein Schüler hat kein gefundenes Lerntalent (" + unitNumber + ") bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 			return -1;
 		}
 		lernTalent = lernTalent.substring(0, 1).toUpperCase() + lernTalent.substring(1).toLowerCase();
 		SkillType skillType = super.gd_Script.rules.getSkillType(lernTalent);
 		if (skillType==null){
-			super.addComment("Ein Schüler hat kein erkanntes Lerntalent (" + unitNumber + "): " + lernTalent,true);
-			super.addComment("Unit wurde durch LEHREN NICHT bestaetigt", true);
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Ein Schüler hat kein erkanntes Lerntalent (" + unitNumber + "): " + lernTalent);
 			addOutLine("X....Ein Schüler hat kein erkanntes Lerntalent (" + unitNumber + ", " + lernTalent + ") bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 			return -1;
 		}
@@ -111,13 +100,9 @@ public class Lehren extends Script{
 		
 		
 		if (!(teacherSkillLevel>pupilSkillLevel+1)){
-			super.addComment("Ein Schüler kann nicht gelehrt werden (" + unitNumber + ")",true);
-			super.addComment("Unit wurde durch LEHREN NICHT bestaetigt", true);
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Ein Schüler kann nicht gelehrt werden (" + unitNumber + ")");
 			return -1;
 		}
-		// Personenanzahlcheck geht nur, wenn alle Personen gezählt wurden...
-		
 		
 		return u.getModifiedPersons();
 	}

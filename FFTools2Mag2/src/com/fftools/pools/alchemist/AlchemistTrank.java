@@ -105,8 +105,7 @@ public class AlchemistTrank {
 		// Check
 		if (this.originalName.length()<2){
 			outText.addOutLine("!!!AlchemistTrank nicht erkannt: " + u.unitDesc(),true);
-			u.addComment("AlchemistTrank nicht erkannt");
-			u.doNotConfirmOrders();
+			u.doNotConfirmOrders("AlchemistTrank nicht erkannt");
 			return;
 		}
 		// Ersetzungen vornehmen
@@ -115,8 +114,7 @@ public class AlchemistTrank {
 		this.potion = FFToolsGameData.getPotion(u.getScriptMain().gd_ScriptMain,this.originalName);
 		if (this.potion==null){
 			outText.addOutLine("!!!AlchemistTrank nicht erkannt: " + this.originalName + " bei " + u.unitDesc(),true);
-			u.addComment("AlchemistTrank nicht erkannt: " + this.originalName);
-			u.doNotConfirmOrders();
+			u.doNotConfirmOrders("AlchemistTrank nicht erkannt: " + this.originalName);
 			return;
 		}
 		
@@ -124,8 +122,7 @@ public class AlchemistTrank {
 		this.trankItemType = u.getScriptMain().gd_ScriptMain.rules.getItemType(potion.getName(), false);
 		if (this.trankItemType==null){
 			outText.addOutLine("!!!AlchemistTrank nicht erkannt (ItemType): " + this.originalName + " bei " + u.unitDesc(),true);
-			u.addComment("AlchemistTrank nicht erkannt (ItemType): " + this.originalName);
-			u.doNotConfirmOrders();
+			u.doNotConfirmOrders("AlchemistTrank nicht erkannt (ItemType): " + this.originalName);
 			return;
 		}
 		
@@ -135,8 +132,7 @@ public class AlchemistTrank {
 		
 		if (this.rang==RANG_UNDEF){
 			outText.addOutLine("!!!AlchemistTrank Rang nicht erkannt: " + this.originalName + " bei " + u.unitDesc(),true);
-			u.addComment("AlchemistTrank Rang nicht erkannt: " + this.originalName);
-			u.doNotConfirmOrders();
+			u.doNotConfirmOrders("AlchemistTrank Rang nicht erkannt: " + this.originalName);
 			return;
 		}
 		

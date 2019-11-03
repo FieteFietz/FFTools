@@ -10,6 +10,7 @@ import javax.swing.KeyStroke;
 
 import com.fftools.demo.actions.MenuAction;
 import com.fftools.demo.actions.unit.TeilenAnzahlAction;
+import com.fftools.demo.actions.unit.TeilenJeAnzahlAction;
 /**
  * SubMenu zur Auswahl, wieviele Personen eine/mehrere Einheiten
  * rekrutieren soll
@@ -31,8 +32,13 @@ public class TeilenSubMenu extends JMenu {
 		addMenuItem(this,new TeilenAnzahlAction(selectionObserver,20));
 		addMenuItem(this,new TeilenAnzahlAction(selectionObserver,25));
 		addMenuItem(this,new TeilenAnzahlAction(selectionObserver,50));
-		
-		
+		addSeparator();
+		addMenuItem(this,new TeilenJeAnzahlAction(selectionObserver,5));
+		addMenuItem(this,new TeilenJeAnzahlAction(selectionObserver,6));
+		addMenuItem(this,new TeilenJeAnzahlAction(selectionObserver,10));
+		addMenuItem(this,new TeilenJeAnzahlAction(selectionObserver,20));
+		addMenuItem(this,new TeilenJeAnzahlAction(selectionObserver,50));
+		addMenuItem(this,new TeilenJeAnzahlAction(selectionObserver,100));
 	}
 	
 	

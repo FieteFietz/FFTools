@@ -4,6 +4,8 @@ import magellan.library.Region;
 import magellan.library.Skill;
 import magellan.library.rules.SkillType;
 
+import java.util.ArrayList;
+
 import com.fftools.ReportSettings;
 import com.fftools.pools.circus.CircusPool;
 import com.fftools.pools.circus.CircusPoolRelation;
@@ -24,7 +26,7 @@ import com.fftools.utils.GotoInfo;
 public class Unterhalten extends TransportScript{
 	private static final ReportSettings reportSettings = ReportSettings.getInstance();
 	
-	private int Durchlauf_vorCircusPool = 70;
+	private int Durchlauf_vorCircusPool = 59;
 	private int Durchlauf_nachCircusPool = 78;
 	
 	private int[] runners = {Durchlauf_vorCircusPool,Durchlauf_nachCircusPool};
@@ -55,6 +57,8 @@ public class Unterhalten extends TransportScript{
 	private GotoInfo gotoInfo = null;
 	
 	private int finalOrderedUnterhaltung = 0;
+	
+	private String LernfixOrder = "Talent=Unterhaltung";
 	
 	// Konstruktor
 	public Unterhalten() {
@@ -162,12 +166,14 @@ public void runScript(int scriptDurchlauf){
 				}
 			} else {
 				// zu schlecht => lernen
-				this.lerneUnterhaltung("Mindesttalentwert " + mindestTalent + " unterschritten");
+				this.addComment("Mindesttalentwert " + mindestTalent + " unterschritten");
+				this.Lerne();
 			}
 			
 		} else {
 			// Einheit kann garnicht Unterhalten!
-			this.lerneUnterhaltung("Mindesttalentwert " + mindestTalent + " unterschritten");
+			this.addComment("Mindesttalentwert " + mindestTalent + " unterschritten");
+			this.Lerne();
 		}	
 	}	
 	
@@ -203,9 +209,10 @@ public void runScript(int scriptDurchlauf){
 				if (!automode){
 					// Negativ wäre ein überzähliger Unterhalter!
 					if (circusPoolRelation.getDoUnterhaltung() < 0 ){
-						this.lerneUnterhaltung("Warnung: Überzählige Unterhalter Einheit!");
 						if (!this.confirmIfunemployed){
-							super.scriptUnit.doNotConfirmOrders();
+							super.scriptUnit.doNotConfirmOrders("Warnung: Überzählige Unterhalter Einheit!");
+						} else {
+							this.lerneUnterhaltung("Warnung: Überzählige Unterhalter Einheit!");
 						}
 					} else{
 						
@@ -219,7 +226,7 @@ public void runScript(int scriptDurchlauf){
 						// unter 90% auslastung unbestätigt. 
 						if ( auslastung < ((double)this.mindestAuslastung/100)){
 							if (!this.confirmIfunemployed){
-								super.scriptUnit.doNotConfirmOrders();
+								super.scriptUnit.doNotConfirmOrders("Warnung: Einheit ist NICHT ausgelastet!" + Math.round((circusPoolRelation.getVerdienst()-circusPoolRelation.getDoUnterhaltung())/circusPoolRelation.getProKopfVerdienst()) + " Unterhalter überflüssig");
 							}
 						}
 						
@@ -301,6 +308,20 @@ public void runScript(int scriptDurchlauf){
 	private void lerneUnterhaltung(String Meldung){
 		this.addComment(Meldung);
 		this.lerneTalent("Unterhaltung", true);
+	}
+	
+	private void Lerne() {
+		this.scriptUnit.addComment("Lernfix wird initialisiert mit dem Parameter: " + this.LernfixOrder);
+		Script L = new Lernfix();
+		ArrayList<String> order = new ArrayList<String>();
+		order.add(this.LernfixOrder);
+		L.setArguments(order);
+		L.setScriptUnit(this.scriptUnit);
+		L.setGameData(this.scriptUnit.getScriptMain().gd_ScriptMain);
+		if (this.scriptUnit.getScriptMain().client!=null){
+			L.setClient(this.scriptUnit.getScriptMain().client);
+		}
+		this.scriptUnit.addAScript(L);
 	}
 
 

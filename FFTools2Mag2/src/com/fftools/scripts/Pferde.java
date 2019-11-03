@@ -3,6 +3,8 @@ package com.fftools.scripts;
 import magellan.library.Skill;
 import magellan.library.rules.SkillType;
 
+import java.util.ArrayList;
+
 import com.fftools.ReportSettings;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.utils.FFToolsGameData;
@@ -83,7 +85,7 @@ public class Pferde extends MatPoolScript{
 	 */
 	private int minTalent = 1;
 	
-	
+	private String LernfixOrder = "Talent=Pferdedressur";
 	
 	/**
 	 * Parameterloser Constructor
@@ -134,9 +136,8 @@ public class Pferde extends MatPoolScript{
 		}
 		
 		this.minPferdRegion = OP.getOptionInt("minRegion",this.minPferdRegion);
-		if (this.minPferdRegion<0 || this.minPferdRegion>1000){
-			this.addComment("minPferd nicht erkannt");
-			this.scriptUnit.doNotConfirmOrders();
+		if (this.minPferdRegion<0 || this.minPferdRegion>10000){
+			this.scriptUnit.doNotConfirmOrders("minPferd nicht erkannt");
 			outText.addOutLine("!!! Pferde: minRegion nicht erkannt! " + this.unitDesc(), true);
 			this.minPferdRegion=0;
 		}
@@ -149,8 +150,7 @@ public class Pferde extends MatPoolScript{
 		
 		this.minAuslastung = OP.getOptionInt("minAuslastung", this.minAuslastung);
 		if (this.minAuslastung<0 || this.minAuslastung>100){
-			this.addComment("minAuslastung nicht erkannt");
-			this.scriptUnit.doNotConfirmOrders();
+			this.scriptUnit.doNotConfirmOrders("minAuslastung nicht erkannt");
 			outText.addOutLine("!!! Pferde: minAuslastung nicht erkannt! " + this.unitDesc(), true);
 			this.minAuslastung=minAuslastungDefault;
 		}
@@ -160,18 +160,26 @@ public class Pferde extends MatPoolScript{
 		this.LernTalent = OP.getOptionString("LernTalent");
 		
 		if (this.LernTalent.length()>2 && this.LernPlanName.length()>2){
-			this.addComment("Lernplan und Lerntalent nicht möglich!");
-			this.scriptUnit.doNotConfirmOrders();
+			this.scriptUnit.doNotConfirmOrders("Lernplan und Lerntalent nicht möglich!");
 			outText.addOutLine("!!! Pferde: Lernplan und Lerntalent nicht möglich! " + this.unitDesc(), true);
 			this.LernPlanName = "";
 			this.LernTalent = "";
 		}
 		
+		if (this.LernPlanName.length()>1) {
+			this.LernfixOrder="Lernplan="+this.LernPlanName;
+		}
+		if (this.LernTalent.length()>1) {
+			this.LernfixOrder = "Talent="+this.LernTalent;
+			if (OP.getOptionInt("Ziel", 0)>0) {
+				this.LernfixOrder = "Talent="+this.LernTalent + " Ziel=" + OP.getOptionInt("Ziel", 0);
+			}
+		}
+		
 		this.pferdRequestPrio = OP.getOptionInt("maxPferdPrio", this.pferdRequestPrio);
 		if (this.pferdRequestPrio<0 || this.pferdRequestPrio>1500){
-			this.addComment("Pferde Request Prio nicht erkannt");
 			outText.addOutLine("!!! Pferde: request prio nicht erkannt! " + this.unitDesc(), true);
-			this.scriptUnit.doNotConfirmOrders();
+			this.scriptUnit.doNotConfirmOrders("Pferde Request Prio nicht erkannt");
 			this.pferdRequestPrio = 10;
 		}
 		
@@ -192,8 +200,7 @@ public class Pferde extends MatPoolScript{
 					this.addMatPoolRequest(this.zuechterRequest);
 					this.addComment("ist Zuechter. " + menge + " Pferde angefordert. (Prio " + this.pferdRequestPrio + ")");
 				} else {
-					this.addComment("Zuechter kann nicht zuechten? (Talent?)");
-					this.scriptUnit.doNotConfirmOrders();
+					this.scriptUnit.doNotConfirmOrders("Zuechter kann nicht zuechten? (Talent?)");
 					outText.addOutLine("!!! Zuechter kann nicht zuechten? (Talent?)! " + this.unitDesc(), true);
 				}
 			} else {
@@ -248,7 +255,7 @@ public class Pferde extends MatPoolScript{
 	public int maxMachenPferde(){
 		int erg = 0;
 		int skillLevel = 0;
-		SkillType skillType = this.gd_Script.rules.getSkillType("Pferdedressur", false);
+		SkillType skillType = this.gd_Script.getRules().getSkillType("Pferdedressur", false);
 		if (skillType!=null){
 			Skill skill = this.scriptUnit.getUnit().getModifiedSkill(skillType);
 			if (skill!=null){
@@ -287,6 +294,7 @@ public class Pferde extends MatPoolScript{
 	 */
 	public void alternativOrder(){
 		// Haben wir einen Lernplan?
+		/*
 		if (this.LernPlanName.length()>2){
 			this.addComment("Setze Lernfix mit Lernplan=" + this.LernPlanName);
 			this.scriptUnit.findScriptClass("Lernfix", "Lernplan=" + this.LernPlanName);
@@ -300,6 +308,8 @@ public class Pferde extends MatPoolScript{
 		// default behaviour
 		this.addComment("kein gesetztes Lernen -> Default.");
 		this.addOrder("Lernen Pferdedressur",true);
+		*/
+		this.Lerne();
 	}
 	
 	/**
@@ -335,6 +345,20 @@ public class Pferde extends MatPoolScript{
 		this.gotoInfo = gotoInfo;
 	}
 
+	
+	private void Lerne() {
+		this.scriptUnit.addComment("Lernfix wird initialisiert mit dem Parameter: " + this.LernfixOrder);
+		Script L = new Lernfix();
+		ArrayList<String> order = new ArrayList<String>();
+		order.add(this.LernfixOrder);
+		L.setArguments(order);
+		L.setScriptUnit(this.scriptUnit);
+		L.setGameData(this.scriptUnit.getScriptMain().gd_ScriptMain);
+		if (this.scriptUnit.getScriptMain().client!=null){
+			L.setClient(this.scriptUnit.getScriptMain().client);
+		}
+		this.scriptUnit.addAScript(L);
+	}
 
 	
 	

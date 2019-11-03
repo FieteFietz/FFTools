@@ -765,20 +765,59 @@ public class MatPool2 implements MatPool{
 	 * @param sU
 	 */
 	public void offerEverything(ScriptUnit sU){
-		if (sU.isGibNix()){return;}
+		/*
+		if (!this.matPoolManager.isReportOFF()) {
+			outText.addOutLine("DEBUG: offerEverything for " + sU.toString());
+		}
+		*/
+		if (sU.isGibNix()){
+			/*
+			if (!this.matPoolManager.isReportOFF()) {
+				outText.addOutLine("isGibNix for " + sU.toString());
+			}
+			*/
+			return;
+		}
 		for (Iterator<Item> iter = sU.getUnit().getItems().iterator();iter.hasNext();){
 			Item item = (Item)iter.next();
+			/*
+			if (!this.matPoolManager.isReportOFF()) {
+				outText.addOutLine("DEBUG: " + sU.toString() + ": checking item " + item.getName());
+			}
+			*/
 			if (this.isMatPoolItemType(item.getItemType())){
 				// OK, anbieten
 				// checken ob modified geringer ist, dann nur das benutzen
 				Item itemModified = sU.getUnit().getModifiedItem(item.getItemType());
 				if (itemModified!=null && itemModified.getAmount()>0){
 					MatPoolOffer mpr = new MatPoolOffer(sU,item);
+					/*
+					if (!this.matPoolManager.isReportOFF()) {
+						outText.addOutLine("DEBUG: " + sU.toString() + ": taking standard item count:" + item.getAmount());
+					}
+					*/
+					
 					if (itemModified.getAmount()<item.getAmount()){
 						Item newModifiedItem = new Item(itemModified.getItemType(),itemModified.getAmount());
 						mpr = new MatPoolOffer(sU,newModifiedItem);
+						/*
+						if (!this.matPoolManager.isReportOFF()) {
+							outText.addOutLine("DEBUG: " + sU.toString() + ": taking modifie item count:" + newModifiedItem.getAmount());
+						}
+						*/
 					}
 					this.addMatPoolOffer(mpr);
+				} else {
+					if (!this.matPoolManager.isReportOFF()) {
+						/*
+						outText.addOutLine("DEBUG: " + sU.toString() + ": checking item " + item.getName() + " modifiesItem=null or modified=0");
+						if (itemModified==null) {
+							outText.addOutLine("-- itemMod is NULL!");
+						} else {
+							outText.addOutLine("-- amount modified = " + itemModified.getAmount());
+						}
+						*/
+					}
 				}
 			}
 		}

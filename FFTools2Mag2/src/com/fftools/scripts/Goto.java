@@ -23,9 +23,8 @@ public class Goto extends Script implements WithGotoInfo{
 		// hier code fuer GoTo
 		// addOutLine("....start GoTo mit " + super.getArgCount() + " Argumenten");
 		if (super.getArgCount()<1) {
-			super.addComment("Das Ziel fehlt beim Aufruf von GOTO!",true);
+			super.scriptUnit.doNotConfirmOrders("Das Ziel fehlt beim Aufruf von GOTO!");
 			super.addComment("Unit wurde durch GOTO NICHT bestaetigt", true);
-			super.scriptUnit.doNotConfirmOrders();
 			addOutLine("X....fehlendes GOTO Ziel bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 		} else {
 			// wir haben zumindest ein Ziel
@@ -66,16 +65,14 @@ public class Goto extends Script implements WithGotoInfo{
 							}
 			 			} else {
 			 				// irgendetwas beim ersetzen ist schief gegangen
-			 				super.addComment("Fehler beim setzen der nächsten // script GOTO Anweisung",true);
+			 				super.scriptUnit.doNotConfirmOrders("Fehler beim setzen der nächsten // script GOTO Anweisung");
 			 				super.addComment("Unit wurde durch GOTO NICHT bestaetigt", true);
-			 				super.scriptUnit.doNotConfirmOrders();
 			 				addOutLine("X....Fehler beim setzen der nächsten // script GOTO Anweisung bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 			 			}
 						
 					} else {
 						// das wars...Ziel erreicht und gut
-						super.addComment("GOTO: Einheit hat Ziel erreicht, daher NICHT bestätigt.",true);
-						super.scriptUnit.doNotConfirmOrders();
+						super.scriptUnit.doNotConfirmOrders("GOTO: Einheit hat Ziel erreicht, daher NICHT bestätigt.");
 					}
 				} else {
 					// nope, da müssen wir noch hin
@@ -89,9 +86,8 @@ public class Goto extends Script implements WithGotoInfo{
 	}
 	
 	private void zielParseFehler() {
-		super.addComment("Ungueltiges Ziel beim Aufruf von GOTO!",true);
+		super.scriptUnit.doNotConfirmOrders("Ungueltiges Ziel beim Aufruf von GOTO!");
 		super.addComment("Unit wurde durch GOTO NICHT bestaetigt", true);
-		super.scriptUnit.doNotConfirmOrders();
 		addOutLine("X....ungültiges GOTO Ziel bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 	}
 	

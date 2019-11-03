@@ -92,16 +92,14 @@ public class Ontradeareaconnection extends TradeAreaScript{
 		// Name des TAC
 		String Name = OP.getOptionString("name");
 		if (Name.length()<2){
-			this.doNotConfirmOrders();
-			this.addComment("!!! setTAC: Name fehlt!!! -> unbestaetigt");
+			this.doNotConfirmOrders("!!! setTAC: Name fehlt!!! -> unbestaetigt");
 			return;
 		}
 		
 		// TAC suchen...
 		TradeAreaConnector actTAC = super.getTradeAreaHandler().getTAC(Name);
 		if (actTAC==null || !actTAC.isValid()){
-			this.doNotConfirmOrders();
-			this.addComment("!!! ein TAC " + Name + " konnte nicht gefunden werden! -> nicht bestätigt");
+			this.doNotConfirmOrders("!!! ein TAC " + Name + " konnte nicht gefunden werden! -> nicht bestätigt");
 			return;
 		}
 		this.myTAC = actTAC;
@@ -110,8 +108,7 @@ public class Ontradeareaconnection extends TradeAreaScript{
 		// checken, ob diese Unit auch ein saetKapa hat
 		Object o = this.scriptUnit.getScript(Setkapa.class);
 		if (o==null){
-			this.doNotConfirmOrders();
-			this.addComment("!!! onTradeAreaConnection verlangt zwingend eine setKapa-Angabe -> unbestätigt");
+			this.doNotConfirmOrders("!!! onTradeAreaConnection verlangt zwingend eine setKapa-Angabe -> unbestätigt");
 			return;
 		}
 		Setkapa sk = (Setkapa)o;
@@ -123,17 +120,14 @@ public class Ontradeareaconnection extends TradeAreaScript{
 		if (s!=null){
 			int speed = this.gd_Script.getGameSpecificStuff().getGameSpecificRules().getShipRange(s);
 			if (speed<this.myTAC.getSpeed()){
-				this.doNotConfirmOrders();
-				this.addComment("!!! onTradeAreaConnection: Speed des Schiffes KLEINER als TAC-Speed -> unbestätigt");
+				this.doNotConfirmOrders("!!! onTradeAreaConnection: Speed des Schiffes KLEINER als TAC-Speed -> unbestätigt");
 			}
 			if (speed>(this.myTAC.getSpeed()+2)){
-				this.doNotConfirmOrders();
-				this.addComment("!!! onTradeAreaConnection: Speed des Schiffes HÖHER als (TAC-Speed + 2) -> unbestätigt");
+				this.doNotConfirmOrders("!!! onTradeAreaConnection: Speed des Schiffes HÖHER als (TAC-Speed + 2) -> unbestätigt");
 			}
 		} else {
 			// kein Schiff ?!
-			this.doNotConfirmOrders();
-			this.addComment("!!! onTradeAreaConnection: diese Einheit ist nicht auf einem Schiff ?!? -> unbestätigt");
+			this.doNotConfirmOrders("!!! onTradeAreaConnection: diese Einheit ist nicht auf einem Schiff ?!? -> unbestätigt");
 		}
 		
 		
@@ -223,15 +217,13 @@ public class Ontradeareaconnection extends TradeAreaScript{
 			if (r.isInRegionList(r1)) {
 				this.addComment("Routencheck I OK: " + r1.toString() + " ist auf der Route");
 			} else {
-				this.addComment("!!! Fehler im Routencheck I: " + r1.toString() + " ist NICHT auf der Route (daher unbestätigt)");
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("!!! Fehler im Routencheck I: " + r1.toString() + " ist NICHT auf der Route (daher unbestätigt)");
 			}
 			r1 = this.myTAC.getSU2().getUnit().getRegion();
 			if (r.isInRegionList(r1)) {
 				this.addComment("Routencheck II OK: " + r1.toString() + " ist auf der Route");
 			} else {
-				this.addComment("!!! Fehler im Routencheck II: " + r1.toString() + " ist NICHT auf der Route (daher unbestätigt)");
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("!!! Fehler im Routencheck II: " + r1.toString() + " ist NICHT auf der Route (daher unbestätigt)");
 			}
 		} else {
 			this.addComment("!!! Routencheck: Mover ist nicht auf einer Route ?!?");

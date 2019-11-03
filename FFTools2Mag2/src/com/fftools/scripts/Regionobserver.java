@@ -159,8 +159,7 @@ public class Regionobserver extends MatPoolScript{
 				this.requests.add(MPR);
 				this.addComment("RegionObserver (debug): fordere " + MPR.getOriginalGefordert() + " " + MPR.getOriginalGegenstand() + " mit Prio " + MPR.getPrio() + " an.");
 			} else {
-				this.addComment("!!! RegionObserver: angegebene Waffe ist weder ein Gegenstand noch eine Kategorie ?!?");
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("!!! RegionObserver: angegebene Waffe ist weder ein Gegenstand noch eine Kategorie ?!?");
 			}
 			
 		}
@@ -171,8 +170,7 @@ public class Regionobserver extends MatPoolScript{
 		this.addComment("RegionObserver (debug): fordere " + MPR.getOriginalGefordert() + " " + MPR.getOriginalGegenstand() + " mit Prio " + MPR.getPrio() + " an.");
 		
 		if (!didSomething){
-			this.addComment("Keine Waffenanforderung - kein Talent vorhanden?");
-			this.doNotConfirmOrders();
+			this.doNotConfirmOrders("Keine Waffenanforderung - kein Talent vorhanden?");
 		}
 		
 		// 3. Bewachen, falls keine Gegner in der Region sind, sonst Alarm 
@@ -214,9 +212,8 @@ public class Regionobserver extends MatPoolScript{
 			
 			if (badUnit){
 				// Uh-oh, suspicious unit found!
-				this.addComment("WARNUNG: Einheit " + actU.toString(true) + " wird nicht vertraut!");
 				alertStatus=1;
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("WARNUNG: Einheit " + actU.toString(true) + " wird nicht vertraut!");
 			}
 		}
 
@@ -230,8 +227,7 @@ public class Regionobserver extends MatPoolScript{
 			String LP_Name = OP.getOptionString("Lernplan");
 			Lernplan LP = this.scriptUnit.getOverlord().getLernplanHandler().getLernplan(this.scriptUnit, LP_Name, false);
 			if (LP==null){
-				this.addComment("!!!Lernplan nicht bekannt: " + LP_Name);
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("!!!Lernplan nicht bekannt: " + LP_Name);
 			} else {
 				// alles schön
 				this.scriptUnit.findScriptClass("Lernfix", "Lernplan=" + LP_Name);
@@ -245,8 +241,7 @@ public class Regionobserver extends MatPoolScript{
 			talent = talent.substring(0, 1).toUpperCase() + talent.substring(1).toLowerCase();
 			SkillType skillType = super.gd_Script.rules.getSkillType(talent);
 			if (skillType==null){
-				this.addComment("!!!Lerntalent nicht bekannt: " + talent);
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("!!!Lerntalent nicht bekannt: " + talent);
 			} else {
 				// alles schön
 				this.scriptUnit.findScriptClass("Lernfix", "Talent=" + talent);
@@ -258,9 +253,8 @@ public class Regionobserver extends MatPoolScript{
 		if (!hasLearnOrder){
 			Lernplan LP = this.scriptUnit.getOverlord().getLernplanHandler().getLernplan(this.scriptUnit, "RegionObserver", false);
 			if (LP==null){
-				this.addComment("!!!Lernplan nicht bekannt: RegionObserver");
 				this.addComment("Hinweis: wenn ein Lernplan RegionObserver definiert wurde, so wird dieser genutzt.");
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("!!!Lernplan nicht bekannt: RegionObserver");
 			} else {
 				// alles schön
 				this.scriptUnit.findScriptClass("Lernfix", "Lernplan=RegionObserver");
@@ -271,8 +265,7 @@ public class Regionobserver extends MatPoolScript{
 		// Tja, was nun? 
 		// Wenn keine Lernorder, dann unbestätigt Lassen und default anbieten
 		if (!hasLearnOrder){
-			this.doNotConfirmOrders();
-			this.addComment("!!! Dem RegionObserver ist nicht bekannt, was gelernt werden soll!!!");
+			this.doNotConfirmOrders("!!! Dem RegionObserver ist nicht bekannt, was gelernt werden soll!!!");
 			this.addOrder("Lernen Wahrnehmung", true);
 		}
 		
@@ -309,13 +302,12 @@ public class Regionobserver extends MatPoolScript{
 			} else {
 				// wir bewachen schon, wenn nun nicht genügend waffen, warnen, dass bewachung aufgelöst werden wird
 				if (countWeapons < this.getUnit().getModifiedPersons()){
-					this.addComment("!!! Bewachung durch Regionobserver wird scheitern, da keine Waffenversorgung erkannt wurde. (" + countWeapons + "/" + this.getUnit().getModifiedPersons() + ") !!!");
-					this.doNotConfirmOrders();
+					this.doNotConfirmOrders("!!! Bewachung durch Regionobserver wird scheitern, da keine Waffenversorgung erkannt wurde. (" + countWeapons + "/" + this.getUnit().getModifiedPersons() + ") !!!");
 				}
 			}
 		// Nicht alle Einheiten vertrauenswürdig? Volle Deckung...
 		} else {
-			if (this.scriptUnit.getUnit().getGuard()==1) {
+			if (this.scriptUnit.getUnit().getGuard()>0) {
 				this.scriptUnit.addOrder("BEWACHEN NICHT", false);
 				this.scriptUnit.addOrder("KÄMPFE FLIEHE", false);
 			}

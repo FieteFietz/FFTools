@@ -90,6 +90,10 @@ public class SoldatenFrontAction extends MenuAction {
 		
 		// rekrutieren
 		tempUnit.addOrder("// script Runde " + this.selectionObserver.getClient().getData().getDate().getDate() + " script Rekrutieren 10");
+		tempUnit.addOrder("Rekrutiere 10");
+		
+		// script Bewachen [noWeaponACK=ja]
+		tempUnit.addOrder("// script Bewachen noWeaponACK=ja");
 
 		this.selectionObserver.getClient().getDispatcher().fire(new TempUnitEvent(this, tempUnit, TempUnitEvent.CREATED));
 	}

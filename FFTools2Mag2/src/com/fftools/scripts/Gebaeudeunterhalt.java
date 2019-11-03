@@ -172,7 +172,7 @@ public class Gebaeudeunterhalt extends MatPoolScript{
 		   if (this.matPoolRequests==null){
 				//be fail safe..something's gone wrong
 				outText.addOutLine("!!! Gebäudeunterhalt hat keine Requests !!: " + this.unitDesc());
-				super.scriptUnit.doNotConfirmOrders();
+				super.scriptUnit.doNotConfirmOrders("!!! Gebäudeunterhalt hat keine Requests !!: " + this.unitDesc());
 				return;
 			}
 			// durch alle Requests dieser Unit durchgehen
@@ -189,9 +189,7 @@ public class Gebaeudeunterhalt extends MatPoolScript{
 		if (_mpr.getOriginalGefordert()!=_mpr.getBearbeitet()) {
 			// fuck, war es wenigstens ein weit zukünftiges?
 			if(_mpr.getId()<=(this.mindestVersorgungsRunden)){
-				super.scriptUnit.doNotConfirmOrders();
-				super.addComment("Gebäudeunterhalt nicht erfüllt!");
-				super.addComment("Es fehlen " +(_mpr.getOriginalGefordert()-_mpr.getBearbeitet())+ " " +_mpr.getOriginalGegenstand() +" für Gebäude in Runde " +(this.aktuelleRunde+_mpr.getId()-1) ,false );
+				super.scriptUnit.doNotConfirmOrders("Gebäudeunterhalt nicht erfüllt!" + " Es fehlen " +(_mpr.getOriginalGefordert()-_mpr.getBearbeitet())+ " " +_mpr.getOriginalGegenstand() +" für Gebäude in Runde " +(this.aktuelleRunde+_mpr.getId()-1) );
 			}
 		}	
 	} 

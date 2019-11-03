@@ -81,8 +81,7 @@ public class Akademie extends Script{
 						AkademiePool _AP = AM.addAkademie(b,this);
 						if (_AP == null){
 							// Problem, Pool bereits vorhanden
-							addComment("!!! Akademiepool " + b.getID().toString() + " konnte nicht angelegt werden, Besitzerwechsel??");
-							doNotConfirmOrders();
+							doNotConfirmOrders("!!! Akademiepool " + b.getID().toString() + " konnte nicht angelegt werden, Besitzerwechsel??");
 						} else {
 							// kein Problem
 							addComment("AkaTalenten " + b.getID().toString() + ": die Aka wurde erfolgreich dem AkaManger bekannt gemacht.");

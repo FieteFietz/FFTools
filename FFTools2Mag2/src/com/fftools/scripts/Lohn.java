@@ -70,8 +70,7 @@ public class Lohn extends MatPoolScript{
 			try {
 				this.AnzRunden = Integer.valueOf(super.getArgAt(0));
 			} catch (NumberFormatException e) {
-				this.doNotConfirmOrders();
-				this.addComment("Lohn!!! Fehler beim Erkennen des Argumentes!!!");
+				this.doNotConfirmOrders("Lohn!!! Fehler beim Erkennen des Argumentes!!!");
 				this.AnzRunden=1;
 			}
 			// Notloesung...lieber 2 runden statt 0 silber...hin und zurueck halt...
@@ -157,8 +156,7 @@ public class Lohn extends MatPoolScript{
 				super.addComment(_mpr.getBearbeitet() + "/" + _mpr.getOriginalGefordert() + " Lohn. (Prio " + _mpr.getPrio() + ")", true);
 			} else {
 				// super.addComment("Einheit durch Lohn NICHT bestaetigt", true);
-				super.addComment("kein Lohn (Prio " + _mpr.getPrio() + ")", true);
-				super.scriptUnit.doNotConfirmOrders();
+				super.scriptUnit.doNotConfirmOrders("kein Lohn (Prio " + _mpr.getPrio() + ")");
 			}
 		}
 	}

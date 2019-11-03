@@ -177,8 +177,7 @@ public class Checkhelpstatus extends Script{
         							this.addComment("checkgroup ("+ ListName + "): Error while inspecting orders of " + u.toString()+ ", faction number or groupname to short");
         						}
     						} else {
-    							this.addComment("!!! checkhelpstatus-checkgroup: kein : gefunden!!!");
-    							this.doNotConfirmOrders();
+    							this.doNotConfirmOrders("!!! checkhelpstatus-checkgroup: kein : gefunden!!!");
     						}
     						
     					}
@@ -298,8 +297,7 @@ public class Checkhelpstatus extends Script{
 	private void scriptStart(){
 		// zuerst checken, ob wir nicht schon am Start waren
 		if (super.scriptUnit.getScriptMain().singleInstanceScriopts.contains(this)){
-			this.addComment("!!! kein weiterer Aufruf von Checkhelpstatus zugelassen!!! -> unconfirmed");
-			this.doNotConfirmOrders();
+			this.doNotConfirmOrders("!!! kein weiterer Aufruf von Checkhelpstatus zugelassen!!! -> unconfirmed");
 			return ;
 		}
 		

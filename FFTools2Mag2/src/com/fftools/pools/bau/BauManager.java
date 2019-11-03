@@ -50,15 +50,23 @@ public class BauManager implements OverlordRun,OverlordInfo{
 	
 	public void run(int durchlauf){
 		
-		
-		
+		// outText.addOutLine("Start Baumanager", true);
+		long StartTime=System.currentTimeMillis();
+		long ActTime=System.currentTimeMillis();
+		long DiffTime=0;
 		if (this.tradeAreaHandler.getTradeAreas()==null || this.tradeAreaHandler.getTradeAreas().size()==0){
 			return;
 		}
 		
+		// outText.addOutLine("Baumanager - Anzahl TAs: " + this.tradeAreaHandler.getTradeAreas().size(), true);
+		
+		
 		for (TradeArea tA:this.tradeAreaHandler.getTradeAreas()){
 			if (tA.hasBauManager()){
 				if (durchlauf==Durchlauf0){
+					ActTime=System.currentTimeMillis();
+					DiffTime = ActTime - StartTime;
+					// outText.addOutLine(DiffTime + "ms: Baumanger run0 für TA " + tA.getName(), true);
 					tA.getTradeAreaBauManager().run0();
 				}
 				if (durchlauf==Durchlauf1){

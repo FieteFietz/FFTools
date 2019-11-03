@@ -42,9 +42,7 @@ public class Ifregion extends Script{
 		// addOutLine("....scriptstart IfRegion mit " + super.getArgCount() + " Argumenten");
 		if (super.getArgCount()<2) {
 			// falsche Anzahl Paras
-			super.addComment("Falscher Aufruf von IfRegion: zu geringe Anzahl Parameter.",true);
-			super.addComment("Unit wurde durch IfRegion NICHT bestaetigt", true);
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Falscher Aufruf von IfRegion: zu geringe Anzahl Parameter.");
 			parseOK=false;
 			addOutLine("X....Falscher Aufruf von IfRegion: zu geringe Anzahl Parameter: " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 		}
@@ -56,9 +54,7 @@ public class Ifregion extends Script{
 				CoordinateID actDest = CoordinateID.parse(super.getArgAt(0),",");
 				if (actDest == null){
 					// komische Regionsangabe
-					super.addComment("Fehler beim Erkennen der Regionskoordinaten", true);
-					super.addComment("Unit wurde durch IfRegion NICHT bestaetigt", true);
-					super.scriptUnit.doNotConfirmOrders();
+					super.scriptUnit.doNotConfirmOrders("Fehler beim Erkennen der Regionskoordinaten IfRegion");
 					parseOK=false;
 					addOutLine("X....Fehler beim Erkennen der Regionskoordinaten: " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 				}
@@ -73,9 +69,7 @@ public class Ifregion extends Script{
 			} else {
 				String regionWanted = super.getArgAt(0).replace("_", " ");
 				if (regionWanted == null) {
-					super.addComment("Fehler beim Erkennen des Regionsnamens", true);
-					super.addComment("Unit wurde durch IfRegion NICHT bestaetigt", true);
-					super.scriptUnit.doNotConfirmOrders();
+					super.scriptUnit.doNotConfirmOrders("Fehler beim Erkennen des Regionsnamens (IfRegion");
 					parseOK=false;
 					addOutLine("X....Fehler beim Erkennen des Regionsnamens: " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 				}
@@ -105,9 +99,7 @@ public class Ifregion extends Script{
 						super.scriptUnit.findScriptClass(super.getArgAt(2), newOrderLine,true);
 					} else {
 						// die befehlszeile endet mit dem keyWord script
-						super.addComment("Unerwartetes Ende der Befehlszeile (script)", true);
-						super.addComment("Unit wurde durch IfRegion NICHT bestaetigt", true);
-						super.scriptUnit.doNotConfirmOrders();
+						super.scriptUnit.doNotConfirmOrders("Unerwartetes Ende der Befehlszeile (script IfRegion)");
 						addOutLine("X....Unerwartetes Ende der Befehlszeile (IfRegion,script): " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 					}
 				} else {

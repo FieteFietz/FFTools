@@ -74,7 +74,7 @@ public class Transport extends TransportScript{
 		// Einschub: minReitTalent abfragen
 		if (this.transporter.getMinReitTalent()>0){
 			this.addComment("DEBUG: minReitTalent ist " + this.transporter.getMinReitTalent());
-			SkillType reitSkillType = super.gd_Script.rules.getSkillType("Reiten");
+			SkillType reitSkillType = super.gd_Script.getRules().getSkillType("Reiten");
 			if (reitSkillType!=null){
 				Skill reitSkill = super.getUnit().getModifiedSkill(reitSkillType);
 				if ((reitSkill==null) || reitSkill.getLevel()<this.transporter.getMinReitTalent()){
@@ -98,7 +98,7 @@ public class Transport extends TransportScript{
 			} else {
 				// aktuellen Stand halten
 				// der ist wie?
-				Item pferdItem = this.scriptUnit.getUnit().getItem(this.gd_Script.rules.getItemType("Pferd"));
+				Item pferdItem = this.scriptUnit.getUnit().getItem(this.gd_Script.getRules().getItemType("Pferd"));
 				if (pferdItem!=null){
 					menge = pferdItem.getAmount();
 				}
@@ -110,7 +110,7 @@ public class Transport extends TransportScript{
 			}
 			MatPoolRequest mpr = null;
 			int actPferdePolicy = MatPoolRequest.KAPA_max_zuPferd;
-			ItemType wagenType = super.gd_Script.rules.getItemType("Wagen");
+			ItemType wagenType = super.gd_Script.getRules().getItemType("Wagen");
 			
 			
 			// erstmal jeder 1 Pferd

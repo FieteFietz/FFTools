@@ -58,6 +58,12 @@ public class Forester extends MatPoolScript{
 	 */
 	private boolean isMallornregion = false;
 	
+	/**
+	 * Erst wenn der Baumbestand unter den minBestand sinkt, erst dann wird der Förster tatsächlich aktiv
+	 * anforderungen bleiben trotzdem bestehen
+	 */
+	private int minBestand=0;
+	
 	// Konstruktor
 	public Forester() {
 		super.setRunAt(this.runners);
@@ -126,6 +132,16 @@ public void runScript(int scriptDurchlauf){
 			}
 			infoText += "maxMenge=" + this.maxMenge;
 		}
+		
+		this.minBestand = OP.getOptionInt("minBestand", 0);
+		if (this.minBestand>0) {
+			if (infoText.length()>1){
+				infoText += ", ";
+			}
+			infoText += "minBestand=" + this.minBestand;
+		}
+		
+		
 		if (infoText.length()>0){
 			infoText = "Forester diese Runde (" + infoText + ")";
 		} else {
@@ -182,6 +198,39 @@ public void runScript(int scriptDurchlauf){
 		if (this.minMenge>0 && Produktion<this.minMenge){
 			mayProduce=false;
 			this.addComment("Forester: mögliche Produktion (" + Produktion + ") unter Minimalmenge!");
+		}
+		
+		if (mayProduce && this.minBestand>0) {
+			// checke, ob minBestand gesetzt und unterschritten
+			this.addComment("prüfe auf Unterschreitung des MindestBestands (" + this.minBestand + " Stämme)");
+			int Staemme = 0;
+			ItemType IT = this.gd_Script.getRules().getItemType("Mallorn");
+			RegionResource RR = this.region().getResource(IT);
+			if (RR!=null){
+				Staemme += RR.getAmount();
+			}
+			IT = this.gd_Script.getRules().getItemType("Mallornschößlinge");
+			RR = this.region().getResource(IT);
+			if (RR!=null){
+				Staemme += RR.getAmount();
+			}
+			IT = this.gd_Script.getRules().getItemType("Bäume");
+			RR = this.region().getResource(IT);
+			if (RR!=null){
+				Staemme += RR.getAmount();
+			}
+			// Schößlinge
+			IT = this.gd_Script.getRules().getItemType("Schößlinge");
+			RR = this.region().getResource(IT);
+			if (RR!=null){
+				Staemme += RR.getAmount();
+			}
+			if (Staemme>this.minBestand) {
+				this.addComment(Staemme + " Stämme gefunden -> kein Aufforsten diese Runde");
+				mayProduce=false;
+			} else {
+				this.addComment(Staemme + " Stämme gefunden -> Mindestbestand unterschritten.");
+			}
 		}
 		
 		

@@ -60,7 +60,7 @@ public class Auramaxwarning extends Script{
 				if (automode){
 					automode_AuraMax();
 				} else {
-					this.doNotConfirmOrders();
+					this.doNotConfirmOrders("AuraMaxWarning: Einheit hat Maximum an Aura!");
 				}
 			} else {
 				/* Maximum noch nicht erreicht */
@@ -81,8 +81,7 @@ public class Auramaxwarning extends Script{
 	private void automode_noAuraMax(){
 		int givenOrders = setGivenOrders("IfNoAuraMax:");
 		if (givenOrders==0){
-			this.addComment("!!!Obwohl diese Einheit im automode ist, hat sie keine IfNoAuraMax:-Befehle!");
-			this.doNotConfirmOrders();
+			this.doNotConfirmOrders("!!!Obwohl diese Einheit im automode ist, hat sie keine IfNoAuraMax:-Befehle!");
 		} else {
 			this.addComment(givenOrders + " Befehle wurden der Einheit gegeben.");
 		}
@@ -94,8 +93,7 @@ public class Auramaxwarning extends Script{
 	private void automode_AuraMax(){
 		int givenOrders = setGivenOrders("IfAuraMax:");
 		if (givenOrders==0){
-			this.addComment("!!!Obwohl diese Einheit im automode ist, hat sie keine IfAuraMax:-Befehle!");
-			this.doNotConfirmOrders();
+			this.doNotConfirmOrders("!!!Obwohl diese Einheit im automode ist, hat sie keine IfAuraMax:-Befehle!");
 		} else {
 			this.addComment(givenOrders + " Befehle wurden der Einheit gegeben.");
 		}
@@ -132,9 +130,7 @@ public class Auramaxwarning extends Script{
 						this.addComment("Auramaxwarning - invoked stript " + params[1] + " with param " + newOrderLine + " ... ");
 					} else {
 						// die befehlszeile endet mit dem keyWord script
-						super.addComment("Unerwartetes Ende der Befehlszeile (script)", true);
-						super.addComment("Unit wurde durch " + keyword + " NICHT bestaetigt", true);
-						super.scriptUnit.doNotConfirmOrders();
+						super.scriptUnit.doNotConfirmOrders("Unerwartetes Ende der Befehlszeile (script) | Unit wurde durch \" + keyword + \" NICHT bestaetigt");
 						addOutLine("X....Unerwartetes Ende der Befehlszeile (" + keyword + "): " + this.unitDesc());
 					}
 				} else {

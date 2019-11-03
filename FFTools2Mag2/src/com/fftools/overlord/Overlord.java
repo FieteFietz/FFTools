@@ -4,8 +4,6 @@ package com.fftools.overlord;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import magellan.library.io.cr.CRParser;
-
 import com.fftools.OutTextClass;
 import com.fftools.ScriptMain;
 import com.fftools.ScriptUnit;
@@ -19,9 +17,12 @@ import com.fftools.pools.circus.CircusPoolManager;
 import com.fftools.pools.heldenregionen.HeldenRegionsManager;
 import com.fftools.pools.matpool.MatPoolManager;
 import com.fftools.pools.pferde.PferdeManager;
+import com.fftools.pools.seeschlangen.SeeschlangenJagdManager_SJM;
 import com.fftools.pools.treiber.TreiberPoolManager;
 import com.fftools.trade.TradeAreaHandler;
 import com.fftools.transport.TransportManager;
+
+import magellan.library.io.cr.CRParser;
 
 
 /**
@@ -43,6 +44,22 @@ public class Overlord {
 	private ScriptMain scriptMain = null;
 	
 	/**
+	 * Debug Zeitsummen
+	 */
+	public long Zeitsumme1 = 0;
+	public long Zeitsumme2 = 0;
+	public long Zeitsumme3 = 0;
+	public long Zeitsumme4 = 0;
+	public long Zeitsumme5 = 0;
+	public long Zeitsumme6 = 0;
+	public long Zeitsumme7 = 0;
+	public long Zeitsumme8 = 0;
+	public long Zeitsumme9 = 0;
+	public long Zeitsumme10 = 0;
+	
+	
+	
+	/**
 	 * die manager
 	 */
 	private MatPoolManager matPoolManager = null;
@@ -56,6 +73,8 @@ public class Overlord {
 	private HeldenRegionsManager heldenRegionsManager = null;
 	private BauManager bauManager = null;
 	private WerftManager werftManager = null;
+	private SeeschlangenJagdManager_SJM SJM = null;
+	
 	
 	/**
 	 * die handler
@@ -118,20 +137,43 @@ public class Overlord {
 			}
 		}
 		
-		
+		long time1 =0;
+		long timeX = 0;
+		// long tDiffX = 0;
 		for (mainDurchlauf = 0;mainDurchlauf<Integer.MAX_VALUE;mainDurchlauf++){
 			sayTime=false;
-			long time1 = System.currentTimeMillis();
+			time1 = System.currentTimeMillis();
+			timeX = 0;
+			// tDiffX = 0;
+			// outText.addNewLine();
+			// outText.addOutChars("*** start: " + mainDurchlauf + " *** ");
 			// Info doch vorab
 			String scriptNames = getScriptsForRunNumber(mainDurchlauf);
+			
+			timeX=System.currentTimeMillis();
+			// tDiffX = timeX - time1;
+			// outText.addNewLine();
+			// outText.addOutChars(tDiffX + ": after getScriptsForRunNumber ");
+			
 			if (scriptNames.length()>0){
-				outText.addNewLine();
-				outText.addOutChars(mainDurchlauf + "->" + scriptNames + ":");
+				// outText.addNewLine();
+				// outText.addOutChars(mainDurchlauf + "-s>" + scriptNames + ":");
 				sayTime=true;
 			} else {
 				// outText.addOutChars("," + mainDurchlauf);
 			}
 			
+			
+			this.Zeitsumme1=0;
+			this.Zeitsumme2=0;
+			this.Zeitsumme3=0;
+			this.Zeitsumme4=0;
+			this.Zeitsumme5=0;
+			this.Zeitsumme6=0;
+			this.Zeitsumme7=0;
+			this.Zeitsumme8=0;
+			this.Zeitsumme9=0;
+			this.Zeitsumme10=0;
 			
 			// scriptunits anstossen
 			for (Iterator<ScriptUnit> iter = this.scriptMain.getScriptUnits().values().iterator();iter.hasNext();){
@@ -141,27 +183,63 @@ public class Overlord {
 					outText.addPoint();
 				}
 			}
+			/*
+			outText.addNewLine();
+			outText.addOutChars("Zeitsumme 1: " + this.Zeitsumme1);
+			outText.addNewLine();
+			outText.addOutChars("Zeitsumme 2: " + this.Zeitsumme2);
+			outText.addNewLine();
+			outText.addOutChars("Zeitsumme 3: " + this.Zeitsumme3);
+			outText.addNewLine();
+			outText.addOutChars("Zeitsumme 4: " + this.Zeitsumme4);
+			outText.addNewLine();
+			outText.addOutChars("Zeitsumme 5: " + this.Zeitsumme5);
+			outText.addNewLine();
+			outText.addOutChars("Zeitsumme 6: " + this.Zeitsumme6);
+			outText.addNewLine();
+			outText.addOutChars("Zeitsumme 7: " + this.Zeitsumme7);
+			outText.addNewLine();
+			outText.addOutChars("Zeitsumme 8: " + this.Zeitsumme8);
+			outText.addNewLine();
+			outText.addOutChars("Zeitsumme 9: " + this.Zeitsumme9);
+			outText.addNewLine();
+			outText.addOutChars("Zeitsumme 10: " + this.Zeitsumme10);
+			*/
+			
+			timeX=System.currentTimeMillis();
+			// tDiffX = timeX - time1;
+			// outText.addNewLine();
+			// outText.addOutChars(tDiffX + ": after scrU.runScripts ");
+			
+			
 			// manager laufen lassen ?!
 			if (this.runnings!=null){
 				for (Iterator<OverlordRun> iter = this.runnings.iterator();iter.hasNext();){
 					Object o = iter.next();
 					OverlordInfo oI = (OverlordInfo)o;
 					if (isInRun(oI, mainDurchlauf)){
-						outText.addNewLine();
-						outText.addOutChars(mainDurchlauf + "->" + this.getSimpleClassName(oI.getClass()) + ":");
+						// outText.addNewLine();
+						// outText.addOutChars(mainDurchlauf + "-m>" + this.getSimpleClassName(oI.getClass()) + ":");
 						OverlordRun oR = (OverlordRun)o;
 						oR.run(mainDurchlauf);
 						outText.addOutChars(" | done with " + this.getSimpleClassName(oI.getClass()));
+						outText.addNewLine();
 						sayTime=true;
 					}
 				}
 			}
 			
+			timeX=System.currentTimeMillis();
+			// tDiffX = timeX - time1;
+			// outText.addNewLine();
+			// outText.addOutChars(tDiffX + ": after run Overlords-Runs ");
+			
+			
 			if (sayTime){
 				long time2 = System.currentTimeMillis();
 				long tDiff = time2 - time1;
 				outText.addOutChars("[" + mainDurchlauf + ":" + tDiff + "ms]");
-				// outText.addNewLine();
+				outText.addNewLine();
 			}
 			
 			
@@ -381,6 +459,19 @@ public class Overlord {
 			this.addRunner(matPoolManager);
 		}
 		return matPoolManager;
+	}
+	
+	/**
+	 * 
+	 * @return the SJM
+	 */
+	public SeeschlangenJagdManager_SJM getSJM() {
+		if (this.SJM==null) {
+			this.SJM = new SeeschlangenJagdManager_SJM(this);
+			this.addRunner(SJM);
+			this.addOverlordInfo(SJM);
+		}
+		return this.SJM;
 	}
 
 

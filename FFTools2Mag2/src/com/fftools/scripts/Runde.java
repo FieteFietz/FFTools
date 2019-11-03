@@ -45,9 +45,8 @@ public class Runde extends Script{
 		// Mindestparameterzahl: 2: runde und befehl/script
 		
 		if (super.getArgCount()<2){
-			this.addComment("!!! Fehlerhafter Rundenbefehl bei: " + this.unitDesc());
 			outText.addOutLine("!!! Fehlerhafter Rundenbefehl bei: " + this.unitDesc());
-			this.scriptUnit.doNotConfirmOrders();
+			this.scriptUnit.doNotConfirmOrders("!!! Fehlerhafter Rundenbefehl bei: " + this.unitDesc());
 			return;
 		}
 		
@@ -57,9 +56,8 @@ public class Runde extends Script{
 			sollRunde = Integer.parseInt(rundenString);
 		} catch (NumberFormatException e) {
 			// pech gehabt
-			this.addComment("!!! Fehlerhafte Rundenerkennung bei: " + this.unitDesc());
 			outText.addOutLine("Fehlerhafte Rundenerkennung bei: " + this.unitDesc());
-			this.scriptUnit.doNotConfirmOrders();
+			this.scriptUnit.doNotConfirmOrders("!!! Fehlerhafte Rundenerkennung bei Runde");
 			return;
 		}
 		
@@ -85,11 +83,8 @@ public class Runde extends Script{
 					super.scriptUnit.findScriptClass(super.getArgAt(2), newOrderLine,true);
 				} else {
 					// die befehlszeile endet mit dem keyWord script
-					super.addComment("Unerwartetes Ende der Befehlszeile (script)", true);
-					super.addComment("Unit wurde durch Runde NICHT bestaetigt", true);
-					super.scriptUnit.doNotConfirmOrders();
+					super.scriptUnit.doNotConfirmOrders("Unerwartetes Ende der Befehlszeile (script Runde)");
 					addOutLine("X....Unerwartetes Ende der Befehlszeile (Runde, script):" + this.unitDesc());
-					this.scriptUnit.doNotConfirmOrders();
 				}
 			} else {
 				// kein scriptbefehl dahinter

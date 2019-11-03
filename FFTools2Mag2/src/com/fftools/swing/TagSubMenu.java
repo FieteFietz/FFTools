@@ -8,13 +8,14 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
-import magellan.client.Client;
-
+import com.fftools.demo.actions.CreateOrderTextFiles;
 import com.fftools.demo.actions.File2OrdersAction;
 import com.fftools.demo.actions.MenuAction;
 import com.fftools.demo.actions.Orders2TagsAction;
 import com.fftools.demo.actions.Tags2FileAction;
 import com.fftools.demo.actions.Tags2OrdersAction;
+
+import magellan.client.Client;
 
 public class TagSubMenu extends JMenu {
 	
@@ -27,6 +28,8 @@ public class TagSubMenu extends JMenu {
 	    addMenuItem(this,new Tags2OrdersAction(client));
 	    addMenuItem(this,new Tags2FileAction(client));
 	    addMenuItem(this,new File2OrdersAction(client));
+	    // CreateOrderTextFiles
+	    addMenuItem(this,new CreateOrderTextFiles(client));
 	}
 	
 	

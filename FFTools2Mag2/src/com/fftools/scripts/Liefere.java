@@ -138,9 +138,10 @@ public class Liefere extends Script{
 				continue;
 			}
 			if (item.getAmount()<this.menge && !this.weniger){
-				this.addComment("Liefere: nicht ausreichend " + this.itemType.getName() + " vorhanden.");
 				if (!this.notSuccessACK){
-					this.scriptUnit.doNotConfirmOrders();
+					this.scriptUnit.doNotConfirmOrders("Liefere: nicht ausreichend " + this.itemType.getName() + " vorhanden.");
+				} else {
+					this.addComment("Liefere: nicht ausreichend " + this.itemType.getName() + " vorhanden.");
 				}
 				continue;
 			}
@@ -178,9 +179,10 @@ public class Liefere extends Script{
 					} else {
 						// nicht mehr genügend da
 						if (!this.weniger){
-							this.addComment("Liefere: (->" + u.toString(false) + ") nicht ausreichend " + this.itemType.getName() + " vorhanden.");
 							if (!this.notSuccessACK){
-								this.scriptUnit.doNotConfirmOrders();
+								this.scriptUnit.doNotConfirmOrders("Liefere: (->" + u.toString(false) + ") nicht ausreichend " + this.itemType.getName() + " vorhanden.");
+							} else {
+								this.addComment("Liefere: (->" + u.toString(false) + ") nicht ausreichend " + this.itemType.getName() + " vorhanden.");
 							}
 						}
 					}

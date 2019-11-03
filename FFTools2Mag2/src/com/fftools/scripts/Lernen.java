@@ -54,12 +54,7 @@ public class Lernen extends MatPoolScript{
 		
 		// erstmal ganz Einfach: Das erste Argument weiter lernen und bestaetigen
 		if (super.getArgCount()<1) {
-			super.addComment("Das Talent fehlt beim Aufruf von Lernen!",true);
-			// nicht bestaetigen!
-			// wo speichern wir das?
-			// in der scriptunit
-			super.addComment("Unit wurde durch Lernen NICHT bestaetigt", true);
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Das Talent fehlt beim Aufruf von Lernen!");
 		} else {
 			String talent = getArgAt(0);
 			talent = talent.substring(0, 1).toUpperCase() + talent.substring(1).toLowerCase();
@@ -68,8 +63,7 @@ public class Lernen extends MatPoolScript{
 			
 			if (skillType==null){
 				// wow, kein Lerntalent
-				super.addComment("Kein Lerntalent! -> NICHT bestaetigt!", true);
-				super.scriptUnit.doNotConfirmOrders();
+				super.scriptUnit.doNotConfirmOrders("Kein Lerntalent! -> NICHT bestaetigt!");
 				addOutLine("!!! ungueltiges Lerntalent bei " + this.unitDesc());
 			} else {
 				// Alles OK...Lerntalent erkannt
@@ -88,8 +82,7 @@ public class Lernen extends MatPoolScript{
 					} else {
 						addOutLine("!!! ungueltiges LernMaxtalent bei " + this.unitDesc());
 						mayConfirm = false;
-						super.addComment("Fehler bei maxTalentStufe", true);
-						super.scriptUnit.doNotConfirmOrders();
+						super.scriptUnit.doNotConfirmOrders("Fehler bei maxTalentStufe");
 					}
 				}
 				// int actLernTalent = super.scriptUnit.getUnit().getSkill(skillType).getLevel();
@@ -123,8 +116,7 @@ public class Lernen extends MatPoolScript{
 				super.addOrder(Befehl, true);
 				
 				if (actLernTalent >= maxTalent) { 
-					super.addComment("Unit hat maxTalentStufe erreicht.", true);
-					super.scriptUnit.doNotConfirmOrders();
+					super.scriptUnit.doNotConfirmOrders("Unit hat maxTalentStufe erreicht.");
 					mayConfirm = false;
 				}
 				if (mayConfirm){
@@ -141,8 +133,7 @@ public class Lernen extends MatPoolScript{
 				if (request.getBearbeitet()<this.getLernKosten(actSkill)){
 				// int a =  this.getLernKosten(actSkill);
 				// int b = request.getBearbeitet();
-				super.scriptUnit.doNotConfirmOrders();
-				super.addComment("Lernkosten ungedeckt: " +request.getBearbeitet()+" von " +this.getLernKosten(actSkill)+ " Silber erhalten" , true);
+				super.scriptUnit.doNotConfirmOrders("Lernkosten ungedeckt: " +request.getBearbeitet()+" von " +this.getLernKosten(actSkill)+ " Silber erhalten");
 				}
 			}
 			

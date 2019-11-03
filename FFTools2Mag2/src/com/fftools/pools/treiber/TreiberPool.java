@@ -280,6 +280,7 @@ public void keplerRegionMaxTreiben(){
 		return;
 	}
 	keplerCalcRun = true;
+	this.keplerInfo.add("maxSilberfreigabe nach Kepler");
 	/*
 	In einer Region:
 	Es wird festgestellt, wieviel die Bauern für den Ankauf von Luxusgütern ausgeben (LUX).
@@ -332,14 +333,52 @@ public void maxTreibsilberFreigabe(){
 	
 	this.keplerInfo.add("maxSilberfreigabe nach Kepler (v2)");
 	// Einkommen
-	long einkommen = (region.getPeasantWage()-1) * region.getModifiedPeasants();
-	this.keplerInfo.add("Einkommen: " + einkommen + " (Bauern(" + region.getModifiedPeasants() + ") * Lohn(" + (region.getPeasantWage()-1) + "))");
+	long einkommen = (region.getPeasantWage()) * region.getModifiedPeasants();
+	this.keplerInfo.add("Einkommen: " + einkommen + " (Bauern(" + region.getModifiedPeasants() + ") * Lohn(" + (region.getPeasantWage()) + "))");
 	long bev = (long)Math.floor(region.getModifiedPeasants() * 1.001);
 	this.keplerInfo.add("Bevölkerung: " + bev + " (Bauern * 1.001 abgerundet)");
 	long vers=bev * 10;
 	this.keplerInfo.add("Versorgung: " + vers + " (Bevölkerung * 10)");
 	int erg = (int)(this.region.getSilver() + einkommen - vers);
+	if (erg<0) {
+		erg =0;
+	}
 	this.keplerInfo.add("MaxTreiben damit: " + erg + " (Regionssilber + Einkommen - Versorgung)");
+	this.regionMaxTreiben=erg;
+	this.limit = regionMaxTreiben;
+}
+
+/**
+ * Berechnet das maximal zu treibende Silber nach Kepler, Version 3
+ */
+public void maxTreibsilberFreigabe_Kepler3(){
+	/**
+	 * // script setScripterOption Treibsilberfreigabe=max
+	 *		mit folgender Semantik:
+	 * Einkommen = Bauern * Lohn
+	 * Bevölkerung = Bauern * 1,001 // abgerundet
+	 * Versorgung = Bevölkerung * 10
+	 * Treibsilber = Regionssilber + Einkommen - Versorgung
+	 * Alle sonstigen Aktivitäten wie Unterhaltung, Handel, Rekrutierungen, Veränderungen durch GIB 0, Krieg usw. sollen nicht berücksichtigt werden. Diese Option ist für Spieler gedacht, die in stabilen Regionen nur treiben und optimal abschöpfen wollen, ohne dass jemand hungert.
+	 */
+	
+	
+	this.keplerInfo.add("maxSilberfreigabe nach Kepler (v3)");
+	this.keplerInfo.add("Regionssilber - aktueller Stand: " + this.region.getSilver() + " Silber");
+	// Einkommen
+	long einkommen = (region.getPeasantWage()) * region.getModifiedPeasants();
+	this.keplerInfo.add("Einkommen: " + einkommen + " (Bauern(" + region.getModifiedPeasants() + ") * Lohn(" + (region.getPeasantWage()) + "))");
+	long bev = (long)Math.floor(region.getModifiedPeasants() * 1.001);
+	this.keplerInfo.add("Bevölkerung: " + bev + " (Bauern * 1.001 abgerundet)");
+	long vers=bev * 10;
+	this.keplerInfo.add("Versorgung: " + vers + " (Bevölkerung * 10)");
+	long medVorsorge = bev * 30;
+	this.keplerInfo.add("MedikamentenVersorgung: " + medVorsorge + " (Bevölkerung * 30)");
+	int erg = (int)(this.region.getSilver() + einkommen - vers - medVorsorge);
+	if (erg<0) {
+		erg =0;
+	}
+	this.keplerInfo.add("MaxTreiben damit: " + erg + " (Regionssilber + Einkommen - Versorgung - Medikamentenvorsorge)");
 	this.regionMaxTreiben=erg;
 	this.limit = regionMaxTreiben;
 }

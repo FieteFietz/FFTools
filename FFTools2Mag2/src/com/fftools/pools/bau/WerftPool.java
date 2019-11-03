@@ -132,6 +132,7 @@ private boolean allShips = false;
 			for (Ship s:this.SchiffListe){
 				
 				int RepairPunkte = neededBaupunkte(s);
+				int TalentStufe = s.getShipType().getBuildSkillLevel();
 				
 				// outText.addOutLine("Werft: bearbeite Schiff " + s.toString() + ", RP: " + RepairPunkte, true);
 				Unit u = s.getOwnerUnit();
@@ -152,15 +153,15 @@ private boolean allShips = false;
 						iterCounter=iterCounter+1;
 						for (Werft w:ActiveWerftList){
 							// outText.addOutLine("Werft: bearbeite Werft " + w.scriptUnit.toString(), true);
-							if (!workList.contains(w) && RepairPunkte>0 && w.getBauPunkteMitHolz()>0){
+							if (!workList.contains(w) && RepairPunkte>0 && w.getBauPunkteMitHolz(s.getShipType())>0){
 								// outText.addOutLine("Werft: beauftrage Werft " + w.scriptUnit.toString(), true);
 								// ok..bauen lassen
 								oldRepairPunkte = RepairPunkte;
-								RepairPunkte = RepairPunkte - w.getBauPunkteMitHolz();
-								w.addOrder("machen schiff " + s.getID() + "; Werft-Script: verbaue " + w.getBauPunkteMitHolz() + ", verbleibend " + RepairPunkte,true);
+								RepairPunkte = RepairPunkte - w.getBauPunkteMitHolz(s.getShipType());
+								w.addOrder("machen schiff " + s.getID() + "; Werft-Script: verbaue " + w.getBauPunkteMitHolz(s.getShipType()) + ", verbleibend " + RepairPunkte,true);
 								workList.add(w);
 								if (su!=null){
-									su.addComment("An Schiff wird diese Runde gebaut: " + w.getBauPunkteMitHolz() + " von " + w.scriptUnit.toString() + "[" + oldRepairPunkte + "->" + RepairPunkte + "]");
+									su.addComment("An Schiff wird diese Runde gebaut: " + w.getBauPunkteMitHolz(s.getShipType()) + " von " + w.scriptUnit.toString() + "[" + oldRepairPunkte + "->" + RepairPunkte + "]");
 								}
 								ActiveWerftList.remove(w);
 								break;
@@ -174,8 +175,7 @@ private boolean allShips = false;
 						su.addComment("Werftinfo: verbleibend " + RepairPunkte + " Schaden.");
 					}
 					if (iterCounter>=10000 && su!=null){
-						su.doNotConfirmOrders();
-						su.addComment("!!! Werftmanager versagt! Erreichte 10000 Iterationen!!!");
+						su.doNotConfirmOrders("!!! Werftmanager versagt! Erreichte 10000 Iterationen!!!");
 					}
 				} else {
 					outText.addOutLine("!!! Schiff in Werftregion unbemannt!!!: " + s.toString() + " in " + s.getRegion().toString(), true);

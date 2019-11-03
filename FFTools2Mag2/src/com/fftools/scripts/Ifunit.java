@@ -44,9 +44,7 @@ public class Ifunit extends Script{
 		
 		if (super.getArgCount()<2) {
 			// falsche Anzahl Paras
-			super.addComment("Falscher Aufruf von IfUnit: zu geringe Anzahl Parameter.",true);
-			super.addComment("Unit wurde durch IfUnit NICHT bestaetigt", true);
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Falscher Aufruf von IfUnit: zu geringe Anzahl Parameter.");
 			
 			addOutLine("X....Falscher Aufruf von IfUnit: zu geringe Anzahl Parameter: " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 		} else {
@@ -60,9 +58,7 @@ public class Ifunit extends Script{
 			Unit checkU = super.scriptUnit.getUnit();
 			if (checkU.getName().equalsIgnoreCase(unitDesc) || checkU.toString(false).equalsIgnoreCase(unitDesc)){
 				// soso, ein Witzbold..
-				super.addComment("Ich bin ich, meiner selbst, und mir - ganz ich.", true);
-				super.addComment("Unit wurde durch IfUnit NICHT bestaetigt", true);
-				super.scriptUnit.doNotConfirmOrders();
+				super.scriptUnit.doNotConfirmOrders("Ich bin ich, meiner selbst, und mir - ganz ich. (IfUnit");
 				addOutLine("X....Falscher Aufruf von IfUnit: auf sich selbst angewendet: " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 			} else {
 				// Die Region mal holen
@@ -101,9 +97,7 @@ public class Ifunit extends Script{
 						super.scriptUnit.findScriptClass(super.getArgAt(2), newOrderLine,true);
 					} else {
 						// die befehlszeile endet mit dem keyWord script
-						super.addComment("Unerwartetes Ende der Befehlszeile (script)", true);
-						super.addComment("Unit wurde durch IfUnit NICHT bestaetigt", true);
-						super.scriptUnit.doNotConfirmOrders();
+						super.scriptUnit.doNotConfirmOrders("Unerwartetes Ende der Befehlszeile (script IfUnit)");
 						addOutLine("X....Unerwartetes Ende der Befehlszeile (IfUnit, script): " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 					}
 				} else {

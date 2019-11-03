@@ -6,10 +6,7 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import magellan.library.CoordinateID;
-import magellan.library.Region;
-import magellan.library.Unit;
-
+import com.fftools.OutTextClass;
 import com.fftools.ScriptUnit;
 import com.fftools.pools.ausbildung.AusbildungsPool;
 import com.fftools.pools.ausbildung.Lernplan;
@@ -24,13 +21,17 @@ import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsRegions;
 import com.fftools.utils.GotoInfo;
 
+import magellan.library.CoordinateID;
+import magellan.library.Region;
+import magellan.library.Unit;
+
 
 /**
  *Verwaltet Bauen-scripte eines TradeAreas
  *
  */
 public class TradeAreaBauManager {
-	// private static final OutTextClass outText = OutTextClass.getInstance();
+	private static final OutTextClass outText = OutTextClass.getInstance();
 
 	private TradeArea tradeArea = null;
 	
@@ -96,7 +97,15 @@ public class TradeAreaBauManager {
 	 */
 	public void run0(){
 		
+		long StartTime=System.currentTimeMillis();
+		long ActTime=System.currentTimeMillis();
+		long DiffTime=0;
+		// outText.addOutLine(DiffTime + "ms: start TA-BM", true);
+		
 		this.processBurgenbau();
+		ActTime=System.currentTimeMillis();
+		DiffTime=ActTime-StartTime;
+		// outText.addOutLine(DiffTime + "ms: rdy with processBurgenbau", true);
 		
 		if (this.bauAufträge==null || this.bauAufträge.size()==0){
 			this.infoLines.add("keine Bauaufträge im TA bekannt");
@@ -119,7 +128,9 @@ public class TradeAreaBauManager {
 				}
 			}
 		}
-		
+		ActTime=System.currentTimeMillis();
+		DiffTime=ActTime-StartTime;
+		// outText.addOutLine(DiffTime + "ms: rdy with building builders", true);
 		if (autoBauer.size()==0){
 			this.infoLines.add("keine automatischen Bauarbeiter im TA bekannt");
 			return;
@@ -129,6 +140,9 @@ public class TradeAreaBauManager {
 		this.supportableBuilder = new ArrayList<Bauen>();
 		
 		processCentralHomeDest(autoBauer);
+		ActTime=System.currentTimeMillis();
+		DiffTime=ActTime-StartTime;
+		// outText.addOutLine(DiffTime + "ms: rdy with procCentralHomeDest", true);
 
 		
 		// erste Infozeilen
@@ -152,6 +166,11 @@ public class TradeAreaBauManager {
 				}
 			}
 		}
+		
+		ActTime=System.currentTimeMillis();
+		DiffTime=ActTime-StartTime;
+		// outText.addOutLine(DiffTime + "ms: rdy with build Orders", true);
+		
 		// Sortieren
 		Collections.sort(auftragsBauscripte, new BauScriptComparator());
 		for (Bauen b:auftragsBauscripte){
@@ -211,10 +230,10 @@ public class TradeAreaBauManager {
 			}
 		}
 		
-		
-		
-		
-		
+		ActTime=System.currentTimeMillis();
+		DiffTime=ActTime-StartTime;
+		// outText.addOutLine(DiffTime + "ms: rdy with TA-BM", true);
+
 		
 		Collections.reverse(this.infoLines);
 		
@@ -552,8 +571,7 @@ public class TradeAreaBauManager {
 			}
 			if (allFertig && !isOnAutomode){
 				// alle bauaufträge fertig
-				actUnit.addComment("Alle Bauaufträge erledigt");
-				actUnit.doNotConfirmOrders();
+				actUnit.doNotConfirmOrders("Alle Bauaufträge erledigt");
 			}
 			
 			if (!hasCommand){
@@ -575,8 +593,7 @@ public class TradeAreaBauManager {
 							}
 						} else {
 							// keine AR -> Lernplan beendet ?!
-							actBauen.addComment("Lernplan liefert keine Aufgabe mehr");
-							actBauen.scriptUnit.doNotConfirmOrders();
+							actBauen.scriptUnit.doNotConfirmOrders("Lernplan liefert keine Aufgabe mehr");
 							// default ergänzen - keine Ahnung, was, eventuell kan
 							// die einheit ja nix..
 							actBauen.lerneTalent(lernTalent, true);
@@ -590,8 +607,7 @@ public class TradeAreaBauManager {
 					
 				} else {
 					// kann nicht lernen
-					actUnit.addComment("!!!Bauen: Unit soll Lernen, kann aber nicht!");
-					actUnit.doNotConfirmOrders();
+					actUnit.doNotConfirmOrders("!!!Bauen: Unit soll Lernen, kann aber nicht!");
 				}
 			}
 		}
@@ -823,8 +839,7 @@ public class TradeAreaBauManager {
 			ArrayList<Bauauftrag> list = this.bauAufträge.get(su);
 			if (list==null || list.size()==0){
 				// komisch...bauauftragshalter ohne Aufträge
-				su.doNotConfirmOrders();
-				su.addComment("!!! Als Halter von Bauaufträgen gelistet aber keine Gefunden!");
+				su.doNotConfirmOrders("!!! Als Halter von Bauaufträgen gelistet aber keine Gefunden!");
 			} else {
 				int count_all=0;
 				int count_rdy=0;
@@ -841,8 +856,7 @@ public class TradeAreaBauManager {
 				// info
 				su.addComment("TA-Bau: " + count_rdy + " / " + count_all + " OK, ToDo: " + count_toDo);
 				if (count_toDo==0){
-					su.doNotConfirmOrders();
-					su.addComment("TA-Bau: keine offenen Bauaufträge mehr!");
+					su.doNotConfirmOrders("TA-Bau: keine offenen Bauaufträge mehr!");
 				}
 			}
 		}

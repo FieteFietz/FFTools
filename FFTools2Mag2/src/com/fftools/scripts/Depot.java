@@ -205,8 +205,7 @@ public class Depot extends TransportScript{
 				TR.setTradeAreaName(setAreaName);
 				this.addComment("trying to name TradeArea as: " + setAreaName);
 			} else {
-				this.addComment("!!! could not set TradeArea Name: no TradeRegion found.");
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("!!! could not set TradeArea Name: no TradeRegion found.");
 			}
 		}
 		
@@ -268,8 +267,7 @@ public class Depot extends TransportScript{
 				int diffPersonen = actPersonen - maxPersonen;
 				this.addComment("Bauerncheck!!! " + diffPersonen + " Bauern zu viel in der Region! !!!");
 				if (actRekrutierungen<maxRekrutierungen && actRekrutierungen<diffPersonen) {
-					this.addComment("Bauerncheck!!! Nur " + actRekrutierungen + " von " + maxRekrutierungen + " rekrutiert in dieser Runde!");
-					this.doNotConfirmOrders();
+					this.doNotConfirmOrders("Bauerncheck!!! Nur " + actRekrutierungen + " von " + maxRekrutierungen + " rekrutiert in dieser Runde!");
 				} else {
 					this.addComment("Bauerncheck!!! Es wird gut rekrutiert...(" + actRekrutierungen + ")");
 				}
@@ -302,8 +300,7 @@ public class Depot extends TransportScript{
 				if (SilberDepotVorratAlarmAus) {
 					this.addComment("kein Alarm, da SilberDepotVorratAlarmAus aktiviert");
 				} else {
-					this.scriptUnit.doNotConfirmOrders();
-					outText.addOutLine("!!! DepotSilber ungenügend (" + MPR.getBearbeitet() + "/" + MPR.getOriginalGefordert() + "): " + this.unitDesc(),true);
+					this.scriptUnit.doNotConfirmOrders("!!! DepotSilber ungenügend (" + MPR.getBearbeitet() + "/" + MPR.getOriginalGefordert() + "): " + this.unitDesc());
 				}
 			}
 			

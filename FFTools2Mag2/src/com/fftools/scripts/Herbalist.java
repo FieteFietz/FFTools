@@ -106,8 +106,7 @@ public class Herbalist extends MatPoolScript{
 		// Differenz 0-2 - Warnung, noconfirm, nicht mehr MACHEN
 		if (diff <= 2) {
 			this.addOrder("FORSCHEN KRÄUTER", false);
-			this.addComment("WARNUNG: Sehr wenig geerntet. Region prüfen, auf Forschen umgestellt!");
-			this.doNotConfirmOrders();
+			this.doNotConfirmOrders("WARNUNG: Sehr wenig geerntet. Region prüfen, auf Forschen umgestellt!");
 			makeMore = 0;
 		}
 		

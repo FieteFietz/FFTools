@@ -8,12 +8,18 @@ import magellan.library.Region;
 import magellan.library.Unit;
 import magellan.library.utils.Direction;
 import magellan.library.utils.Regions;
+import magellan.library.utils.logging.Logger;
 
+import com.fftools.magellan2.ConnectorPlugin;
 import com.fftools.utils.FFToolsRegions;
 import com.fftools.utils.FFToolsUnits;
 
 public class Sailto extends Script{
 	private static final int Durchlauf = 42;
+	
+	private static final Logger log = Logger.getInstance(Sailto.class);
+	
+	public Region nextShipStop = null;
 	
 	// Parameterloser constructor
 	public Sailto() {
@@ -26,9 +32,7 @@ public class Sailto extends Script{
 		// addOutLine("....start SAILTO mit " + super.getArgCount() + " Argumenten");
 		if (FFToolsUnits.checkShip(this)){
 			if (super.getArgCount()<1) {
-				super.addComment("Das Ziel fehlt beim Aufruf von SAILTO!",true);
-				super.addComment("Unit wurde durch SAILTO NICHT bestaetigt", true);
-				super.scriptUnit.doNotConfirmOrders();
+				super.scriptUnit.doNotConfirmOrders("Das Ziel fehlt beim Aufruf von SAILTO!");
 				addOutLine("X....fehlendes SAILTO Ziel bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 			} else {
 				// wir haben zumindest ein Ziel
@@ -69,16 +73,13 @@ public class Sailto extends Script{
 								}
 				 			} else {
 				 				// irgendetwas beim ersetzen ist schief gegangen
-				 				super.addComment("Fehler beim setzen der nächsten // script SAILTO Anweisung",true);
-				 				super.addComment("Unit wurde durch SAILTO NICHT bestaetigt", true);
-				 				super.scriptUnit.doNotConfirmOrders();
+				 				super.scriptUnit.doNotConfirmOrders("Fehler beim setzen der nächsten // script SAILTO Anweisung");
 				 				addOutLine("X....Fehler beim setzen der nächsten // script SAILTO Anweisung bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 				 			}
 							
 						} else {
 							// das wars...Ziel erreicht und gut
-							super.addComment("SAILTO: Einheit hat Ziel erreicht, daher NICHT bestätigt.",true);
-							super.scriptUnit.doNotConfirmOrders();
+							super.scriptUnit.doNotConfirmOrders("SAILTO: Einheit hat Ziel erreicht, daher NICHT bestätigt.");
 						}
 					} else {
 						// nope, da müssen wir noch hin
@@ -93,17 +94,13 @@ public class Sailto extends Script{
 			}
 		} else {
 			// kein Kaptn oder nicht auf dem schiff
-			super.addComment("Einheit nicht als Kapitän eines Schiffes erkannt.",true);
-			super.addComment("Unit wurde durch SAILTO NICHT bestaetigt", true);
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Einheit nicht als Kapitän eines Schiffes erkannt.");
 			addOutLine("X....Einheit nicht als Kapitän eines Schiffes erkannt: " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 		}
 	}
 	
 	private void zielParseFehler() {
-		super.addComment("Ungueltiges Ziel beim Aufruf von SAILTO!",true);
-		super.addComment("Unit wurde durch SAILTO NICHT bestaetigt", true);
-		super.scriptUnit.doNotConfirmOrders();
+		super.scriptUnit.doNotConfirmOrders("Ungueltiges Ziel beim Aufruf von SAILTO!");
 		addOutLine("X....ungültiges SAILTO Ziel bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 	}
 	
@@ -112,8 +109,7 @@ public class Sailto extends Script{
 		// FF 20070103: eingebauter check, ob es actDest auch gibt?!
 		if (!com.fftools.utils.FFToolsRegions.isInRegions(this.gd_Script.getRegions(), dest)){
 			// Problem  actDest nicht im CR -> abbruch
-			super.addComment("Sailto Ziel nicht im CR",true);
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Sailto Ziel nicht im CR");
 			addOutLine("!!! Sailto Ziel nicht im CR: " + this.unitDesc());
 			return;
 		} 
@@ -141,14 +137,18 @@ public class Sailto extends Script{
 			if (turns_exact!=turns_easy){
 				this.addComment("ETA due ports and land regions in " + turns_exact + " turns.");
 			}
+			this.nextShipStop = FFToolsRegions.nextShipStop;
+			if (this.nextShipStop!=null) {
+				this.addComment("nächster Halt: " + this.nextShipStop.toString());
+			} else {
+				this.addComment("nächster Halt konnte leider nicht bestimmt werden");
+			}
 			// NACH-Order	
 			super.addOrder("NACH " + path, true);
 			super.addComment("Einheit durch SAILTO bestätigt.",true);
 		} else {
 			// path nicht gefunden
-			super.addComment("Einheit durch SAILTO NICHT bestätigt.",true);
-			super.addComment("Es konnte kein Weg gefunden werden.",true);
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Es konnte kein Weg gefunden werden. (SailTo)");
 			addOutLine("X....kein Weg gefunden für " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 		}
 	}

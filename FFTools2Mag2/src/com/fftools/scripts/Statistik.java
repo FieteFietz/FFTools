@@ -44,9 +44,7 @@ public class Statistik extends Script{
 			super.addComment("Statistik...unpassende Anzahl Parameter -> Unit unbestaetigt", true);
 			
 			// Hilfetext
-			this.addComment("Mögliche Statistiken: Requests, Transporter");
-			
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Mögliche Statistiken: Requests, Transporter");
 			return;
 		}
 		

@@ -39,22 +39,19 @@ public class Ifshipok extends Script{
 		// nicht OK, wenn nicht an Bord...
 		Ship s = this.scriptUnit.getUnit().getShip();
 		if (s==null){
-			this.doNotConfirmOrders();
-			this.addComment("!!! IfShipOK macht keinen Sinn, wenn ich nicht an Bord bin!!!");
+			this.doNotConfirmOrders("!!! IfShipOK macht keinen Sinn, wenn ich nicht an Bord bin!!!");
 			return;
 		}
 		
 		// nicht OK, wenn kein Kapitän
 		Unit u = s.getOwnerUnit();
 		if (u==null){
-			this.doNotConfirmOrders();
-			this.addComment("!!! IfShipOK macht keinen Sinn, den das Schiff hat keinen Kapitän!!!");
+			this.doNotConfirmOrders("!!! IfShipOK macht keinen Sinn, den das Schiff hat keinen Kapitän!!!");
 			return;
 		}
 		
 		if (!u.equals(this.scriptUnit.getUnit())){
-			this.doNotConfirmOrders();
-			this.addComment("!!! IfShipOK macht keinen Sinn, wenn ich nicht der Kapitän bin!!!");
+			this.doNotConfirmOrders("!!! IfShipOK macht keinen Sinn, wenn ich nicht der Kapitän bin!!!");
 			return;
 		}
 		
@@ -89,9 +86,7 @@ public class Ifshipok extends Script{
 					// this.addComment("added script order: " + newOrderLine + " (IfShipOK)");
 				} else {
 					// die befehlszeile endet mit dem keyWord script
-					super.addComment("Unerwartetes Ende der Befehlszeile (script)", true);
-					super.addComment("Unit wurde durch ifShipOK NICHT bestaetigt", true);
-					super.scriptUnit.doNotConfirmOrders();
+					super.scriptUnit.doNotConfirmOrders("Unerwartetes Ende der Befehlszeile (script IfShipOK)");
 					addOutLine("X....Unerwartetes Ende der Befehlszeile (IfShipOK,script): " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 				}
 			} else {

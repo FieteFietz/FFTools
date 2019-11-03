@@ -87,7 +87,8 @@ public class tempZupferAction extends MenuAction {
 		tempUnit.addOrder("// script Zupfer");
 		
 		// rekrutieren
-		tempUnit.addOrder("// script Runde " + this.selectionObserver.getClient().getData().getDate().getDate() + " script Rekrutieren 1");
+		tempUnit.addOrder("// script Runde " + this.selectionObserver.getClient().getData().getDate().getDate() + " script Rekrutieren 3");
+		tempUnit.addOrder("Rekrutiere 3");
 
 		this.selectionObserver.getClient().getDispatcher().fire(new TempUnitEvent(this, tempUnit, TempUnitEvent.CREATED));
 	}

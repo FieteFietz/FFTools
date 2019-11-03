@@ -26,7 +26,7 @@ public class Laen extends MatPoolScript{
 	 */
 	private int minTalent = 1;
 	
-	
+	private String LernfixOrder = "Talent=Bergbau";
 	
 	
 	/**
@@ -79,12 +79,11 @@ public class Laen extends MatPoolScript{
 		// pre Check....werde ich im Bergwerk sein
 		Building b = this.scriptUnit.getUnit().getModifiedBuilding();
 		if (b==null || !b.getType().toString().equalsIgnoreCase("Bergwerk")){
-			this.addComment("!!!Laen: ich bin nicht im Bergwerk!!!!");
+			this.doNotConfirmOrders("!!!Laen: ich bin nicht im Bergwerk!!!!");
 			if (!(b==null)){
 				this.addComment("Debug: ich bin nämlich in:" + b.getType().toString());
 			}
 			this.addOrder("Lernen Bergbau", true);
-			this.doNotConfirmOrders();
 			return;
 		}
 		// Eigene Talentstufe ermitteln
@@ -106,27 +105,16 @@ public class Laen extends MatPoolScript{
 			ItemType IT = this.gd_Script.getRules().getItemType("Laen");
 			RegionResource RR = R.getResource(IT);
 			if (RR == null) {
-				this.addComment("Region hat kein Laenvorkommen!!!");
-				this.addComment("Ergänze Lernfix Eintrag mit Talent=Bergbau");
-				// this.addOrder("Lernen Bergbau", true);
-				Script L = new Lernfix();
-				ArrayList<String> order = new ArrayList<String>();
-				order.add("Talent=Bergbau");
-				L.setArguments(order);
-				L.setScriptUnit(this.scriptUnit);
-				L.setGameData(this.gd_Script);
-				if (this.scriptUnit.getScriptMain().client!=null){
-					L.setClient(this.scriptUnit.getScriptMain().client);
-				}
-				this.scriptUnit.addAScript(L);
+				this.addComment("Region hat kein Laenvorkommen!!!, Lerne...");
 				
+				// this.addOrder("Lernen Bergbau", true);
+				this.Lerne();
 				String modeSetting = OP.getOptionString("mode");
 				this.addComment("searching for automode setting, found: " + modeSetting);
 				if (modeSetting.equalsIgnoreCase("auto")){
 					this.addComment("AUTOmode detected....confirmed learning");
 				} else {
-					this.addComment("no AUTOmode detected....pls confirm learning / adjust orders");
-					this.doNotConfirmOrders();
+					this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");
 				}
 			} else {
 				if (RR.getSkillLevel()<=skillLevel) {
@@ -134,35 +122,37 @@ public class Laen extends MatPoolScript{
 					this.addComment("Laen in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
 					this.addOrder("machen Laen ;(script Laen)", true);
 				} else {
-					this.addComment("Laen in der Region bei T" + RR.getSkillLevel() + ", wir bauen NICHT weiter ab, ich kann ja nur T" + skillLevel);
-					this.addComment("Ergänze Lernfix Eintrag mit Talent=Bergbau");
-					// this.addOrder("Lernen Bergbau", true);
-					Script L = new Lernfix();
-					ArrayList<String> order = new ArrayList<String>();
-					order.add("Talent=Bergbau");
-					L.setArguments(order);
-					L.setScriptUnit(this.scriptUnit);
-					L.setGameData(this.gd_Script);
-					if (this.scriptUnit.getScriptMain().client!=null){
-						L.setClient(this.scriptUnit.getScriptMain().client);
-					}
-					this.scriptUnit.addAScript(L);
+					this.addComment("Laen in der Region bei T" + RR.getSkillLevel() + ", wir bauen NICHT weiter ab, ich kann ja nur T" + skillLevel + ", ich lerne");
+					this.Lerne();
 					String modeSetting = OP.getOptionString("mode");
 					this.addComment("searching for automode setting, found: " + modeSetting);
 					if (modeSetting.equalsIgnoreCase("auto")){
 						this.addComment("AUTOmode detected....confirmed learning");
 					} else {
-						this.addComment("no AUTOmode detected....pls confirm learning / adjust orders");
-						this.doNotConfirmOrders();
+						this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");
 					}
 				}
 			}
 		} else {
-			this.addOrder("Lernen Bergbau", true);
 			// this.doNotConfirmOrders();
 			this.addComment("Lerne, weil mindestTalent nicht erreicht (" + this.minTalent + ")");
+			this.Lerne();
 		}
 		
+	}
+	
+	private void Lerne() {
+		this.scriptUnit.addComment("Lernfix wird initialisiert mit dem Parameter: " + this.LernfixOrder);
+		Script L = new Lernfix();
+		ArrayList<String> order = new ArrayList<String>();
+		order.add(this.LernfixOrder);
+		L.setArguments(order);
+		L.setScriptUnit(this.scriptUnit);
+		L.setGameData(this.scriptUnit.getScriptMain().gd_ScriptMain);
+		if (this.scriptUnit.getScriptMain().client!=null){
+			L.setClient(this.scriptUnit.getScriptMain().client);
+		}
+		this.scriptUnit.addAScript(L);
 	}
 
 }

@@ -67,8 +67,7 @@ public class Rekrutieren extends MatPoolScript{
 		// falls kein parameter bzw zu viele
 		if (super.getArgCount()< 1){
 			addOutLine(super.scriptUnit.getUnit().toString(true) + ": Rekrutiere...unpassende Anzahl Parameter");
-			super.addComment("Rekrutiere...unpassende Anzahl Parameter -> Unit unbestaetigt", true);
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Rekrutiere...unpassende Anzahl Parameter -> Unit unbestaetigt");
 			return;
 		}
 		
@@ -89,8 +88,7 @@ public class Rekrutieren extends MatPoolScript{
 			// Hinweis von Argelas 20111114
 			Race orkRace = this.gd_Script.getRules().getRace("Orks",false);
 			if (orkRace==null){
-				this.doNotConfirmOrders();
-				this.addComment("Ork-Rasse nicht in den Regeln gefunden - FFTools braucht ein Update");
+				this.doNotConfirmOrders("Ork-Rasse nicht in den Regeln gefunden - FFTools braucht ein Update");
 			} else {
 				if (ra.equals(orkRace)){
 					anzahl = anzahl*2;
@@ -104,8 +102,7 @@ public class Rekrutieren extends MatPoolScript{
 		}
 		if (anzahl == 0){
 			addOutLine(super.scriptUnit.getUnit().toString(true) + ": Rekrutiere...unpassende Anzahl Rekruten");
-			super.addComment("Rekrutiere...unpassende Anzahl Rekruten -> Unit unbestaetigt", true);
-			super.scriptUnit.doNotConfirmOrders();
+			super.scriptUnit.doNotConfirmOrders("Rekrutiere...unpassende Anzahl Rekruten -> Unit unbestaetigt");
 			return;
 		}
 		
@@ -206,9 +203,8 @@ public class Rekrutieren extends MatPoolScript{
 		if (this.myMPR!=null && this.myMPR.getOriginalGefordert()>0) {
 			int diff = myMPR.getOriginalGefordert() - myMPR.getBearbeitet();
 			if (diff!=0){
-				this.addComment("!!! Rekrut: nicht genügend Silber. " + diff + " Fehlen. (Prio:" + this.rekrutierungskostenPrio + ")");
 				outText.addOutLine("Nicht genügend Silber zum Rekrutieren! " + this.unitDesc(), true);
-				this.scriptUnit.doNotConfirmOrders();
+				this.scriptUnit.doNotConfirmOrders("!!! Rekrut: nicht genügend Silber. " + diff + " Fehlen. (Prio:" + this.rekrutierungskostenPrio + ")");
 			}
 		}
 	}

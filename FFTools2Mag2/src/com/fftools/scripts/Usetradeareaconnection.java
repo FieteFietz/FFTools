@@ -74,28 +74,24 @@ public class Usetradeareaconnection extends TradeAreaScript{
 		// TAC-Name
 		String Name = OP.getOptionString("name");
 		if (Name.length()<2){
-			this.doNotConfirmOrders();
-			this.addComment("!!! setTAC: Name fehlt!!! -> unbestaetigt");
+			this.doNotConfirmOrders("!!! setTAC: Name fehlt!!! -> unbestaetigt");
 			return;
 		}
 		// gibts den namen
 		TradeAreaConnector myTAC = super.getTradeAreaHandler().getTAC(Name);
 		if (myTAC==null){
-			this.addComment("!useTAC gescheitert: so einen TAC gibt es nicht: " + Name);
-			this.doNotConfirmOrders();
+			this.doNotConfirmOrders("!useTAC gescheitert: so einen TAC gibt es nicht: " + Name);
 			return;
 		}
 		if (!myTAC.isValid()){
-			this.addComment("!useTAC gescheitert: der TAC ist ungültig : " + Name);
-			this.doNotConfirmOrders();
+			this.doNotConfirmOrders("!useTAC gescheitert: der TAC ist ungültig : " + Name);
 			return;
 		}
 		
 		// Ware
 		String Ware = OP.getOptionString("Ware");
 		if (Ware.length()<2){
-			this.addComment("!useTAC gescheitert: Ware nicht erkannt : " + Ware);
-			this.doNotConfirmOrders();
+			this.doNotConfirmOrders("!useTAC gescheitert: Ware nicht erkannt : " + Ware);
 			return;
 		}
 		
@@ -104,10 +100,19 @@ public class Usetradeareaconnection extends TradeAreaScript{
 		if (Summe<1){
 			Summe = OP.getOptionInt("Menge",-1);
 			if (Summe<1){
-				this.addComment("!useTAC gescheitert: Summe nicht erkannt : " + Summe);
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("!useTAC gescheitert: Summe/Menge nicht erkannt : " + Summe);
 				return;
 			}
+		}
+		
+		int Bestand = OP.getOptionInt("Bestand",0);
+		if (Bestand==0) {
+			Bestand = Summe;
+		}
+		
+		int Zielbestand = OP.getOptionInt("ZielBestand",0);
+		if (Zielbestand == 0) {
+			Zielbestand = Bestand;
 		}
 		
 		// prio 
@@ -130,7 +135,7 @@ public class Usetradeareaconnection extends TradeAreaScript{
 		boolean useIT = true;
 		// 20161019
 		if (OP.getOptionBoolean("depotAusgleich", false)){
-			this.addComment("Depotausgleich für " + Summe + " " + Ware + " nach " + Name + " erkannt. Prüfe Vorraussetzungen...",false);
+			this.addComment("Depotausgleich für " + Bestand + " " + Ware + " nach " + Name + " erkannt. Prüfe Vorraussetzungen...(ZielDepot muss weniger als " + Zielbestand + "besitzen, maximaler Transport: " + Summe + ")",false);
 			String realWare = FFToolsGameData.translateItemShortform(Ware);
 			if (!realWare.equalsIgnoreCase(Ware)){
 				this.addComment("Name der Ware geändert in: " + realWare,false);
@@ -156,7 +161,7 @@ public class Usetradeareaconnection extends TradeAreaScript{
 					this.addComment("Beim hiesigen Depot " + depotU.toString(true) + " wurden " + AnzahlHier + " " + Ware + " erkannt",false);
 				}
 			}
-			if (AnzahlHier>=Summe){
+			if (AnzahlHier>=Bestand){
 				// checken wir das Gegendepot, dass muss weniger Haben...
 				ScriptUnit gegenSU = myTAC.getSU2(); 
 				if (gegenSU!=null){
@@ -173,15 +178,20 @@ public class Usetradeareaconnection extends TradeAreaScript{
 								Unit depotU2 = depotSU2.getUnit();
 								AnzahlDa = FFToolsUnits.getAmountOfWare(depotSU2, Ware);
 								this.addComment("Beim dortigen Depot " + depotU2.toString(true) + " wurden " + AnzahlDa + " " + Ware + " erkannt",false);
-								if (AnzahlDa<Summe){
+								if (AnzahlDa<Zielbestand){
 									this.addComment("Fazit: depotAusgleich ist aktiv für " + Ware,false);
 									// Summe anpassen?
 									if (AnzahlDa>0){
-										Summe = Summe - AnzahlDa;
-										this.addComment("Menge angepasst auf " + Summe + " Ware.",false);
+										Zielbestand = Zielbestand - AnzahlDa;
+										this.addComment("Menge angepasst auf " + Zielbestand + " " + Ware + " ",false);
 									}
+									if (Zielbestand>Summe) {
+										Zielbestand = Summe;
+										this.addComment("Menge beschränkt auf " + Zielbestand + " " + Ware + ".(Limit pro Schiff)",false);
+									}
+									
 								} else {
-									this.addComment("Fazit: depotAusgleich ist NICHT aktiv für " + Ware,false);
+									this.addComment("Fazit: depotAusgleich ist NICHT aktiv für " + Ware + " (ist gegenüber ausreichend vorrätig)",false);
 									useIT=false;
 								}
 							} else {
@@ -210,7 +220,7 @@ public class Usetradeareaconnection extends TradeAreaScript{
 		if (useIT){
 			TradeArea myTA = this.getTradeArea();
 			// Ergänzen
-			myTAC.addUsage(myTA, Ware, Summe, prio,prioTM);
+			myTAC.addUsage(myTA, Ware, Zielbestand, prio,prioTM);
 		}
 		
 	}

@@ -131,8 +131,7 @@ public class Beschreibung extends Script{
 			if (this.showRunde || this.showTalente){
 				this.addComment("kein weiterer Text zur Beschreibung erkannt.");
 			} else {
-				this.addComment("!!! Beschreibung - kein Text?");
-				this.doNotConfirmOrders();
+				this.doNotConfirmOrders("!!! Beschreibung - kein Text?");
 			}
 		}
 		
@@ -233,8 +232,7 @@ public class Beschreibung extends Script{
 		int anzahl = 0;
 		ItemType itemType = this.gd_Script.rules.getItemType(itemName, false);
 		if (itemType==null){
-			this.doNotConfirmOrders();
-			this.addComment("Beschreibung: " + itemName + " ist unbekannt");
+			this.doNotConfirmOrders("Beschreibung: " + itemName + " ist unbekannt");
 			return itemName + ":?";
 		}
 		

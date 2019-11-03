@@ -43,6 +43,9 @@ public class Steine extends MatPoolScript{
 	 * Drinne Lassen fuer die Instanzierung des Objectes
 	 */
 	
+	
+	private String LernfixOrder = "Talent=Steinbau";
+	
 	public Steine() {
 		super.setRunAt(this.runners);
 	}
@@ -89,7 +92,7 @@ public class Steine extends MatPoolScript{
 		
 		// Eigene Talentstufe ermitteln
 		int skillLevel = 0;
-		SkillType skillType = this.gd_Script.rules.getSkillType("Steinbau", false);
+		SkillType skillType = this.gd_Script.getRules().getSkillType("Steinbau", false);
 		if (skillType!=null){
 			Skill skill = this.scriptUnit.getUnit().getModifiedSkill(skillType);
 			if (skill!=null){
@@ -103,30 +106,19 @@ public class Steine extends MatPoolScript{
 		if (skillLevel>=this.minTalent){
 			// Regionslevel beziehen
 			Region R = this.scriptUnit.getUnit().getRegion();
-			ItemType IT = this.gd_Script.rules.getItemType("Steine");
+			ItemType IT = this.gd_Script.getRules().getItemType("Steine");
 			RegionResource RR = R.getResource(IT);
 			if (RR == null) {
-				this.addComment("Region hat kein Steinvorkommen!!!");
-				this.addComment("Ergänze Lernfix Eintrag mit Talent=Steinbau");
+				this.addComment("Region hat kein Steinvorkommen!!!, Lerne...");
 				// this.addOrder("Lernen Bergbau", true);
-				Script L = new Lernfix();
-				ArrayList<String> order = new ArrayList<String>();
-				order.add("Talent=Steinbau");
-				L.setArguments(order);
-				L.setScriptUnit(this.scriptUnit);
-				L.setGameData(this.gd_Script);
-				if (this.scriptUnit.getScriptMain().client!=null){
-					L.setClient(this.scriptUnit.getScriptMain().client);
-				}
-				this.scriptUnit.addAScript(L);
+				this.Lerne();
 				
 				String modeSetting = OP.getOptionString("mode");
 				this.addComment("searching for automode setting, found: " + modeSetting);
 				if (modeSetting.equalsIgnoreCase("auto")){
 					this.addComment("AUTOmode detected....confirmed learning");
 				} else {
-					this.addComment("no AUTOmode detected....pls confirm learning / adjust orders");
-					this.doNotConfirmOrders();
+					this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");
 				}
 			} else {
 				if (RR.getSkillLevel()<=skillLevel) {
@@ -136,36 +128,23 @@ public class Steine extends MatPoolScript{
 					this.myStandardSkillLevel = skillLevel;
 					this.makeStein=true;
 				} else {
-					this.addComment("Steine in der Region bei T" + RR.getSkillLevel() + ", wir bauen NICHT weiter ab, ich kann ja nur T" + skillLevel);
-					this.addComment("Ergänze Lernfix Eintrag mit Talent=Steinbau");
+					this.addComment("Steine in der Region bei T" + RR.getSkillLevel() + ", wir bauen NICHT weiter ab, ich kann ja nur T" + skillLevel + ", ich lerne");
 					// this.addOrder("Lernen Bergbau", true);
-					Script L = new Lernfix();
-					ArrayList<String> order = new ArrayList<String>();
-					order.add("Talent=Steinbau");
-					L.setArguments(order);
-					L.setScriptUnit(this.scriptUnit);
-					L.setGameData(this.gd_Script);
-					if (this.scriptUnit.getScriptMain().client!=null){
-						L.setClient(this.scriptUnit.getScriptMain().client);
-					}
-					this.scriptUnit.addAScript(L);
+					this.Lerne();
 					String modeSetting = OP.getOptionString("mode");
 					this.addComment("searching for automode setting, found: " + modeSetting);
 					if (modeSetting.equalsIgnoreCase("auto")){
 						this.addComment("AUTOmode detected....confirmed learning");
 					} else {
-						this.addComment("no AUTOmode detected....pls confirm learning / adjust orders");
-						this.doNotConfirmOrders();
+						this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");
 					}
 				}
 			}
 		} else {
-			this.addOrder("Lernen Steinbau", true);
-			// this.doNotConfirmOrders();
 			this.makeStein=false;
 			this.addComment("Lerne, weil mindestTalent nicht erreicht (" + this.minTalent + ")");
+			this.Lerne();
 		}
-		
 	}
 	
 	private void produce(){
@@ -199,7 +178,7 @@ public class Steine extends MatPoolScript{
 		
 		
 		// 20170708: berücksichtigung von RdfF
-		ItemType rdfType=this.gd_Script.rules.getItemType("Ring der flinken Finger",false);
+		ItemType rdfType=this.gd_Script.getRules().getItemType("Ring der flinken Finger",false);
 		if (rdfType!=null){
 			Item rdfItem = this.scriptUnit.getModifiedItem(rdfType);
 			if (rdfItem!=null && rdfItem.getAmount()>0){
@@ -253,6 +232,20 @@ public class Steine extends MatPoolScript{
 		machbareMenge=mengeResult;
 		this.addOrder("machen " + machbareMenge + " Stein ;(script Steine)", true);
 		
+	}
+	
+	private void Lerne() {
+		this.scriptUnit.addComment("Lernfix wird initialisiert mit dem Parameter: " + this.LernfixOrder);
+		Script L = new Lernfix();
+		ArrayList<String> order = new ArrayList<String>();
+		order.add(this.LernfixOrder);
+		L.setArguments(order);
+		L.setScriptUnit(this.scriptUnit);
+		L.setGameData(this.scriptUnit.getScriptMain().gd_ScriptMain);
+		if (this.scriptUnit.getScriptMain().client!=null){
+			L.setClient(this.scriptUnit.getScriptMain().client);
+		}
+		this.scriptUnit.addAScript(L);
 	}
 
 }

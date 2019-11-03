@@ -153,9 +153,10 @@ public class Trankeffekt extends MatPoolScript{
 	public void nachMatPool(int scriptDurchlauf){
 		if (this.myMPR!=null && this.myMPR.getOriginalGefordert()>0){
 			if (this.myMPR.getBearbeitet()<this.myMPR.getOriginalGefordert()){
-				this.addComment("Trank vorrat nicht ausreichend!. (" +  this.trank + ")");
 				if (!this.notSuccessACK) {
-					this.scriptUnit.doNotConfirmOrders();
+					this.scriptUnit.doNotConfirmOrders("Trank vorrat nicht ausreichend!. (" +  this.trank + ")");
+				} else {
+					this.addComment("Trank vorrat nicht ausreichend!. (" +  this.trank + ")");
 				}
 			}
 		}

@@ -47,17 +47,15 @@ public class Abrunde extends Script{
 			sollRunde = Integer.parseInt(rundenString);
 		} catch (NumberFormatException e) {
 			// pech gehabt
-			this.addComment("!!! Fehlerhafte Rundenerkennung bei: " + this.unitDesc());
 			outText.addOutLine("Fehlerhafte Rundenerkennung bei: " + this.unitDesc());
-			this.scriptUnit.doNotConfirmOrders();
+			this.scriptUnit.doNotConfirmOrders("!!! Fehlerhafte Rundenerkennung bei: " + this.unitDesc());
 			return;
 		}
 		
 		if (sollRunde<=0){
 			// pech gehabt
-			this.addComment("!!! Fehlerhafte Rundenerkennung bei: " + this.unitDesc());
 			outText.addOutLine("Fehlerhafte Rundenerkennung bei: " + this.unitDesc());
-			this.scriptUnit.doNotConfirmOrders();
+			this.scriptUnit.doNotConfirmOrders("!!! Fehlerhafte Rundenerkennung bei: " + this.unitDesc());
 			return;
 		}
 		
@@ -90,11 +88,8 @@ public class Abrunde extends Script{
 					
 				} else {
 					// die befehlszeile endet mit dem keyWord script
-					super.addComment("Unerwartetes Ende der Befehlszeile (script)", true);
-					super.addComment("Unit wurde durch abrunde NICHT bestaetigt", true);
-					super.scriptUnit.doNotConfirmOrders();
+					this.scriptUnit.doNotConfirmOrders("Unerwartetes Ende der Befehlszeile (script) | Unit wurde durch abrunde NICHT bestaetigt");
 					addOutLine("X....Unerwartetes Ende der Befehlszeile (abrunde):" + this.unitDesc());
-					this.scriptUnit.doNotConfirmOrders();
 				}
 			} else {
 				// kein scriptbefehl dahinter

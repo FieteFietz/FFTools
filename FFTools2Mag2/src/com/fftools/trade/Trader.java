@@ -7,14 +7,19 @@ import com.fftools.OutTextClass;
 import com.fftools.ReportSettings;
 import com.fftools.ScriptUnit;
 import com.fftools.scripts.Handeln;
+import com.fftools.scripts.Lernfix;
 import com.fftools.scripts.MatPoolScript;
+import com.fftools.scripts.Script;
 import com.fftools.transport.TransportRequest;
 import com.fftools.utils.FFToolsOptionParser;
+import com.fftools.utils.FFToolsRegions;
 
+import magellan.library.Building;
 import magellan.library.Item;
 import magellan.library.Region;
 import magellan.library.Skill;
 import magellan.library.rules.ItemType;
+import magellan.library.rules.Race;
 import magellan.library.rules.SkillType;
 
 /**
@@ -60,6 +65,9 @@ public class Trader {
 	private boolean verkaufen = true;
 	private boolean kaufen = true;
 	private boolean lernen = false;
+	
+	private int warteAufBurgBis=0;
+	private String LernfixOrder = "";
 	
 	private int sellItemRequestPrio = DEFAULT_REQUEST_PRIO;
 	private int silverRequestPrio = DEFAULT_REQUEST_SILBER_PRIO;
@@ -232,6 +240,29 @@ public class Trader {
 		}
 		this.scriptUnit.addComment("parsing OK, DepotSilberRunden=" + this.anzahl_silber_runden);
 		
+		if (OP.getOptionInt("warteAufBurgBis", 0)>0) {
+			this.warteAufBurgBis = OP.getOptionInt("warteAufBurgBis", 0);
+		}
+		if (OP.getOptionInt("waitForTowerUntil", 0)>0) {
+			this.warteAufBurgBis = OP.getOptionInt("waitForTowerUntil", 0);
+		}
+		
+		if (OP.getOptionString("Lernplan")!="") {
+			this.LernfixOrder="Lernplan=" + OP.getOptionString("Lernplan");
+		}
+		
+		if (OP.getOptionString("Talent")!="") {
+			this.LernfixOrder="Talent=" + OP.getOptionString("Talent");
+		}
+		
+		if (OP.getOptionInt("Ziel",0)>0) {
+			this.LernfixOrder+=" Ziel=" + OP.getOptionInt("Ziel",0);
+		}
+		
+		if (this.LernfixOrder==""){
+			this.LernfixOrder="Talent=Handeln";
+		}
+		
 		
 		// Talentcheck
 		int minTalent = OP.getOptionInt("minTalent", 0);
@@ -249,8 +280,9 @@ public class Trader {
 					this.lernen = true;
 					this.verkaufen = false;
 					this.kaufen = false;
-					// ToDo: Lernfix mit Zielangabe
-					this.scriptUnit.addOrder("Lernen Handeln", true);
+					// erledigt ToDo: Lernfix mit Zielangabe
+					// this.scriptUnit.addOrder("Lernen Handeln", true);
+					this.Lerne();
 				} else  {
 					this.scriptUnit.addComment("(mindestTalent ist erfüllt)");
 				}
@@ -261,8 +293,74 @@ public class Trader {
 			this.scriptUnit.addComment("(kein mindestTalent angegeben)");
 		}
 		
+		if (!this.lernen) {
+			// herausfinden, ob in der Region Burg existiert, oder Insekt handelt (in wüsten und sumpf)
+			boolean RegionHatBurg = false;
+			Region r = this.scriptUnit.getUnit().getRegion();
+			Building b = FFToolsRegions.getBiggestCastle(r);
+			if (b!=null) {
+				if (b.getSize()>1) {
+					RegionHatBurg = true;
+				}
+			}
+			if (RegionHatBurg) {
+				this.scriptUnit.addComment("Trader: Burg in der Region vorhanden.");
+			} else {
+				this.scriptUnit.addComment("Trader: keine Burg in der Region vorhanden.");
+				// Auf Rasse der Scriptunit prüfen
+				// Insekten können in Wüsten und Sümpfen auch ohne Burgen handeln.
+				Race race = this.scriptUnit.getUnit().getRace();
+				if (race.getName().equalsIgnoreCase("Insekten")) {
+					this.scriptUnit.addComment("Trader: Insekten erkannt, prüfe Regionstyp.");
+					boolean RegionIstInsektenfreundlich = false;
+					if (r.getRegionType().getName().equalsIgnoreCase("Wüste")) {
+						RegionIstInsektenfreundlich = true;
+					}
+					if (r.getRegionType().getName().equalsIgnoreCase("Sumpf")) {
+						RegionIstInsektenfreundlich = true;
+					}
+					if (RegionIstInsektenfreundlich) {
+						this.scriptUnit.addComment("Trader: in Region können Insekten handeln");
+						RegionHatBurg=true;
+					} else {
+						this.scriptUnit.addComment("Trader: in Region können KEINE Insekten handeln");
+					}
+				}
+			}
+			if (!RegionHatBurg) {
+				this.verkaufen = false;
+				this.kaufen = false;
+				// In der Region kann derzeit nicht gehandelt werden: keine Burg und keine Insekten in Sumpf/Wüste
+				// Verhalten normal: Abbruch des Traders - der soll nicht bestätigt werden
+				// Ausnahme: warteAufBurgBis ist gesetzt, dann Lernen, sogar mit Lernpplan bzw Talent m it Ziel
+				if (this.warteAufBurgBis>this.getScriptUnit().getScriptMain().gd_ScriptMain.getDate().getDate()) {
+					// OK, weiter warten und Lernen
+					this.scriptUnit.addComment("Trader: warten erkannt bis Runde " + this.warteAufBurgBis + ", werde Lernen");
+					this.Lerne();
+					this.lernen=true;
+				} else {
+					// nicht OK...Abbrechen
+					this.scriptUnit.doNotConfirmOrders("!!!Trader: kein Handel möglich, kein Warten konfiguriert: unbestätigt!!!");
+				}
+			}
+		}
 	}
 
+	
+	private void Lerne() {
+		this.scriptUnit.addComment("Lernfix wird initialisiert mit dem Parameter: " + this.LernfixOrder);
+		Script L = new Lernfix();
+		ArrayList<String> order = new ArrayList<String>();
+		order.add(this.LernfixOrder);
+		L.setArguments(order);
+		L.setScriptUnit(this.scriptUnit);
+		L.setGameData(this.scriptUnit.getScriptMain().gd_ScriptMain);
+		if (this.scriptUnit.getScriptMain().client!=null){
+			L.setClient(this.scriptUnit.getScriptMain().client);
+		}
+		this.scriptUnit.addAScript(L);
+	}
+	
 
 	/**
 	 * @return the setAreaName

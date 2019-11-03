@@ -155,9 +155,8 @@ public class Handeln extends TradeAreaScript{
 			// keine Region prices
 			// Meldung wenn er verkaufen oder kaufen sollte..sonst nicht
 			if (this.getTrader().isKaufen() || this.getTrader().isVerkaufen()){
-				super.addComment("keine Preisinfos verfügbar", true);
 				outText.addOutLine("!!!Handeln: keine Preisinfos verfügbar: " + this.unitDesc());
-				super.scriptUnit.doNotConfirmOrders();
+				super.scriptUnit.doNotConfirmOrders("keine Preisinfos verfügbar");
 			}
 		}
 	}
@@ -228,8 +227,7 @@ public class Handeln extends TradeAreaScript{
 					addComment("!! Es gibt keinen Grund, hier etwas einzukaufen!!");
 					kaufMenge=0;
 				} else {
-					addComment("!!unerwartete vorgeschlagene Einkaufsmenge!!");
-					this.scriptUnit.doNotConfirmOrders();
+					this.scriptUnit.doNotConfirmOrders("!!unerwartete vorgeschlagene Einkaufsmenge!!");
 				}
 			}
 			if (this.getTrader().getBuyPolicy() == Trader.trader_buy_Max){
@@ -245,8 +243,7 @@ public class Handeln extends TradeAreaScript{
 					addComment("!! Es gibt keinen Grund, hier etwas einzukaufen!!");
 					kaufMenge=0;
 				} else {
-					addComment("!!unerwartete vorgeschlagene Einkaufsmenge!!");
-					this.scriptUnit.doNotConfirmOrders();
+					this.scriptUnit.doNotConfirmOrders("!!unerwartete vorgeschlagene Einkaufsmenge!!");
 				}
 			}
 			
@@ -376,9 +373,8 @@ public class Handeln extends TradeAreaScript{
 				doSomething=true;
 			} else {
 				// kann gar nix kaufen
-				super.addComment("Kein Silber. Sollkauf: " + this.getTrader().getBuy().getAmount(), true);
 				outText.addOutLine("!!!** Handeln: Kein Kaufsilber: " + this.unitDesc());
-				super.scriptUnit.doNotConfirmOrders();
+				super.scriptUnit.doNotConfirmOrders("Kein Silber. Sollkauf: " + this.getTrader().getBuy().getAmount());
 			}
 		} else {
 			// gehe davon aus, genug Silber zu haben
@@ -416,15 +412,13 @@ public class Handeln extends TradeAreaScript{
 			// Problem
 			if (MPR.getPrio()==this.getTrader().getSilverRequestPrio() && MPR.getBearbeitet()<MPR.getOriginalGefordert()){
 				// max prio und nicht erfüllt ?!
-				this.scriptUnit.doNotConfirmOrders();
-				
 				// TM Info
 				String s2Info = "";
 				if (MPR.getTransportRequest()!=null){
 					s2Info = " (TM: " + MPR.getTransportRequest().getBearbeitet() + " geladen) ";
 				}
 				
-				this.addComment("!!! Händler: DepotSilberWarnung !!!" + s2Info);
+				this.scriptUnit.doNotConfirmOrders("!!! Händler: DepotSilberWarnung !!!" + s2Info);
 				outText.addOutLine("!!! Händler: DepotSilberWarnung: " + s2Info + this.unitDesc(),true);
 			}
 		}

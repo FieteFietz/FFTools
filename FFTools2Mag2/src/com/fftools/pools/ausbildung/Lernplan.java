@@ -64,8 +64,7 @@ public class Lernplan {
 			if (!newLevelOK){
 				// Levelerkennung gescheitert
 				outText.addOutLine("!!! Lernplan: Stufe nicht erkannt! " + u.unitDesc() , true);
-				u.addComment("!!! Lernplan: Stufe nicht erkannt");
-				u.doNotConfirmOrders();
+				u.doNotConfirmOrders("!!! Lernplan: Stufe nicht erkannt");
 			}
 		}
 	}
@@ -91,8 +90,7 @@ public class Lernplan {
 		// check1: überhaupt angegeben
 		if (talentName.length()<2){
 			outText.addOutLine("!!! Lernplan:TalentName nicht erkannt! " + u.unitDesc() , true);
-			u.addComment("!!! Lernplan:TalentName nicht erkannt");
-			u.doNotConfirmOrders();
+			u.doNotConfirmOrders("!!! Lernplan:TalentName nicht erkannt");
 			return;
 		}
 		// check2: Kein SkillType
@@ -105,8 +103,7 @@ public class Lernplan {
 		} else {
 			// Talentname ohne weitere angabe...->fehler
 			outText.addOutLine("!!! Lernplan:Talentzielstufe nicht angegeben! " + u.unitDesc() , true);
-			u.addComment("!!! Lernplan:Talentzielstufe nicht angegeben");
-			u.doNotConfirmOrders();
+			u.doNotConfirmOrders("!!! Lernplan:Talentzielstufe nicht angegeben");
 			return;
 		}
 		// (wie gut dass wir scriptunit haben...link auf Gamedata vorhanden..
@@ -114,8 +111,7 @@ public class Lernplan {
 		if (skillType==null){
 			// skill nicht gefunden -> abbruch
 			outText.addOutLine("!!! Lernplan:Talent unbekannt! " + u.unitDesc() , true);
-			u.addComment("!!! Lernplan:TalentName unbekannt");
-			u.doNotConfirmOrders();
+			u.doNotConfirmOrders("!!! Lernplan:TalentName unbekannt");
 			return;
 		}
 		// OK, alles fein soweit...LernplanTalent finden bzw anlegen

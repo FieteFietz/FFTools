@@ -100,7 +100,7 @@ public class ScriptMain {
 	 * 
 	 */
 	
-	public void addUnit(Unit u){
+	public ScriptUnit addUnit(Unit u){
 		// ist die Map schon angelegt worden?
 		if (scriptUnits == null){
 			scriptUnits = new Hashtable<Unit, ScriptUnit>();
@@ -151,6 +151,8 @@ public class ScriptMain {
 				}
 			}
 		}
+		
+		return new_su;
 		
 	}
 	
@@ -361,7 +363,7 @@ public class ScriptMain {
 							}
 							
 						} else {
-							su.doNotConfirmOrders();
+							su.doNotConfirmOrders("!!! keine Insassen im Gebäude ?!?!?");
 							su.addComment("!!! keine Insassen im Gebäude ?!?!?");
 						}
 					}
@@ -374,6 +376,14 @@ public class ScriptMain {
 		}
 		
 		outText.addOutLine("BEZAHLE NICHT benötigte " + (ufc_end-ufc_start) + " ms.");
+		
+		
+		// doNotConfirmGründe extra ausgeben
+		for (Iterator<ScriptUnit> iter = scriptUnits.values().iterator();iter.hasNext();){
+			ScriptUnit scrU = (ScriptUnit)iter.next();
+			scrU.informDoNotConfirmReason();
+		}
+		
 		
 		outText.addOutLine("setting tags");
 		// finally..tags FF 20070531
@@ -459,7 +469,7 @@ public class ScriptMain {
 		}
 		// Lauf 2
 		// System.out.println("ReadReportSettings 2");
-		outText.addOutLine("ReadReportSettings 2");
+		outText.addOutLine("ReadReportSettings 2 and creating the scripts");
 		for (Iterator<ScriptUnit> iter = scriptUnits.values().iterator();iter.hasNext();){
 			ScriptUnit scrU = (ScriptUnit)iter.next();
 			// auf Handel prüfen (TradeArea bauen)
@@ -559,8 +569,16 @@ public class ScriptMain {
 		
 		
 		// durch die Regionen wandern..
+		boolean isInActualSelectedRegions = true;
+		Client c = this.client;
 		for (Region r:gd_ScriptMain.getRegions()){
 			if (r.getUnits()!=null && r.getUnits().size()>0){
+				isInActualSelectedRegions = true;
+				if (c.getSelectedRegions()!=null && c.getSelectedRegions().size()>0){
+					if (!c.getSelectedRegions().values().contains(r)){
+						isInActualSelectedRegions=false;
+					}
+				}
 				for (Unit u:r.getUnits().values()){
 					boolean ignore = false;
 					if (this.ignoreList != null){	
@@ -574,8 +592,9 @@ public class ScriptMain {
 					
 					
 					if (!ignore && ScriptUnit.isScriptUnit(u)){
-						this.addUnit(u);
+						ScriptUnit su = this.addUnit(u);
 						this.setFactionTrustlevel(u.getFaction());
+						su.setInClientSelectedRegions(isInActualSelectedRegions);
 					}
 				}
 			}
