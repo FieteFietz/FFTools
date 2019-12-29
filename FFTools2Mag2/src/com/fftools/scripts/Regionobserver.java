@@ -48,6 +48,10 @@ public class Regionobserver extends MatPoolScript{
 	// Falls Waffe explizit angegeben werden soll
 	private String WaffenName="";
 	
+	// 20191112, Wunsch Zarox
+	// wenn enemy da ist, weiter bewachen
+	private boolean GuardIfEnemey = false;
+	
 	/**
 	 * Parameterloser Constructor
 	 * Drinne Lassen fuer die Instanzierung des Objectes
@@ -273,6 +277,10 @@ public class Regionobserver extends MatPoolScript{
 		// TODO oben: Lernplan für "Volks-Waffentalent" ermöglichen (Halbling=Armbrust,
 		//		Troll=Hiebwaffen, Insekt=Stangenwaffen, usw.
 		
+		// sollen wir weiter bewachen ?
+		this.GuardIfEnemey = OP.getOptionBoolean("GuardIfEnemy", false);
+		
+		
 	}
 	
 	
@@ -307,10 +315,16 @@ public class Regionobserver extends MatPoolScript{
 			}
 		// Nicht alle Einheiten vertrauenswürdig? Volle Deckung...
 		} else {
+			
 			if (this.scriptUnit.getUnit().getGuard()>0) {
-				this.scriptUnit.addOrder("BEWACHEN NICHT", false);
-				this.scriptUnit.addOrder("KÄMPFE FLIEHE", false);
+				if (!this.GuardIfEnemey) {
+					this.scriptUnit.addOrder("BEWACHEN NICHT", false);
+					this.scriptUnit.addOrder("KÄMPFE FLIEHE", false);
+				} else {
+					this.addComment("RegionObserver: Obwohl mir mulmig ist, werde ich nicht weichen! (Option GuardIfEnemy ist aktiv)");
+				}
 			}
+			
 		}
 	}
 	

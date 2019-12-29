@@ -79,6 +79,7 @@ public class Steine extends MatPoolScript{
 	 * bis die Talentstufe nicht mehr ausreicht
 	 */
 	private void start(){
+		super.addVersionInfo();
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Steine");
 		
 		int unitMinTalent = OP.getOptionInt("minTalent", -1);
@@ -108,32 +109,36 @@ public class Steine extends MatPoolScript{
 			Region R = this.scriptUnit.getUnit().getRegion();
 			ItemType IT = this.gd_Script.getRules().getItemType("Steine");
 			RegionResource RR = R.getResource(IT);
+			String modeSetting = OP.getOptionString("mode");
+			this.addComment("searching for automode setting, found: " + modeSetting);
 			if (RR == null) {
 				this.addComment("Region hat kein Steinvorkommen!!!, Lerne...");
 				// this.addOrder("Lernen Bergbau", true);
 				this.Lerne();
-				
-				String modeSetting = OP.getOptionString("mode");
-				this.addComment("searching for automode setting, found: " + modeSetting);
-				if (modeSetting.equalsIgnoreCase("auto")){
+				if (modeSetting.equalsIgnoreCase("auto") || modeSetting.equalsIgnoreCase("search")){
 					this.addComment("AUTOmode detected....confirmed learning");
 				} else {
 					this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");
 				}
 			} else {
 				if (RR.getSkillLevel()<=skillLevel) {
-					// weiter machen
-					this.addComment("Steine in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
-					// this.addOrder("machen Stein ;(script Steine)", true);
-					this.myStandardSkillLevel = skillLevel;
-					this.makeStein=true;
+					if (modeSetting.equalsIgnoreCase("search")) {
+						// erforschung abgeschlossen - abbrechen
+						this.addComment("Steine in der Region bei T" + RR.getSkillLevel() + ", wir brechen die Suche ab.");
+						this.doNotConfirmOrders("Steinlevel erforscht, Suche abgebrochen");
+						this.makeStein=false;
+					} else {
+						// weiter machen
+						this.addComment("Steine in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
+						// this.addOrder("machen Stein ;(script Steine)", true);
+						this.myStandardSkillLevel = skillLevel;
+						this.makeStein=true;
+					}
 				} else {
 					this.addComment("Steine in der Region bei T" + RR.getSkillLevel() + ", wir bauen NICHT weiter ab, ich kann ja nur T" + skillLevel + ", ich lerne");
 					// this.addOrder("Lernen Bergbau", true);
 					this.Lerne();
-					String modeSetting = OP.getOptionString("mode");
-					this.addComment("searching for automode setting, found: " + modeSetting);
-					if (modeSetting.equalsIgnoreCase("auto")){
+					if (modeSetting.equalsIgnoreCase("auto") || modeSetting.equalsIgnoreCase("search")){
 						this.addComment("AUTOmode detected....confirmed learning");
 					} else {
 						this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");

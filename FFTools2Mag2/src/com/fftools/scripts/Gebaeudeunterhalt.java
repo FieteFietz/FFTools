@@ -190,6 +190,7 @@ public class Gebaeudeunterhalt extends MatPoolScript{
 			// fuck, war es wenigstens ein weit zukünftiges?
 			if(_mpr.getId()<=(this.mindestVersorgungsRunden)){
 				super.scriptUnit.doNotConfirmOrders("Gebäudeunterhalt nicht erfüllt!" + " Es fehlen " +(_mpr.getOriginalGefordert()-_mpr.getBearbeitet())+ " " +_mpr.getOriginalGegenstand() +" für Gebäude in Runde " +(this.aktuelleRunde+_mpr.getId()-1) );
+				this.scriptUnit.unterhaltProblem=true;
 			}
 		}	
 	} 

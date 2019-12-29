@@ -12,13 +12,14 @@ import com.fftools.OutTextClass;
 import com.fftools.ReportSettings;
 import com.fftools.ScriptUnit;
 import com.fftools.pools.circus.CircusPool;
+import com.fftools.pools.circus.CircusPoolRelation;
 import com.fftools.trade.TradeArea;
 import com.fftools.trade.Trader;
 
 
 /**
- * Klasse die Unterhalter einer Region koordiniert und selbst 
- * von CircusPoolManager verwaltet wird
+ * Klasse die Treiber einer Region koordiniert und selbst 
+ * von TreiberPoolManager verwaltet wird
  * @author Marc
  *
  */
@@ -191,7 +192,7 @@ public class TreiberPool {
 			     
 			     // Check: Noch Silber zu verdienen AND Verdienst geringer als Restsilber?
 			     if ((remainingTreiben > 0) && (cpr.getVerdienst()<= remainingTreiben)){
-			    	 // Unterhalte soviel wie geht!
+			    	 // Treibe soviel wie geht!
 			    	 cpr.setDoTreiben(cpr.getVerdienst());
 			    	 regionsVerdienst = regionsVerdienst + cpr.getVerdienst();
 			    	 // Freies Silber reduzieren um Unterhalungsvermögen der Einheit 
@@ -465,6 +466,13 @@ public void addKeplerInfo(ScriptUnit sc) {
 	for (String s:this.keplerInfo){
 		sc.addComment(s);
 	}
+}
+
+/**
+ * @return the listOfRelations
+ */
+public ArrayList<TreiberPoolRelation> getListOfRelations() {
+	return listOfRelations;
 }
 
 }

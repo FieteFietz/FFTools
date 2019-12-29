@@ -106,13 +106,10 @@ public class Usetradeareaconnection extends TradeAreaScript{
 		}
 		
 		int Bestand = OP.getOptionInt("Bestand",0);
-		if (Bestand==0) {
-			Bestand = Summe;
-		}
 		
 		int Zielbestand = OP.getOptionInt("ZielBestand",0);
 		if (Zielbestand == 0) {
-			Zielbestand = Bestand;
+			Zielbestand = Summe;
 		}
 		
 		// prio 
@@ -135,7 +132,7 @@ public class Usetradeareaconnection extends TradeAreaScript{
 		boolean useIT = true;
 		// 20161019
 		if (OP.getOptionBoolean("depotAusgleich", false)){
-			this.addComment("Depotausgleich für " + Bestand + " " + Ware + " nach " + Name + " erkannt. Prüfe Vorraussetzungen...(ZielDepot muss weniger als " + Zielbestand + "besitzen, maximaler Transport: " + Summe + ")",false);
+			this.addComment("Depotausgleich für " + Zielbestand + " " + Ware + " nach " + Name + " erkannt. Prüfe Vorraussetzungen...(ZielDepot muss weniger als " + Zielbestand + "besitzen, maximaler Transport: " + Summe + ", nur wenn mehr als " + Bestand + " vorrätig)",false);
 			String realWare = FFToolsGameData.translateItemShortform(Ware);
 			if (!realWare.equalsIgnoreCase(Ware)){
 				this.addComment("Name der Ware geändert in: " + realWare,false);
@@ -189,6 +186,12 @@ public class Usetradeareaconnection extends TradeAreaScript{
 										Zielbestand = Summe;
 										this.addComment("Menge beschränkt auf " + Zielbestand + " " + Ware + ".(Limit pro Schiff)",false);
 									}
+									// Den Bestand aber hier lassen
+									Zielbestand -= Bestand;
+									if (Zielbestand<0) {
+										Zielbestand = 0;
+									}
+									this.addComment("Menge reduziert auf " + Zielbestand + " " + Ware + ".(Bestand von " + Ware + " verbleibt hier)",false);
 									
 								} else {
 									this.addComment("Fazit: depotAusgleich ist NICHT aktiv für " + Ware + " (ist gegenüber ausreichend vorrätig)",false);

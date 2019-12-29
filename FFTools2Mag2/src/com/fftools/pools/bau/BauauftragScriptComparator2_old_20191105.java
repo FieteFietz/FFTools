@@ -13,7 +13,7 @@ import com.fftools.utils.GotoInfo;
  * @author Fiete
  *
  */
-public class BauauftragScriptComparator implements Comparator<Bauen> {
+public class BauauftragScriptComparator2_old_20191105 implements Comparator<Bauen> {
 	
 	private Region targetRegion;
 	private int level=1;
@@ -22,7 +22,7 @@ public class BauauftragScriptComparator implements Comparator<Bauen> {
 	
 	
 	
-	public BauauftragScriptComparator(Region r, int _level,String _talentName, int _builtSize){
+	public BauauftragScriptComparator2_old_20191105(Region r, int _level,String _talentName, int _builtSize){
 		this.targetRegion = r;
 		this.level=_level;
 		this.builtSize=_builtSize;
@@ -36,7 +36,6 @@ public class BauauftragScriptComparator implements Comparator<Bauen> {
 		int wert1 = 1000;
 		int wert2 = 1000;
 		
-		// 20191105: zuerst *nur* nach Entfernung gehen.
 		
 		// Berechnung: zurückzulegender Weg + Bauzeit
 		if (targetRegion.equals(b1.scriptUnit.getUnit().getRegion())){
@@ -51,9 +50,36 @@ public class BauauftragScriptComparator implements Comparator<Bauen> {
 			GotoInfo gI2 = FFToolsRegions.makeOrderNACH(b2.scriptUnit, targetRegion.getCoordinate() ,b2.scriptUnit.getUnit().getRegion().getCoordinate(), false,"BauauftragScriptComp");
 			wert2 = gI2.getAnzRunden();
 		}
+
 		
-		int erg = wert1 - wert2;
+		// Bauzeit
+		// double tp1 = Math.ceil(b1.scriptUnit.getSkillLevel(this.talentName)/this.level);
+		// double tp2 = Math.ceil(b2.scriptUnit.getSkillLevel(this.talentName)/this.level);
 		
+		double neededTP = this.builtSize * this.level;
+		double availTP1 = b1.scriptUnit.getSkillLevel(this.talentName);
+		double availTP2 = b2.scriptUnit.getSkillLevel(this.talentName);
+		double persons1 = b1.scriptUnit.getUnit().getModifiedPersons();
+		double persons2 = b2.scriptUnit.getUnit().getModifiedPersons();
+		availTP1 = availTP1 * persons1;
+		availTP2 = availTP2 * persons2;
+		double tp1 = Math.ceil(neededTP/availTP1);
+		double tp2 = Math.ceil(neededTP/availTP2);
+		
+		tp1 += wert1;
+		tp2 += wert2;
+		
+		if (tp1==tp2 && ((wert1 + wert2)>0)){
+			// Bei Gleichheit den wählen, der in der Region ist
+			if (wert1==0){
+				// der erste ist in der gleichen region
+				tp1-=1;
+			}
+			if (wert2==0){
+				tp2-=1;			
+			}
+		}
+		int erg = (int) Math.round((tp1-tp2));
 		if (erg==0){
 			// bei immer noch gleichheit
 			// der mit der grösseren Talentanzahl

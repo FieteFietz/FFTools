@@ -1,8 +1,12 @@
 package com.fftools.pools.treiber;
 
-import magellan.library.rules.SkillType;
-
 import com.fftools.ScriptUnit;
+import com.fftools.scripts.Treiben;
+import com.fftools.utils.FFToolsRegions;
+import com.fftools.utils.GotoInfo;
+
+import magellan.library.Region;
+import magellan.library.rules.SkillType;
 
 /**
  * Klasse die Auskunft über die Treiberqualitäten einer ScriptUnit gibt
@@ -19,11 +23,14 @@ public class TreiberPoolRelation implements Comparable<TreiberPoolRelation> {
 	
 	// Welche ScriptUnit bietet sich als Treiber an?
 	private ScriptUnit scriptUnit=null;
+	private Treiben treiben=null;
 	
 	// Welcher TreiberPool ist für die Relation zuständig?
 	private TreiberPool treiberPool;
 	
-	// Daten zur Einheit selbst, die für das Unterhalten wichtig sind
+	
+	
+	// Daten zur Einheit selbst, die für das Treiben wichtig sind
 	
 	private int talentStufe =0;
 	private int personenZahl =0;
@@ -31,15 +38,21 @@ public class TreiberPoolRelation implements Comparable<TreiberPoolRelation> {
 	private int proKopfVerdienst=0; 
 	private int doTreiben = 250000;
 	
+	// hilfsvariabkle zum Vergleichen von Entfernungen
+	private int dist = -1;
+	private GotoInfo gotoInfo = null;
 	
-	public TreiberPoolRelation(ScriptUnit _su, TreiberPool _cp){
-		scriptUnit = _su;
+	
+	public TreiberPoolRelation(Treiben _tu, TreiberPool _cp){
+		this.treiben = _tu;
+		scriptUnit = _tu.scriptUnit;
+		
 		treiberPool = _cp;
 		// FF 20070413 geändert auf modified persons
 		personenZahl = scriptUnit.getUnit().getModifiedPersons();
 		
 		// Skilltype zu "Treiben" besorgen
-		SkillType treibenSkillType =  treiberPool.treiberPoolManager.scriptMain.gd_ScriptMain.rules.getSkillType("Steuereintreiben");
+		SkillType treibenSkillType =  treiberPool.treiberPoolManager.scriptMain.gd_ScriptMain.getRules().getSkillType("Steuereintreiben");
 		
 		// kann die Einheit treiben? Falls nicht kommt null zurück.
 		if (scriptUnit.getUnit().getSkill(treibenSkillType) != null){
@@ -120,4 +133,21 @@ public class TreiberPoolRelation implements Comparable<TreiberPoolRelation> {
 	public void setPersonenZahl(int personenZahl) {
 		this.personenZahl = personenZahl;
 	}
+
+
+	public Treiben getTreiben() {
+		return treiben;
+	}
+	
+	// setzt den dest wert auf die entfernung zur Region "to"
+	public void setDistToRegion(Region to){
+		this.gotoInfo = FFToolsRegions.makeOrderNACH(this.treiben.scriptUnit, this.treiben.scriptUnit.getUnit().getRegion().getCoordinate(), to.getCoordinate(), false,"TreiberPoolRelation");
+		this.dist = this.gotoInfo.getAnzRunden();
+	}
+
+
+	public int getDist() {
+		return dist;
+	}
+	
 }

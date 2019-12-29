@@ -82,7 +82,7 @@ public class Eisen extends MatPoolScript{
 	 * bis die Talentstufe nicht mehr ausreicht
 	 */
 	private void start(){
-		
+		super.addVersionInfo();
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Eisen");
 		int unitMinTalent = OP.getOptionInt("minTalent", -1);
 		if (unitMinTalent>this.minTalent){
@@ -111,6 +111,8 @@ public class Eisen extends MatPoolScript{
 			Region R = this.scriptUnit.getUnit().getRegion();
 			ItemType IT = this.gd_Script.getRules().getItemType("Eisen");
 			RegionResource RR = R.getResource(IT);
+			String modeSetting = OP.getOptionString("mode");
+			this.addComment("searching for automode setting, found: " + modeSetting);
 			if (RR == null) {
 				this.addComment("Region hat kein Eisenvorkommen!!!");
 				this.addComment("Ergänze Lernfix Eintrag mit Talent=Bergbau");
@@ -126,34 +128,56 @@ public class Eisen extends MatPoolScript{
 				}
 				this.scriptUnit.addAScript(L);
 				
-				String modeSetting = OP.getOptionString("mode");
-				this.addComment("searching for automode setting, found: " + modeSetting);
-				if (modeSetting.equalsIgnoreCase("auto")){
+				
+				if (modeSetting.equalsIgnoreCase("auto") || modeSetting.equalsIgnoreCase("search")){
 					this.addComment("AUTOmode detected....confirmed learning");
 				} else {
 					this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");
 				}
 			} else {
 				if (RR.getSkillLevel()<=skillLevel) {
-					// weiter machen
-					this.addComment("Eisen in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
-					this.makeEisen=true;
-					this.myStandardSkillLevel = skillLevel;
-					
+					if (modeSetting.equalsIgnoreCase("search")) {
+						// erforschung abgeschlossen - abbrechen
+						this.addComment("Eisen in der Region bei T" + RR.getSkillLevel() + ", wir brechen die Suche ab.");
+						this.doNotConfirmOrders("Eisenlevel erforscht, Suche abgebrochen");
+						this.makeEisen=false;
+					} else {
+						// weiter machen
+						this.addComment("Eisen in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
+						this.makeEisen=true;
+						this.myStandardSkillLevel = skillLevel;
+					}
 				} else {
 					this.addComment("Eisen in der Region bei T" + RR.getSkillLevel() + ", wir bauen NICHT weiter ab, ich kann ja nur T" + skillLevel);
 					this.addComment("Ergänze Lernfix Eintrag mit Talent=Bergbau");
 					// this.addOrder("Lernen Bergbau", true);
 					this.Lerne();
-					String modeSetting = OP.getOptionString("mode");
-					this.addComment("searching for automode setting, found: " + modeSetting);
-					if (modeSetting.equalsIgnoreCase("auto")){
+					if (modeSetting.equalsIgnoreCase("auto") || modeSetting.equalsIgnoreCase("search")){
 						this.addComment("AUTOmode detected....confirmed learning");
 					} else {
 						this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");
 					}
 				}
 			}
+			
+			// Sondereinschub - wir sind auf search und treffen auf Laen statt Eisen
+			if (modeSetting.equalsIgnoreCase("search")) {
+				// kurzer Check, ob wir Laen sehen
+				IT = this.gd_Script.getRules().getItemType("Laen");
+				RR = R.getResource(IT);
+				if (RR!=null) {
+					if (RR.getSkillLevel()<=skillLevel) {
+						this.addComment("!!!Laen!!! in der Region bei T" + RR.getSkillLevel() + ", wir brechen die Suche ab.");
+						this.doNotConfirmOrders("Laen gefunden, Suche abgebrochen");
+						this.makeEisen=false;
+					} else {
+						this.addComment("search: Laen hier auf höherem Niveau.");
+					}
+				} else {
+					this.addComment("search: kein Laen hier bekannt.");
+				}
+			}
+			
 		} else {
 			this.Lerne();
 			// this.doNotConfirmOrders();
@@ -217,11 +241,11 @@ public class Eisen extends MatPoolScript{
 			this.addComment("Eisen: RdfF ist noch völlig unbekannt.");
 		}
 		
-		int Teiler=2;
-		// wenn Rasse = Zwerge, dann auf 3 / 5 gehen
+		int Teiler=1;
+		// wenn Rasse = Zwerge, dann auf 10 / 5 gehen
 		if (this.scriptUnit.getUnit().getRace().getName().equalsIgnoreCase("Zwerge")){
 			if (isInBergwerk){
-				Teiler = 3;
+				Teiler = 10;  // 0.3 mal Produktionsmenge wird vom Vorrat abgezogen, nur bei X x 10 ohne Verlust
 				addComment("Zwerg im Bergwerk erkannt, versuche Produktionsmenge zu ermitteln, die durch " + Teiler + " teilbar ist.");
 			} else {
 				Teiler = 5;
@@ -236,7 +260,13 @@ public class Eisen extends MatPoolScript{
 			addComment("Anpassung auf gut teilbare Produktionsmenge erfolgt, Änderung von " + machbareMenge + " auf " + mengeResult);
 		}
 		machbareMenge=mengeResult;
-		this.addOrder("machen " + machbareMenge + " Eisen ;(script Eisen)", true);
+		if (machbareMenge>0) {
+			this.addOrder("machen " + machbareMenge + " Eisen ;(script Eisen)", true);
+		} else {
+			this.addComment("daraus folgt -> ich Lerne, leider ohne Lernpool, dafür ist es jetzt zu spät..");
+			this.makeEisen=false;
+			this.addOrder("Lerne Bergbau ;(script Eisen)", true);
+		}
 	}
 	
 	private void Lerne() {

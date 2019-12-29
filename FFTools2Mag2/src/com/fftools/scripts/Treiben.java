@@ -2,16 +2,21 @@ package com.fftools.scripts;
 
 import java.util.ArrayList;
 
-import magellan.library.Skill;
-import magellan.library.rules.ItemType;
-import magellan.library.rules.SkillType;
-
 import com.fftools.ReportSettings;
+import com.fftools.pools.ausbildung.AusbildungsPool;
+import com.fftools.pools.ausbildung.relations.AusbildungsRelation;
 import com.fftools.pools.matpool.MatPool;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.pools.treiber.TreiberPool;
 import com.fftools.pools.treiber.TreiberPoolRelation;
 import com.fftools.utils.FFToolsOptionParser;
+import com.fftools.utils.FFToolsRegions;
+import com.fftools.utils.GotoInfo;
+
+import magellan.library.Region;
+import magellan.library.Skill;
+import magellan.library.rules.ItemType;
+import magellan.library.rules.SkillType;
 
 /**
  * 
@@ -62,6 +67,18 @@ public class Treiben extends TransportScript{
 	private boolean unitIsLearning = false;
 	
 	private String UnterBeschäftigung="Treiben";
+	
+	private String LernplanName = null;
+	private AusbildungsPool ausbildungsPool=null;
+	
+	private String WaffenTalent = null;
+	
+	// wird per parameter gesetzt
+	private boolean automode = false;
+	
+	// WENN in AutoMode UND soll in andere Region, dann hier das Ziel
+	private Region targetRegion = null;
+	private GotoInfo gotoInfo = null;
 	
 	// Konstruktor
 	public Treiben() {
@@ -124,10 +141,10 @@ public void runScript(int scriptDurchlauf){
 		}
 		
 		
-		// FF: eventuell hier setting für die Region ansetzen....falls nötig
+		
 		
 		// skillType holen!
-		SkillType skillType = super.gd_Script.rules.getSkillType("Steuereintreiben");
+		SkillType skillType = super.gd_Script.getRules().getSkillType("Steuereintreiben");
 		
 		// Kann die Einheit das Talent Treiben?
 		skill = super.scriptUnit.getUnit().getModifiedSkill(skillType);
@@ -189,7 +206,7 @@ public void runScript(int scriptDurchlauf){
 				}
 				
 				treiberPoolRelation.setPersonenZahl(waffenanzahl);
-				if (waffenanzahl<=0){
+				if (waffenanzahl<=0 && !this.unitIsLearning){
 					this.addOrder("LERNEN Steuereintreiben", true);
 					this.doNotConfirmOrders("Keine Waffen für Treiber gefunden.");
 					this.noWeapons=true;
@@ -285,14 +302,20 @@ public void runScript(int scriptDurchlauf){
 				
 			} else {
 				// zu schlecht => lernen
-				this.lerneTalent("Mindesttalentwert " + mindestTalent + " unterschritten");
-				this.unitIsLearning=true;
+				if (!this.unitIsLearning) {
+					this.lerneTalent("Mindesttalentwert Treiben " + mindestTalent + " unterschritten");
+					this.unitIsLearning=true;
+				}
 			}
 			
 		} else {
 			// Einheit kann garnicht Treiben!
-			this.lerneTalent("Mindesttalentwert " + mindestTalent + " unterschritten (Keine Fähigkeit gefunden)");
-			this.unitIsLearning=true;
+			
+			if (!this.unitIsLearning) {
+				this.lerneTalent("Mindesttalentwert " + mindestTalent + " unterschritten (Keine Fähigkeit gefunden)");
+			} else {
+				this.addComment("Mindesttalentwert Treiben " + mindestTalent + " unterschritten (Keine Fähigkeit gefunden), Einheit lernt aber bereits.");
+			}
 		}	
 	}	
 	
@@ -304,7 +327,7 @@ public void runScript(int scriptDurchlauf){
 		
         //		 Hurra! Ein Kandidat für den TreiberPool! Aber welcher ist zuständig?
 		// Registrieren läuft gleich mit durch Manager
-		treiberPool = super.scriptUnit.getScriptMain().getOverlord().getTreiberPoolManager().getTreiberPool(super.scriptUnit);
+		treiberPool = super.scriptUnit.getScriptMain().getOverlord().getTreiberPoolManager().getTreiberPool(this);
 					
 		// Relation gleich mal referenzieren für später.
 		treiberPoolRelation = treiberPool.getTreiberPoolRelation(super.scriptUnit);
@@ -316,6 +339,32 @@ public void runScript(int scriptDurchlauf){
 			this.WaffenPrio = OP.getOptionInt("WaffenPrio", this.WaffenPrio);
 			this.addComment("Waffenprio gesetzt auf: " + this.WaffenPrio);
 		}
+		
+		// FF: eventuell hier setting für die Region ansetzen....falls nötig
+		this.LernplanName = OP.getOptionString("LernPlan");
+		
+		// WaffenTalent
+		this.WaffenTalent = OP.getOptionString("WaffenTalent");
+		
+		if (OP.getOptionString("mode").equalsIgnoreCase("auto")){
+			this.automode = true;
+		}
+
+		// 20191210: Talentlevel zur Prio addieren
+		// skillType holen!
+		SkillType skillType = super.gd_Script.getRules().getSkillType("Steuereintreiben");
+		
+		// Kann die Einheit das Talent Treiben?
+		skill = super.scriptUnit.getUnit().getModifiedSkill(skillType);
+		if (skill!= null) {
+			
+			// Einheit kann Treiben ABER lohnt es sich? MindestTalent prüfen!
+			if (skill.getLevel() > 0){
+				this.WaffenPrio += skill.getLevel();
+				this.addComment("Waffenprio um Talentlevel (Steuereintreiben) erhöht auf " + this.WaffenPrio);
+			}
+		}
+		
 		int newFaktor = OP.getOptionInt("Faktor_Silberbestand_Region", -1);
 		if (newFaktor>0){
 			this.treiberPool.setFaktor_silberbestand_region(newFaktor);
@@ -372,7 +421,7 @@ public void runScript(int scriptDurchlauf){
 				boolean didSomething = false;
 				for (int i = 0;i<this.talentNamen.length;i++){
 					String actName = this.talentNamen[i];
-					SkillType actSkillType = this.gd_Script.rules.getSkillType(actName);
+					SkillType actSkillType = this.gd_Script.getRules().getSkillType(actName);
 					if (actSkillType!=null){
 						Skill actSkill = this.scriptUnit.getUnit().getModifiedSkill(actSkillType);
 						if (actSkill!=null && actSkill.getLevel()>0){
@@ -407,6 +456,30 @@ public void runScript(int scriptDurchlauf){
 			}
 		} else {
 			this.addComment("Treiben: keine weiteren Waffen angefordert - anderweitig genügend angefordert");
+		}
+		
+		if (this.WaffenTalent!=null && this.WaffenTalent!="") {
+			// skillType holen!
+			SkillType skillTypeWT = super.gd_Script.getRules().getSkillType(this.WaffenTalent);
+			if (skillTypeWT!=null) {
+				// Kann die Einheit das Talent Treiben?
+				skill = super.scriptUnit.getUnit().getModifiedSkill(skillTypeWT);
+				boolean skillOK = false;
+				if (skill!= null) {
+					// Einheit kann kämpfen?!
+					if (skill.getLevel() >= 1){
+						skillOK = true;
+					}
+				}
+				if (!skillOK) {
+					// wir müssen lernen
+					this.addComment("Einheit beherrscht angegebenes Waffentalent nicht - dies wird nun gelernt!");
+					this.unitIsLearning=true;
+					this.lerneTalent(skillTypeWT, false);
+				}
+			} else {
+				this.doNotConfirmOrders("Angegebenes WaffenTalent unbekannt!");
+			}
 		}
 	}
 	
@@ -453,44 +526,66 @@ public void runScript(int scriptDurchlauf){
 				// FF: ?!? mögliches Risiko: ist sicher, das Relation != null ?
 				
 				if (treiberPoolRelation.getVerdienst() > treiberPoolRelation.getDoTreiben()){
-					
-					// Negativ wäre ein überzähliger Unterhalter!
-					if (treiberPoolRelation.getDoTreiben() < 0 ){
-						this.lerneTalent("Warnung: Überzählige Treiber Einheit!");
-						if (!this.confirmIfunemployed){
-							super.scriptUnit.doNotConfirmOrders("Warnung: Überzählige Treiber Einheit!");
-						} 
-					} else{
-						
-						// postiv aber nicht ausgelastet!
-						super.addComment("Warnung: Einheit ist NICHT ausgelastet!");
-						super.addComment("" + Math.round((treiberPoolRelation.getVerdienst()-treiberPoolRelation.getDoTreiben())/treiberPoolRelation.getProKopfVerdienst()) + " Treiber überflüssig");
-						double auslastung = ((double)treiberPoolRelation.getDoTreiben()/(double)treiberPoolRelation.getVerdienst());
-						
-						// unter 90% auslastung unbestätigt. 
-						if ( auslastung < ((double)this.mindestAuslastung/100)){
+					if (!this.automode || this.targetRegion==null) {
+						// Negativ wäre ein überzähliger Unterhalter!
+						if (this.automode) {
+							this.addComment("Treiber im AutoMode, aber keine Zielregion zugeordnet.");
+						}
+						if (treiberPoolRelation.getDoTreiben() < 0 ){
+							this.lerneTalent("Warnung: Überzählige Treiber Einheit!");
+							if (!this.confirmIfunemployed){
+								super.scriptUnit.doNotConfirmOrders("Warnung: Überzählige Treiber Einheit!");
+							} 
+						} else{
 							
-							if (this.UnterBeschäftigung.equalsIgnoreCase("Treiben")) {
+							// postiv aber nicht ausgelastet!
+							super.addComment("Warnung: Einheit ist NICHT ausgelastet!");
+							super.addComment("" + Math.round((treiberPoolRelation.getVerdienst()-treiberPoolRelation.getDoTreiben())/treiberPoolRelation.getProKopfVerdienst()) + " Treiber überflüssig");
+							double auslastung = ((double)treiberPoolRelation.getDoTreiben()/(double)treiberPoolRelation.getVerdienst());
+							
+							// unter 90% auslastung unbestätigt. 
+							if ( auslastung < ((double)this.mindestAuslastung/100)){
+								
+								if (this.UnterBeschäftigung.equalsIgnoreCase("Treiben")) {
+									super.addOrder("TREIBEN " + treiberPoolRelation.getDoTreiben(), true);
+								}
+								if (this.UnterBeschäftigung.equalsIgnoreCase("Lernen")) {
+									this.addComment("vorgesehener Betrag zum Eintreiben für mich: " + treiberPoolRelation.getDoTreiben() + " Silber, da LERNE ich lieber....");
+									this.lerneTalent("Warnung: Einheit ist nicht ausgelastet!");
+									
+								}
+								if (!this.confirmIfunemployed){
+									super.scriptUnit.doNotConfirmOrders("Warnung: Einheit ist NICHT ausgelastet!" + Math.round((treiberPoolRelation.getVerdienst()-treiberPoolRelation.getDoTreiben())/treiberPoolRelation.getProKopfVerdienst()) + " Treiber überflüssig");
+								}
+							} else {
+								// nicht voll ausgelastet, aber oberhalb min Auslastung
 								super.addOrder("TREIBEN " + treiberPoolRelation.getDoTreiben(), true);
 							}
-							if (this.UnterBeschäftigung.equalsIgnoreCase("Lernen")) {
-								this.addComment("vorgesehener Betrag zum Eintreiben für mich: " + treiberPoolRelation.getDoTreiben() + " Silber, da LERNE ich lieber....");
-								this.lerneTalent("Warnung: Einheit ist nicht ausgelastet!");
-								
-							}
-							if (!this.confirmIfunemployed){
-								super.scriptUnit.doNotConfirmOrders("Warnung: Einheit ist NICHT ausgelastet!" + Math.round((treiberPoolRelation.getVerdienst()-treiberPoolRelation.getDoTreiben())/treiberPoolRelation.getProKopfVerdienst()) + " Treiber überflüssig");
-							}
-						} else {
-							// nicht voll ausgelastet, aber oberhalb min Auslastung
-							super.addOrder("TREIBEN " + treiberPoolRelation.getDoTreiben(), true);
+							
+							// FF: unter 100% angabe
+							if ( auslastung < 1){
+								this.addComment("Auslastung: " + (int)Math.floor(auslastung*100) + "%, unbestätigt unter " + this.mindestAuslastung + "%");	
+							}				
+							
 						}
-						
-						// FF: unter 100% angabe
-						if ( auslastung < 1){
-							this.addComment("Auslastung: " + (int)Math.floor(auslastung*100) + "%, unbestätigt unter " + this.mindestAuslastung + "%");	
-						}				
-						
+					} else {
+						// im AutoMode
+						int reittalent=this.scriptUnit.getSkillLevel("Reiten");
+						if (reittalent>0){
+							gotoInfo = FFToolsRegions.makeOrderNACH(this.scriptUnit, this.region().getCoordinate(),targetRegion.getCoordinate(), true,"Treiben");
+							addComment("dieser Region NEU als Treiber zugeordnet: " + targetRegion.toString());
+							addComment("ETA: " + gotoInfo.getAnzRunden() + " Runden.");
+							// Pferde requesten...
+							MatPoolRequest MPR = new MatPoolRequest(this,this.scriptUnit.getUnit().getModifiedPersons(), "Pferd", 20, "Treiber unterwegs" );
+							this.addMatPoolRequest(MPR);
+						} else {
+							// neu, wir lernen auf T1 Reiten
+							gotoInfo = FFToolsRegions.makeOrderNACH(this.scriptUnit, this.region().getCoordinate(),targetRegion.getCoordinate(), false,"Treiben");
+							this.addComment("-> wir lernen aber erstmal Reiten T1");
+							addComment("dieser Region NEU als Treiber zugeordnet: " + targetRegion.toString());
+							addComment("ETA: " + gotoInfo.getAnzRunden() + " Runden.");
+							this.lerneTalent("Reiten",false);
+						}
 					}
 		
 				} else {
@@ -511,7 +606,66 @@ public void runScript(int scriptDurchlauf){
 	
 	private void lerneTalent(String Meldung){
 		this.addComment(Meldung);
-		this.lerneTalent("Steuereintreiben", true);
+		this.unitIsLearning=true;
+		if (this.LernplanName==null || this.LernplanName=="") {
+			this.lerneTalent("Steuereintreiben", true);
+		} else {
+			this.addComment("Lernplan erkannt, aktiviere den Ausbildungspool");
+			ausbildungsPool = super.scriptUnit.getScriptMain().getOverlord().getAusbildungsManager().getAusbildungsPool(super.scriptUnit);
+			AusbildungsRelation AR = super.getOverlord().getLernplanHandler().getAusbildungsrelation(this.scriptUnit, this.LernplanName);
+			if (AR!=null){
+				AR.informScriptUnit();
+				ausbildungsPool.addAusbildungsRelation(AR);
+			} else {
+				// keine AR -> Lernplan beendet ?!
+				this.scriptUnit.doNotConfirmOrders("Lernplan liefert keine Aufgabe mehr");
+				// default ergänzen - keine Ahnung, was, eventuell kan
+				// die einheit ja nix..
+				this.addOrder("Lernen Ausdauer", true);
+			}
+		}
+	}
+
+
+	public boolean isAutomode() {
+		return automode;
+	}
+
+
+	public void setAutomode(boolean automode) {
+		this.automode = automode;
+	}
+
+
+	public Region getTargetRegion() {
+		return targetRegion;
+	}
+
+
+	public void setTargetRegion(Region targetRegion) {
+		this.targetRegion = targetRegion;
+	}
+
+
+	public GotoInfo getGotoInfo() {
+		return gotoInfo;
+	}
+
+
+	public void setGotoInfo(GotoInfo gotoInfo) {
+		this.gotoInfo = gotoInfo;
+	}
+	
+	public boolean isUnterMindestAuslastung(){
+		boolean erg = false;
+		if (treiberPoolRelation!=null){
+			double auslastung = ((double)treiberPoolRelation.getDoTreiben()/(double)treiberPoolRelation.getVerdienst());
+			if ( auslastung < ((double)this.mindestAuslastung/100)){
+				erg = true;
+			}
+		}
+		
+		return erg;
 	}
 			
 		

@@ -70,6 +70,8 @@ public class Ifenemy extends Script{
 						for (int i = (argStartCount+1);i<super.getArgCount();i++){
 							newOrderLine = newOrderLine.concat(super.getArgAt(i) + " ");
 						}
+						// Trim
+						newOrderLine = newOrderLine.trim();
 						super.scriptUnit.findScriptClass(super.getArgAt(argStartCount), newOrderLine,true);
 					} else {
 						// die befehlszeile endet mit dem keyWord script
@@ -83,6 +85,8 @@ public class Ifenemy extends Script{
 					for (int i = (argStartCount-1);i<super.getArgCount();i++){
 						newOrderLine = newOrderLine.concat(super.getArgAt(i) + " ");
 					}
+					// Trim
+					newOrderLine = newOrderLine.trim();
 					if (newOrderLine.length()>0){
 						// nun denn ... fertig und irgendetwas zu schreiben
 						newOrderLine = newOrderLine.concat(" ;script ifEnemy");

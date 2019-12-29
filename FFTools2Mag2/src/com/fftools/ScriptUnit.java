@@ -116,6 +116,13 @@ public class ScriptUnit {
 	 */
 	private boolean includeSailorsWeight = false;
 	
+	
+	/*
+	 * wird nur gesetzt, wenn gebäudebesitzer und Unterhalt des Gebäudesnicht erfüllt 
+	 */
+	public boolean unterhaltProblem=false;
+	
+	
 	// MatPool2
 	/**
 	 * enthält die Items nach geschützten Ordern und Matpoollauf/läufen
@@ -610,11 +617,11 @@ public class ScriptUnit {
 		}
 		
 		// Gebäudeunterhalt benutzen können
-		
-		if (reportSettings.getOptionBoolean("Gebaeudeunterhalt", this.unit.getRegion())) {
-		     
-			   this.findScriptClass("Gebaeudeunterhalt","",false);
-	    }
+		if (this.getUnit().getModifiedBuilding()!=null) {
+			if (reportSettings.getOptionBoolean("Gebaeudeunterhalt", this.unit.getRegion())) {
+				   this.findScriptClass("Gebaeudeunterhalt","",false);
+		    }
+		}
 		
 		
 		

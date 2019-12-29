@@ -148,6 +148,12 @@ public void runScript(int scriptDurchlauf){
 			infoText = "Forester diese Runde";
 		}
 		
+		int MengeHolz = Integer.MAX_VALUE;
+		if (MengeWDL!=Integer.MAX_VALUE) {
+			MengeHolz = MengeWDL * 10;
+		}
+		
+		
 		// FF 20171203
 		// sind wir in einer Mallornregion?
 		ItemType IT = this.gd_Script.getRules().getItemType("Mallorn");
@@ -156,11 +162,11 @@ public void runScript(int scriptDurchlauf){
 			// tatsächlich
 			this.addComment("Forester: Mallornregion erkannt, fordere Mallorn statt Holz an");
 			this.isMallornregion = true;
-			this.holzRequest = new MatPoolRequest(this,MengeWDL * 10,"Mallorn",this.holzPrio,infoText);
+			this.holzRequest = new MatPoolRequest(this,MengeHolz,"Mallorn",this.holzPrio,infoText);
 			this.addMatPoolRequest(this.holzRequest);
 		} else {
 			// nee Holz...
-			this.holzRequest = new MatPoolRequest(this,MengeWDL * 10,"Holz",this.holzPrio,infoText);
+			this.holzRequest = new MatPoolRequest(this,MengeHolz,"Holz",this.holzPrio,infoText);
 			this.addMatPoolRequest(this.holzRequest);
 		}
 		

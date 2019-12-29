@@ -4,18 +4,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import magellan.library.Border;
-import magellan.library.Building;
-import magellan.library.CoordinateID;
-import magellan.library.Item;
-import magellan.library.Skill;
-import magellan.library.gamebinding.OrderChanger;
-import magellan.library.rules.BuildingType;
-import magellan.library.rules.ItemType;
-import magellan.library.rules.SkillType;
-import magellan.library.utils.Direction;
-import magellan.library.utils.Locales;
-
+import com.fftools.ScriptUnit;
 import com.fftools.pools.ausbildung.AusbildungsPool;
 import com.fftools.pools.ausbildung.Lernplan;
 import com.fftools.pools.ausbildung.relations.AusbildungsRelation;
@@ -26,6 +15,19 @@ import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
 import com.fftools.utils.FFToolsRegions;
 import com.fftools.utils.GotoInfo;
+
+import magellan.library.Border;
+import magellan.library.Building;
+import magellan.library.CoordinateID;
+import magellan.library.Item;
+import magellan.library.Skill;
+import magellan.library.Unit;
+import magellan.library.gamebinding.OrderChanger;
+import magellan.library.rules.BuildingType;
+import magellan.library.rules.ItemType;
+import magellan.library.rules.SkillType;
+import magellan.library.utils.Direction;
+import magellan.library.utils.Locales;
 
 /**
  * 
@@ -40,7 +42,7 @@ public class Bauen extends MatPoolScript implements Cloneable{
 	// private static final ReportSettings reportSettings = ReportSettings.getInstance();
 	private int Durchlauf_Baumanager = 59;
 	private int Durchlauf_vorMatPool = 102;
-	private int Durchlauf_nachMatPool = 440;
+	private int Durchlauf_nachMatPool = 440;   // und nach Gebäudeunterhalt bei 340!!
 	
 	private int[] runners = {Durchlauf_Baumanager,Durchlauf_vorMatPool,Durchlauf_nachMatPool};
 	
@@ -135,6 +137,8 @@ public class Bauen extends MatPoolScript implements Cloneable{
 	
 	// falls in PLanungsmodus...dann eventuell späterer zieleinheit überhelfen
 	private ArrayList<MatPoolRequest> vorPlanungsMPR = null;
+	
+	private Unit preRequisiteBuildungOwner = null;
 	
 	public void setFinalStatusInfo(String finalStatusInfo) {
 		this.finalStatusInfo += finalStatusInfo;
@@ -446,6 +450,50 @@ public void runScript(int scriptDurchlauf){
 				return;
 			}
 			
+			// notwendiges Gebäude vorhanden ??
+			String regionTypeName = this.getUnit().getRegion().getRegionType().getName();
+			this.addComment("Prüfe auf notwendiges Gebäude im Region-Typ " + regionTypeName);
+			String neededBuildingName = "";
+			Integer neededSize = 0;
+			if (regionTypeName.equalsIgnoreCase("Gletscher")) {
+				neededBuildingName="Tunnel";
+				neededSize=100;
+			}
+			if (regionTypeName.equalsIgnoreCase("Sumpf")) {
+				neededBuildingName="Damm";
+				neededSize=50;
+			}
+			if (regionTypeName.equalsIgnoreCase("Wüste")) {
+				neededBuildingName="Karawanserei";
+				neededSize=10;
+			}
+			if (neededBuildingName=="") {
+				this.addComment("Kein Gebäude notwendig");
+			} else {
+				this.addComment("Prüfe auf Gebäude " + neededBuildingName);
+				boolean foundNeededBuilding=false;
+				for (Iterator<Building> iter = this.scriptUnit.getUnit().getRegion().buildings().iterator();iter.hasNext();){
+					Building actBuilding = (Building)iter.next();
+					if (actBuilding.getBuildingType().getName().equalsIgnoreCase(neededBuildingName)){
+						if (actBuilding.getSize()>=neededSize) {
+							if (actBuilding.getModifiedOwnerUnit()!=null) {
+								// Treffer
+								foundNeededBuilding=true;
+								this.addComment(neededBuildingName + " gefunden: " + actBuilding.toString());
+								this.preRequisiteBuildungOwner = actBuilding.getModifiedOwnerUnit();
+								break;
+							} else {
+								this.addComment(neededBuildingName + " gefunden, aber ohne Besitzer: " + actBuilding.toString());
+							}
+						} else {
+							this.addComment(neededBuildingName + " gefunden, aber nicht voll ausgebaut: " + actBuilding.toString());
+						}
+					}
+				}
+				if (!foundNeededBuilding) {
+					this.doNotConfirmOrders("Notwendiges Gebäude für Straßenbau nicht gefunden: " + neededBuildingName + " (script Bauen)");
+				}
+			}
 		}
 		
 		// Prioritäten
@@ -463,7 +511,7 @@ public void runScript(int scriptDurchlauf){
 				statusInfo+="Fehler: Prio nicht erkannt: " + i;
 				this.doNotConfirmOrders("Bauen: Prio nicht erkannt: " + i);
 			}
-		}
+		} 
 		// Silberprio
 		i = OP.getOptionInt("silberprio",-1);
 		if (i!=-1){
@@ -1054,12 +1102,25 @@ public void runScript(int scriptDurchlauf){
 		if (okAusl || complete){
 			this.setBauBefehl("MACHEN STRASSE " + this.dirLocal,"nach MP strasse");
 			this.setFinalStatusInfo("baut Strasse");
+			checkUnterhaltGebäude();
 		} else {
 			// nicht bauen
 			this.addComment("Bauen: Strasse (" + this.dirLocal + ") wird diese Runde nicht weitergebaut.");
 			this.setBauBefehl("","nach MP Strasse");
 			this.setFinalStatusInfo("wartet auf Strassenbau");
 		}	
+	}
+	
+	private void checkUnterhaltGebäude() {
+		if (this.preRequisiteBuildungOwner!=null) {
+			// ScriptUnit finden
+			ScriptUnit su = this.getOverlord().getScriptMain().getScriptUnit(this.preRequisiteBuildungOwner);
+			if (su!=null) {
+				if (su.unterhaltProblem) {
+					this.doNotConfirmOrders("!!! Unterhalt des notwendigen Gebäudes nicht erfüllt!");
+				}
+			}
+		}
 	}
 	
 	
