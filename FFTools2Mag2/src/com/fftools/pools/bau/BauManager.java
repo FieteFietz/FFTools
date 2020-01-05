@@ -1,8 +1,6 @@
 package com.fftools.pools.bau;
 
 
-import magellan.library.CoordinateID;
-
 import com.fftools.OutTextClass;
 import com.fftools.ScriptMain;
 import com.fftools.ScriptUnit;
@@ -11,8 +9,11 @@ import com.fftools.overlord.OverlordRun;
 import com.fftools.scripts.Bauauftrag;
 import com.fftools.scripts.Bauen;
 import com.fftools.scripts.Burgenbau;
+import com.fftools.scripts.Strassenbau;
 import com.fftools.trade.TradeArea;
 import com.fftools.trade.TradeAreaHandler;
+
+import magellan.library.CoordinateID;
 
 
 /**
@@ -51,9 +52,9 @@ public class BauManager implements OverlordRun,OverlordInfo{
 	public void run(int durchlauf){
 		
 		// outText.addOutLine("Start Baumanager", true);
-		long StartTime=System.currentTimeMillis();
-		long ActTime=System.currentTimeMillis();
-		long DiffTime=0;
+		// long StartTime=System.currentTimeMillis();
+		// long ActTime=System.currentTimeMillis();
+		// long DiffTime=0;
 		if (this.tradeAreaHandler.getTradeAreas()==null || this.tradeAreaHandler.getTradeAreas().size()==0){
 			return;
 		}
@@ -64,8 +65,8 @@ public class BauManager implements OverlordRun,OverlordInfo{
 		for (TradeArea tA:this.tradeAreaHandler.getTradeAreas()){
 			if (tA.hasBauManager()){
 				if (durchlauf==Durchlauf0){
-					ActTime=System.currentTimeMillis();
-					DiffTime = ActTime - StartTime;
+					// ActTime=System.currentTimeMillis();
+					// DiffTime = ActTime - StartTime;
 					// outText.addOutLine(DiffTime + "ms: Baumanger run0 für TA " + tA.getName(), true);
 					tA.getTradeAreaBauManager().run0();
 				}
@@ -118,6 +119,14 @@ public class BauManager implements OverlordRun,OverlordInfo{
 		tA.getTradeAreaBauManager().addBurgenBau(b);
 	}
 	
+	public void addStrassenbau(Strassenbau b){
+		TradeArea tA = this.tradeAreaHandler.getTAinRange(b.region());
+		if (tA==null){
+			outText.addOutLine("!!!addStrassenbau nicht erfolgreich: kein TA :" + b.unitDesc());
+			return;
+		}
+		tA.getTradeAreaBauManager().addStrassenBau(b);
+	}
 	
 	public void setCentralHomeDest(CoordinateID centralHomeDest,ScriptUnit fromSU){
 		TradeArea tA = this.tradeAreaHandler.getTAinRange(fromSU.getUnit().getRegion());

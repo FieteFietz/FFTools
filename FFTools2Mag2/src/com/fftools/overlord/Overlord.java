@@ -139,6 +139,7 @@ public class Overlord {
 		
 		long time1 =0;
 		long timeX = 0;
+		long lastProzentAngabe = 0;
 		// long tDiffX = 0;
 		for (mainDurchlauf = 0;mainDurchlauf<Integer.MAX_VALUE;mainDurchlauf++){
 			sayTime=false;
@@ -175,12 +176,20 @@ public class Overlord {
 			this.Zeitsumme9=0;
 			this.Zeitsumme10=0;
 			
+			long scriptU_Counter=0;
 			// scriptunits anstossen
 			for (Iterator<ScriptUnit> iter = this.scriptMain.getScriptUnits().values().iterator();iter.hasNext();){
 				ScriptUnit scrU = (ScriptUnit)iter.next();
 				if (!isDeleted(scrU)){
 					scrU.runScripts(mainDurchlauf);
 					outText.addPoint();
+				}
+				scriptU_Counter++;
+				if ((System.currentTimeMillis() - lastProzentAngabe)>3000) {
+					double actProz = (double)((double)scriptU_Counter/(double)this.scriptMain.getScriptUnits().values().size());
+					long actProzL = Math.round(actProz * 100);
+					outText.addOutChars("|" + actProzL + "%");
+					lastProzentAngabe = System.currentTimeMillis();
 				}
 			}
 			/*

@@ -4,17 +4,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 
-import magellan.library.Item;
-import magellan.library.LuxuryPrice;
-import magellan.library.Region;
-
 import com.fftools.OutTextClass;
 import com.fftools.ReportSettings;
 import com.fftools.ScriptUnit;
 import com.fftools.pools.circus.CircusPool;
-import com.fftools.pools.circus.CircusPoolRelation;
 import com.fftools.trade.TradeArea;
 import com.fftools.trade.Trader;
+
+import magellan.library.Item;
+import magellan.library.LuxuryPrice;
+import magellan.library.Region;
 
 
 /**

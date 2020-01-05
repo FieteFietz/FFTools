@@ -91,6 +91,7 @@ public void runScript(int scriptDurchlauf){
 		}
 		
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Unterhalten");
+		OP.addOptionList(this.getArguments());
 		int unitMinLevel = OP.getOptionInt("minTalent", -1);
 		if (unitMinLevel>this.mindestTalent){
 			this.mindestTalent = unitMinLevel;
@@ -141,6 +142,7 @@ public void runScript(int scriptDurchlauf){
 				
 				// haben wir vielleicht noch einen direkten Parameter in den Optionen?
 				this.mindestAuslastung = OP.getOptionInt("mindestAuslastung", this.mindestAuslastung);
+				this.addComment("Hinweis: Mindestauslastung dieser Einheit: " + this.mindestAuslastung + "%");
 				
 				// Gibt es eine scripterOption für diese Region zum Limit ?
 				int settingsLimit = reportSettings.getOptionInt("UnterhaltenLimit", this.region()); 

@@ -3,10 +3,13 @@ package com.fftools.pools.bau;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 
-import com.fftools.OutTextClass;
+// import com.fftools.OutTextClass;
 import com.fftools.ScriptUnit;
 import com.fftools.pools.ausbildung.AusbildungsPool;
 import com.fftools.pools.ausbildung.Lernplan;
@@ -15,6 +18,7 @@ import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.scripts.Bauauftrag;
 import com.fftools.scripts.Bauen;
 import com.fftools.scripts.Burgenbau;
+import com.fftools.scripts.Strassenbau;
 import com.fftools.trade.TradeArea;
 import com.fftools.trade.TradeRegion;
 import com.fftools.utils.FFToolsGameData;
@@ -24,6 +28,9 @@ import com.fftools.utils.GotoInfo;
 import magellan.library.CoordinateID;
 import magellan.library.Region;
 import magellan.library.Unit;
+import magellan.library.gamebinding.OrderChanger;
+import magellan.library.utils.Direction;
+import magellan.library.utils.Locales;
 
 
 /**
@@ -31,7 +38,7 @@ import magellan.library.Unit;
  *
  */
 public class TradeAreaBauManager {
-	private static final OutTextClass outText = OutTextClass.getInstance();
+	// private static final OutTextClass outText = OutTextClass.getInstance();
 
 	private TradeArea tradeArea = null;
 	
@@ -46,6 +53,12 @@ public class TradeAreaBauManager {
 	
 	// Die scriptUnit, die den automatischen Burgenbau registriert hat
 	private Burgenbau registerBurgenbau = null;
+	
+	// Die scriptUnit, die den automatischen Strassenbau registriert hat
+	private Strassenbau registerStrassenbau = null;
+	
+	// falls mit Parameter NotIn=X,Y|X2,Y2 Regionen vom Strassenbau ausgeschlossen worden sind.
+	private ArrayList<Region> keinStrassenbauRegionen = null;
 	
 	// Liste mit Bauscripten, die extra vom TA-BM informiert werde wollen (info=ja)
 	private ArrayList<ScriptUnit> informationListeners = null;
@@ -97,15 +110,20 @@ public class TradeAreaBauManager {
 	 */
 	public void run0(){
 		
-		long StartTime=System.currentTimeMillis();
-		long ActTime=System.currentTimeMillis();
-		long DiffTime=0;
+		// long StartTime=System.currentTimeMillis();
+		// long ActTime=System.currentTimeMillis();
+		// long DiffTime=0;
 		// outText.addOutLine(DiffTime + "ms: start TA-BM", true);
 		
 		this.processBurgenbau();
-		ActTime=System.currentTimeMillis();
-		DiffTime=ActTime-StartTime;
+		// ActTime=System.currentTimeMillis();
+		// DiffTime=ActTime-StartTime;
 		// outText.addOutLine(DiffTime + "ms: rdy with processBurgenbau", true);
+		
+		this.processStrassenbau();
+		// ActTime=System.currentTimeMillis();
+		// DiffTime=ActTime-StartTime;
+		// outText.addOutLine(DiffTime + "ms: rdy with processStrassenbau", true);
 		
 		if (this.bauAufträge==null || this.bauAufträge.size()==0){
 			this.infoLines.add("keine Bauaufträge im TA bekannt");
@@ -128,8 +146,8 @@ public class TradeAreaBauManager {
 				}
 			}
 		}
-		ActTime=System.currentTimeMillis();
-		DiffTime=ActTime-StartTime;
+		// ActTime=System.currentTimeMillis();
+		// DiffTime=ActTime-StartTime;
 		// outText.addOutLine(DiffTime + "ms: rdy with building builders", true);
 		if (autoBauer.size()==0){
 			this.infoLines.add("keine automatischen Bauarbeiter im TA bekannt");
@@ -140,8 +158,8 @@ public class TradeAreaBauManager {
 		this.supportableBuilder = new ArrayList<Bauen>();
 		
 		processCentralHomeDest(autoBauer);
-		ActTime=System.currentTimeMillis();
-		DiffTime=ActTime-StartTime;
+		// ActTime=System.currentTimeMillis();
+		// DiffTime=ActTime-StartTime;
 		// outText.addOutLine(DiffTime + "ms: rdy with procCentralHomeDest", true);
 
 		
@@ -149,6 +167,9 @@ public class TradeAreaBauManager {
 		this.infoLines.add("TA-Bau: " + this.bauAufträge.size() + " Bauauftragshalter und " + autoBauer.size()+ " autom. Bauarbeiter");
 		if (this.registerBurgenbau!=null){
 			this.infoLines.add("TA-Bau: Bauaufträge definiert bei: " + this.registerBurgenbau.unitDesc());
+		}
+		if (this.registerStrassenbau!=null){
+			this.infoLines.add("TA-Bau: Strassenaufträge definiert bei: " + this.registerStrassenbau.unitDesc());
 		}
 		// Liste der Aufträge
 		this.infoLines.add("bekannte Aufträge:");
@@ -167,8 +188,8 @@ public class TradeAreaBauManager {
 			}
 		}
 		
-		ActTime=System.currentTimeMillis();
-		DiffTime=ActTime-StartTime;
+		// ActTime=System.currentTimeMillis();
+		// DiffTime=ActTime-StartTime;
 		// outText.addOutLine(DiffTime + "ms: rdy with build Orders", true);
 		
 		// Sortieren
@@ -230,8 +251,8 @@ public class TradeAreaBauManager {
 			}
 		}
 		
-		ActTime=System.currentTimeMillis();
-		DiffTime=ActTime-StartTime;
+		// ActTime=System.currentTimeMillis();
+		// DiffTime=ActTime-StartTime;
 		// outText.addOutLine(DiffTime + "ms: rdy with TA-BM", true);
 
 		
@@ -757,6 +778,22 @@ public class TradeAreaBauManager {
 	}
 	
 	/**
+	 * registriert die scriptUnit als Initiator für den Strassenbau
+	 * @param u
+	 */
+	public void addStrassenBau(Strassenbau u){
+		if (this.registerStrassenbau==null){
+			this.registerStrassenbau = u;
+			u.addComment("Automatischer Strassenbau für dieses TA registriert: " + this.getTradeArea().getName());
+		} else {
+			u.addComment("!! Automatischer Strassenbau konnte nicht registriert werden. Ist bereits geschehen durch: " +this.registerStrassenbau.unitDesc());
+		}
+	}
+	
+	
+	
+	
+	/**
 	 * ergänzt Bauaufträge für den automatischen Burgenbau
 	 */
 	private void processBurgenbau(){
@@ -818,6 +855,195 @@ public class TradeAreaBauManager {
 		}
 	}
 	
+	/**
+	 * ergänzt den automatischen Strassenbau
+	 * Ablauf  - Prioritätenliste
+	 * Regionen ohne notwendige Gebäude und mit funktionierenden notw Gebäuden, Sortiert nach Bauernzahl
+	 * 	- dort *alle* Strassen in Richtung von Regionen ohne notwendige Gebäude
+	 * 	- sortiert nach Bauernzahl der Nachbarregion
+	 *  - Reparatur vor Neubau
+	 *  - eine Region immer zuerst komplett ausbauen
+	 * 
+	 * Gebäudebauftragung in den Regionen, wo diese benötigt werden
+	 * 	- sortiert nach Summe der Bauern in den umliegenden Regionen
+	 * 
+	 */
+	private void processStrassenbau() {
+		// Regionen durchgehen, wo ohne Gebäudebau gebaut werden kann, hinzufügen
+		if (this.registerStrassenbau==null) {
+			return;
+		}
+		int actCounter=0;
+		int actPrio = this.registerStrassenbau.getPrioStrassen();
+		if (this.registerStrassenbau.getAnzahlStrassen()>0) {
+			
+			ArrayList<Region> buildableRegions = new ArrayList<Region>();
+			for (TradeRegion TR : this.tradeArea.getTradeRegions()) {
+				Region r = TR.getRegion();
+				if (this.keinStrassenbauRegionen==null || !this.keinStrassenbauRegionen.contains(r)) {
+					if (FFToolsRegions.StreetsCanBeBuild(r)) {
+						// gibt es richtungen, in die noch strassen fehlen?
+						LinkedHashMap<Direction,Integer> listDir = FFToolsRegions.missingStreets(r,this.keinStrassenbauRegionen);
+						if (!listDir.isEmpty()) {
+							// dort ist was zu bauen, also erstmal in die neue Map
+							buildableRegions.add(r);
+						}
+					}
+				}
+			}
+			if (!buildableRegions.isEmpty()) {
+				// sortieren
+				Collections.sort(buildableRegions, new Comparator<Region>() {
+	        		public int compare(Region r1,Region r2) {
+	        			return (r2.getModifiedPeasants() - r1.getModifiedPeasants());
+	        		}} 
+				);
+				
+				
+				
+				// debugAusgabe
+				this.registerStrassenbau.addComment("Liste der Strassenbau-Regionen und ToDos:");
+				OrderChanger changer = this.registerStrassenbau.gd_Script.getGameSpecificStuff().getOrderChanger();
+				for (Region r:buildableRegions) {
+					this.registerStrassenbau.addComment(r.toString() + " (" + r.getModifiedPeasants() + " Bauern):");
+					LinkedHashMap<Direction,Integer> listDir = FFToolsRegions.missingStreets(r, this.keinStrassenbauRegionen);
+					if (!listDir.isEmpty()) {
+						for (Direction d: listDir.keySet()) {
+							String dirS = changer.getOrderO(Locales.getOrderLocale(), d.getId()).getText();
+							this.registerStrassenbau.addComment(" - Richtung " + dirS + ": " + listDir.get(d).toString() + " Steine", false);
+							if (actCounter<this.registerStrassenbau.getAnzahlStrassen()) {
+								actCounter++;
+								this.registerStrassenbau.addComment(" - (als Bauauftrag (Strasse) " + actCounter + " mit Prio " + actPrio + " beauftragt.)");
+								
+								TradeRegion TR = this.tradeArea.getTradeRegion(r);
+								if (TR==null) {
+									this.registerStrassenbau.doNotConfirmOrders("Strassenbau ("+actPrio+"): für " + r.toString() + " kein TA gefunden - blöder Fehler!");
+								} else {
+									Unit u = TR.getDepot();
+									if (u == null){
+										// kein Depot
+										this.registerStrassenbau.doNotConfirmOrders("Strassenbau ("+actPrio+"): kein Depot in " + r.toString());
+									} else {
+										ScriptUnit su = this.registerStrassenbau.scriptUnit.getScriptMain().getScriptUnit(u);
+										if (su==null){
+											this.registerStrassenbau.addComment("Strassenbau ("+actPrio+"): kein Depot-Scriptunit in " + r.toString());
+										} else {
+											// ergänzen
+											Bauauftrag bA = new Bauauftrag();
+											ArrayList<String> newArgs = new ArrayList<String>();
+											newArgs.add("typ=Strasse");
+											newArgs.add("Prio=" + actPrio);
+											newArgs.add("Ziel=" + dirS);
+											bA.setScriptUnit(su);
+											bA.setArguments(newArgs);
+											bA.setGameData(this.registerStrassenbau.gd_Script);
+											su.addAScriptNow(bA);
+											bA.run1();
+											su.addComment("Strassenbau: Auftrag hier hinzugefügt nach " + dirS + ", Strassenbau definiert bei " + this.registerStrassenbau.getUnit().toString());
+											this.registerStrassenbau.addComment(" - Bauauftrag ergänzt bei " + su.toString());
+										}
+									}
+								}
+								actPrio--;
+							}
+						}
+					} else {
+						this.registerStrassenbau.addComment("!! Problem: keine Strassen in Region benötigt!!", false);
+					}
+					
+				}
+			} else {
+				this.registerStrassenbau.addComment("Strassenbau: keine Regionen mit StrassenbauBedarf im TA erkannt.", false);
+			}
+		} else {
+			this.registerStrassenbau.addComment("Strassenbau: deaktiviert, weil Anzahl Strassen = 0 gewünscht");
+		}
+		
+		int actCounterGebäude=0;
+		actPrio = this.registerStrassenbau.getPrioGebäude();
+		
+		if (this.registerStrassenbau.getAnzahlGebäude()>0) {
+			// Fehlende Gebäude ermitteln
+			HashMap<Region,String> buildableRegionsBuildings = new HashMap<Region,String>();
+			for (TradeRegion TR : this.tradeArea.getTradeRegions()) {
+				Region r = TR.getRegion();
+				if (this.keinStrassenbauRegionen==null || !this.keinStrassenbauRegionen.contains(r)) {
+					if (!FFToolsRegions.StreetsCanBeBuild(r)) {
+						// mal schauen, was fehlt
+						String regionTypeName = r.getRegionType().getName();
+						String neededBuildingName = "";
+						if (regionTypeName.equalsIgnoreCase("Gletscher")) {
+							neededBuildingName="Tunnel";
+						}
+						if (regionTypeName.equalsIgnoreCase("Sumpf")) {
+							neededBuildingName="Damm";
+						}
+						if (regionTypeName.equalsIgnoreCase("Wüste")) {
+							neededBuildingName="Karawanserei";
+						}
+						if (neededBuildingName!="") {
+							buildableRegionsBuildings.put(r, neededBuildingName);
+						}
+					}
+				}
+			}
+			if (buildableRegionsBuildings.isEmpty()) {
+				this.registerStrassenbau.addComment("Keine Regionen mit fehlenden Gebäuden für den Strassenbau bekannt.");
+			} else {
+				// Sortieren
+				ArrayList<Region> rS = new ArrayList<Region>();
+				rS.addAll(buildableRegionsBuildings.keySet());
+				Collections.sort(rS, new Comparator<Region>() {
+	        		public int compare(Region r1,Region r2) {
+	        			return (r2.getModifiedPeasants() - r1.getModifiedPeasants());
+	        		}} 
+				);
+				// Ausgabe
+				this.registerStrassenbau.addComment("fehlende Gebäude: ");
+				for (Region actRegion : rS) {
+					this.registerStrassenbau.addComment("- in " + actRegion.toString() + " (" + actRegion.getModifiedPeasants() + " Bauern) fehlt: " + buildableRegionsBuildings.get(actRegion));
+					if (actCounterGebäude<this.registerStrassenbau.getAnzahlGebäude()) {
+						actCounterGebäude++;
+						this.registerStrassenbau.addComment(" - (als Bauauftrag(Gebäude) " + actCounterGebäude + " mit Prio " + actPrio + " beauftragt.)");
+						
+						
+						TradeRegion TR = this.tradeArea.getTradeRegion(actRegion);
+						Unit u = TR.getDepot();
+						if (u == null){
+							// kein Depot
+							this.registerStrassenbau.addComment("Strassenbau ("+actPrio+"): kein Depot in " + actRegion.toString());
+						} else {
+							ScriptUnit su = this.registerStrassenbau.scriptUnit.getScriptMain().getScriptUnit(u);
+							if (su==null){
+								this.registerStrassenbau.addComment("Strassenbau ("+actPrio+"): kein Depot-Scriptunit in " + actRegion.toString());
+							} else {
+								// ergänzen
+								Bauauftrag bA = new Bauauftrag();
+								ArrayList<String> newArgs = new ArrayList<String>();
+								newArgs.add("typ=" + buildableRegionsBuildings.get(actRegion));
+								newArgs.add("Prio=" + actPrio);
+								
+								bA.setScriptUnit(su);
+								bA.setArguments(newArgs);
+								bA.setGameData(this.registerStrassenbau.gd_Script);
+								su.addAScriptNow(bA);
+								bA.run1();
+								su.addComment("Strassenbau: " + buildableRegionsBuildings.get(actRegion) + " beauftragt, Strassenbau definiert bei " + this.registerStrassenbau.getUnit().toString());
+								this.registerStrassenbau.addComment(" - Bauauftrag ergänzt bei " + su.toString());
+							}
+						}
+						actPrio--;
+					}
+				}
+			}
+		} else {
+			this.registerStrassenbau.addComment("Strassenbau-gebäude: deaktiviert, weil Anzahl Gebäude = 0 gewünscht.");
+		}
+		if (actCounter==0 && actCounterGebäude==0 && !this.registerStrassenbau.isConfirmUnemployed()) {
+			this.registerStrassenbau.doNotConfirmOrders("Keine Strassen und/oder notwendige Gebäude mehr zu errichten.");
+		}
+	}
+	
 	
 	private void processCentralHomeDest(ArrayList<Bauen> autoBauer){
 		if (this.centralHomeDest==null){
@@ -859,6 +1085,19 @@ public class TradeAreaBauManager {
 					su.doNotConfirmOrders("TA-Bau: keine offenen Bauaufträge mehr!");
 				}
 			}
+		}
+	}
+	
+	/**
+	 * Regionen für den Strassenbau ausschliessen
+	 * @param r  auszuschliessende Region
+	 */
+	public void addKeinStrassenbau(Region r) {
+		if (this.keinStrassenbauRegionen==null) {
+			this.keinStrassenbauRegionen = new ArrayList<Region>();
+		}
+		if (!this.keinStrassenbauRegionen.contains(r)) {
+			this.keinStrassenbauRegionen.add(r);
 		}
 	}
 	

@@ -119,6 +119,7 @@ public class Alchemist extends MatPoolScript{
 		super.addVersionInfo();
 		
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Alchemist");
+		OP.addOptionList(this.getArguments());
 		this.krautDepot = OP.getOptionBoolean("krautdepot", false);
 		this.itemGroup = OP.getOptionString("itemGroup");
 		this.machen = OP.getOptionBoolean("machen", true);

@@ -1222,7 +1222,25 @@ public class TradeAreaHandler implements OverlordRun,OverlordInfo{
 			
 			this.createTA_Compare_File();
 		}
+		
 		this.scriptMain.createFactionCompare();
+		
+		// MonsterAlert
+		if (reportSettings.getOptionBoolean("enableMonsterAlert")) {
+			// aber nur die, die mit Depots...
+			int countAlertMessages = 0;
+			if (this.tradeAreas!=null && this.tradeAreas.size()>0) {
+				boolean alertOnlyUnattacked = reportSettings.getOptionBoolean("alertOnlyUnattackedMonster"); 
+				for (TradeArea TA:this.tradeAreas){
+					if (TA.getTransporters()!=null && TA.getTransporters().size()>0) {
+						countAlertMessages += TA.monsterAlert(alertOnlyUnattacked);
+					}
+				}
+			}
+			if (countAlertMessages>0) {
+				outText.addNewLine();
+			}
+		}
 	}
 	
 	

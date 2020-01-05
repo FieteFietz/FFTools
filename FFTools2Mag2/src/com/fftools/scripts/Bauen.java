@@ -254,7 +254,7 @@ public void runScript(int scriptDurchlauf){
 	private void BauManager(){
 		super.addVersionInfo();
 		
-		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit);
+		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Bauen");
 		OP.addOptionList(this.getArguments());
 
 		// automode

@@ -125,6 +125,9 @@ public class TreiberPoolManager implements OverlordRun,OverlordInfo {
     	if (TAH.getTradeAreas()==null || TAH.getTradeAreas().size()==0){
     		return;
     	}
+    	if (this.treiberPoolMap==null || this.treiberPoolMap.isEmpty()) {
+    		return;
+    	}
     	for (TradeArea TA:TAH.getTradeAreas()){
     		// Schritt 1: unausgelastete Unterhalter pro TA feststellen
     		ArrayList<TreiberPoolRelation> availableTreiber = new ArrayList<TreiberPoolRelation>();

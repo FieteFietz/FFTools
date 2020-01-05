@@ -451,7 +451,11 @@ public void runScript(int scriptDurchlauf){
 					}
 				}
 				if (!didSomething){
-					this.doNotConfirmOrders("Treiben: keine Waffenanforderung! - kein Waffentalent?!");
+					if (confirmIfunemployed) {
+						this.addComment("Treiben: keine Waffenanforderung! - kein Waffentalent?!");
+					} else {
+						this.doNotConfirmOrders("Treiben: keine Waffenanforderung! - kein Waffentalent?!");
+					}
 				}
 			}
 		} else {

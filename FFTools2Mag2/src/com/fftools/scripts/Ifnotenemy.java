@@ -70,6 +70,7 @@ public class Ifnotenemy extends Script{
 						}
 						// Trim
 						newOrderLine = newOrderLine.trim();
+						this.addComment("debug: script " + super.getArgAt(argStartCount) + " wird aufgerufen, Parameter: " + newOrderLine);
 						super.scriptUnit.findScriptClass(super.getArgAt(argStartCount), newOrderLine,true);
 					} else {
 						// die befehlszeile endet mit dem keyWord script

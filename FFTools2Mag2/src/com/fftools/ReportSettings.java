@@ -665,4 +665,25 @@ public class ReportSettings {
 		this.scriptMain = scriptMain;
 	}
 	
+	
+	private class MonsterBedrohung {
+		private String raceName = "";
+		private double Faktor = 1;
+		private int minTaktikLevel=0;
+		
+		public String getRaceName() {
+			return raceName;
+		}
+		public double getFaktor() {
+			return Faktor;
+		}
+		public int getMinTaktikLevel() {
+			return minTaktikLevel;
+		}
+		
+		
+		
+	}
+	
+	
 }

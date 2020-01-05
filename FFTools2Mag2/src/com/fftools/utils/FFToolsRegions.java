@@ -3,9 +3,13 @@ package com.fftools.utils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -424,10 +428,9 @@ public class FFToolsRegions {
 	 * in angegebener Region
 	 * @param r Region
 	 * @param direction int 
-	 * @param data GameData
 	 * @return
 	 */
-	public static int getMissingStreetStones(Region r, int direction,GameData data){
+	public static int getMissingStreetStones(Region r, int direction){
 		
 		// Anzahl Sollsteine ermitteln
 		
@@ -655,7 +658,7 @@ public class FFToolsRegions {
 	}
 
 	/**
-	 * TODO Inserted by TH
+	 * 
 	 * Returns coordinates of the region whose name was passed as argument, or NULL if not found
 	 * @param data
 	 * @param regionName
@@ -897,4 +900,125 @@ public class FFToolsRegions {
 		return erg;
 	}
 	
+	/**
+	 * Kann aktuell in dieser Region Straßenbau befohlen werden?
+	 * 
+	 * 
+	 * @param r  Region zu Prüfen
+	 * @return Prüfungsergebnis
+	 */
+	public static boolean StreetsCanBeBuild(Region r) {
+		String[] problematicRegionTypesS = {"Sumpf","Wüste","Gletscher"};
+		List<String> problematicRegionTypes = Arrays.asList(problematicRegionTypesS);
+		if (!problematicRegionTypes.contains(r.getRegionType().getName())) {
+			return true;
+		}
+		String regionTypeName = r.getRegionType().getName();
+		String neededBuildingName = "";
+		Integer neededSize = 0;
+		if (regionTypeName.equalsIgnoreCase("Gletscher")) {
+			neededBuildingName="Tunnel";
+			neededSize=100;
+		}
+		if (regionTypeName.equalsIgnoreCase("Sumpf")) {
+			neededBuildingName="Damm";
+			neededSize=50;
+		}
+		if (regionTypeName.equalsIgnoreCase("Wüste")) {
+			neededBuildingName="Karawanserei";
+			neededSize=10;
+		}
+		if (neededBuildingName=="") {
+			return false;
+		} else {
+			return hasRegionSpecificBuilding(r, neededBuildingName, neededSize);
+		}
+	}
+	
+	public static boolean hasRegionSpecificBuilding(Region r, String BuildingTypeName, int neededSize) {
+		for (Iterator<Building> iter =r.buildings().iterator();iter.hasNext();){
+			Building actBuilding = (Building)iter.next();
+			if (actBuilding.getBuildingType().getName().equalsIgnoreCase(BuildingTypeName)){
+				if (actBuilding.getSize()>=neededSize || neededSize==0) {
+					if (actBuilding.getModifiedOwnerUnit()!=null) {
+						// Treffer
+						return true;
+					} 
+				} 
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Liefert ein LinkedHashMap mit Dirs und zu bauenden Steinen, in denen Strassen fehlen / unvollständig sind
+	 * @param r  zu prüfende Region
+	 * @return ArrayList mit Directions, in denen Strassen fehlen
+	 */
+	public static LinkedHashMap<Direction,Integer> missingStreets(Region r, ArrayList<Region> excludedRegions){
+		
+		// outText.addOutLine("Debug missingStreets für: " + r.toString());
+		
+		LinkedHashMap<Direction,Integer> erg = new LinkedHashMap<Direction,Integer>();
+		
+		// Nachbarn holen
+		Map<Direction, Region> n1 = r.getNeighbors();
+		
+		Map<Direction, Region> n2 = new HashMap<Direction,Region>();
+		// alle ausser Ozeanen in neue Map
+		for (Direction d:n1.keySet()) {
+			Region actRegion = n1.get(d);
+			if (actRegion.getRegionType().isLand()) {
+				if (excludedRegions==null || !excludedRegions.contains(actRegion)) {
+					n2.put(d, actRegion);
+				// outText.addOutLine("Debug missingStreets Nachbar gefunden: " + actRegion.toString() + " Rtg " + d.getId());
+				}
+			}
+		}
+		if (n2.keySet().isEmpty()) {
+			return erg;
+		}
+		
+		// Sortieren der Map n2 nach Bauernzahl der Region dahinter
+		// 1. Convert Map to List of Map
+        List<Map.Entry<Direction, Region>> list =
+                new LinkedList<Map.Entry<Direction, Region>>(n2.entrySet());
+        // 2. Sort list with Collections.sort(), provide a custom Comparator
+        //    Try switch the o1 o2 position for a different order
+        Collections.sort(list, new Comparator<Map.Entry<Direction, Region>>() {
+            public int compare(Map.Entry<Direction, Region> r1,
+                               Map.Entry<Direction, Region> r2) {
+                return (r2.getValue().getModifiedPeasants() - r1.getValue().getModifiedPeasants());
+            }
+        });
+		
+        // 3. Loop the sorted list and put it into a new insertion order Map LinkedHashMap
+        Map<Direction, Region> n3 = new LinkedHashMap<Direction, Region>();
+        for (Map.Entry<Direction, Region> entry : list) {
+            n3.put(entry.getKey(), entry.getValue());
+        }
+        // nun der Reihe nach Ablaufen
+        for (Direction d : n3.keySet()) {
+        	
+        	int mss  = getMissingStreetStones(r,d.getDirCode());
+        	// outText.addOutLine("Debug missingStreets Steine in Richtung " + d.getId() + ": " + mss);
+        	if (mss>0) {
+        		erg.put(d, Integer.valueOf(mss));
+        	}
+        }
+		return erg;
+	}
+	
+	/**
+	 * Trifft eine Entscheidung, ob in einer Region die targetEinheit angegriffen werden soll
+	 * und geht davon aus, dass die Monster in der Region dem Opfer helfen werden 
+	 * Notwendige Angreiferanzahl = Gegneranzahl pro Rasse * RassenFaktor
+	 *    // script MonsterBedrohung Rasse={Rasse=Alle} Faktor={Faktor=1} minTaktik={TaktikTalent=0} 
+	 * @return
+	 */
+	public static boolean isValidMonsterAttack(Unit angreifer, Unit verteidiger, ArrayList<Unit> alleAngreifer, int angreiferTaktikTalent) {
+		boolean erg=false;
+		
+		return erg;
+	}
 }

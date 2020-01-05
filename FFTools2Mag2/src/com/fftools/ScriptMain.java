@@ -470,6 +470,8 @@ public class ScriptMain {
 		// Lauf 2
 		// System.out.println("ReadReportSettings 2");
 		outText.addOutLine("ReadReportSettings 2 and creating the scripts");
+		long lastProzentAngabe = 0;
+		long scriptU_Counter=0;
 		for (Iterator<ScriptUnit> iter = scriptUnits.values().iterator();iter.hasNext();){
 			ScriptUnit scrU = (ScriptUnit)iter.next();
 			// auf Handel prüfen (TradeArea bauen)
@@ -479,6 +481,15 @@ public class ScriptMain {
 				scrU.builtScriptList();
 				outText.addPoint();
 			}
+			
+			scriptU_Counter++;
+			if ((System.currentTimeMillis() - lastProzentAngabe)>1000) {
+				double actProz = (double)((double)scriptU_Counter/(double)scriptUnits.values().size());
+				long actProzL = Math.round(actProz * 100);
+				outText.addOutChars("|" + actProzL + "%");
+				lastProzentAngabe = System.currentTimeMillis();
+			}
+			
 		}
 		
 		// aus den settings resultierende Paramter usw

@@ -7,12 +7,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-
-import magellan.library.Item;
-import magellan.library.Region;
-import magellan.library.Unit;
-import magellan.library.rules.ItemType;
-import magellan.library.utils.Utils;
+import java.util.List;
 
 import com.fftools.OutTextClass;
 import com.fftools.ReportSettings;
@@ -31,6 +26,14 @@ import com.fftools.transport.Transporter;
 import com.fftools.utils.FFToolsArrayList;
 import com.fftools.utils.FFToolsRegions;
 import com.fftools.utils.PriorityUser;
+
+import magellan.library.Item;
+import magellan.library.Region;
+import magellan.library.Unit;
+import magellan.library.relation.AttackRelation;
+import magellan.library.relation.UnitRelation;
+import magellan.library.rules.ItemType;
+import magellan.library.utils.Utils;
 
 
 
@@ -1530,4 +1533,64 @@ public class TradeArea {
 		}
 		return erg;
 	}
+	
+	/**
+	 * Meldung, wenn Monster im TA sind, (die nicht angegriffen werden)
+	 */
+	public int monsterAlert(boolean alertOnlyUnattacked) {
+		if (this.tradeRegions==null || this.tradeRegions.size()==0) {
+			return 0;
+		}
+		int erg = 0;
+		for (TradeRegion TA:this.tradeRegions) {
+			Region r = TA.getRegion();
+			int countMonster=0;
+			int countAttackedMonster=0;
+			int countAttackingPersons = 0;
+			String exampleMonsterUnitNumber = "";
+			for (Unit u:r.getUnits().values()) {
+				// wenn Monster
+				if (u.getFaction()!=null && u.getFaction().getID().toString().equalsIgnoreCase("ii")) {
+					countMonster+=u.getPersons();
+					if (exampleMonsterUnitNumber=="") {
+						exampleMonsterUnitNumber=u.toString();
+					}
+					boolean isAttacked = false;
+					List<UnitRelation> uR_List = u.getRelations();
+					if (uR_List!=null && uR_List.size()>0) {
+						for (UnitRelation uR:uR_List) {
+							if (uR instanceof AttackRelation) {
+								if (!isAttacked) {
+									isAttacked=true;
+									countAttackedMonster+=u.getPersons();
+								}
+								if (uR.origin!=null) {
+									countAttackingPersons+=uR.origin.getPersons();
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			if (countMonster>0 && (!alertOnlyUnattacked || countAttackingPersons==0)) {
+				outText.addOutLine("!!! Monster [" + exampleMonsterUnitNumber + "] (" + countMonster + " Monster) in " + r.toString() + ", attackiert: " + countAttackedMonster + " Monster von " + countAttackingPersons + " Angreifern", true);
+				erg++;
+			}
+		}
+		return erg;
+	}
+	
+	public TradeRegion getTradeRegion(Region r) {
+		if (this.tradeRegions!=null && this.tradeRegions.size()>1) {
+			for (TradeRegion TR:this.tradeRegions) {
+				if (TR.getRegion().equals(r)) {
+					return TR;
+				}
+			}
+		}
+		return null;
+	}
+	
+	
 }

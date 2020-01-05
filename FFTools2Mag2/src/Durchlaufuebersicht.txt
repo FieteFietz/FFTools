@@ -98,19 +98,20 @@ Werftmanager		60
 					
 					
 ------------------------------------------w o r k -------------------
-24.07.2016: (0.77)
-Overlord Skriptinfos
+20.01.2020: (0.96)
+Overlord SkriptinfosOverlord Skriptinfos
 1:Setauthcode
+5:Setlernplan
 10:Settrankorder
-11:Setlernplan
 12:Setkapa
 13->Manager:TradeAreaHandler
 14:Auramaxwarning
 15:Ifregion
-16:Ifnotregion
+16:Setregionicon,Ifnotregion
 17:Ifunit
+18:Runde
 19:Ack
-20:Depot,Ifnotshipok,Ifshipok
+20:Depot
 21:Trankeffekt
 22:Gibnix
 25:Enterbuilding
@@ -124,22 +125,19 @@ Overlord Skriptinfos
 42:Sailto
 44:Goto
 50:Transport,Mymonster
-51:Eisen,Steine,Lumberjack
+51:Zupfer,Steine,Eisen,Lumberjack,Laen
 55->Manager:PferdeManager
-58:Werft
+59:Unterhalten,Bauen
 60:Lernen
-60->Manager:WerftManager
 62:Lernfix
-70:Unterhalten
 74->Manager:CircusPoolManager
 78:Unterhalten
 79->Manager:CircusPoolManager
 80->Manager:AusbildungsManager
 82:Lehren
 86:Gebaeudeunterhalt
-90:Burgenbau
+90:Burgenbau,Strassenbau
 92:Bauauftrag
-94:Bauen
 100->Manager:BauManager
 102:Bauen
 104:Usetradeareaconnection
@@ -150,13 +148,13 @@ Overlord Skriptinfos
 112:Treiben
 120:Ontradeareaconnection
 125->Manager:TradeAreaHandler
-135:Laen
 161:Checkhelpstatus
 190:Vorrat
 200->Manager:MatPoolManager
-205:Lumberjack
-210:Treiben
+205:Steine,Eisen,Lumberjack
+210:Treiben,Werft
 220:Islandinfo
+220->Manager:WerftManager
 250->Manager:TreiberPoolManager
 260:Treiben
 300:Transport
@@ -184,6 +182,7 @@ Overlord Skriptinfos
 700->Manager:MatPoolManager
 710:Trankeffekt
 720:Rekrutieren
+725:Bewachen
 730:Liefere
 800:Depot
 810:Handeln
