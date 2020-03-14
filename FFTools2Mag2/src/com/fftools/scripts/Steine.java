@@ -81,6 +81,7 @@ public class Steine extends MatPoolScript{
 	private void start(){
 		super.addVersionInfo();
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Steine");
+		OP.addOptionList(this.getArguments());
 		
 		int unitMinTalent = OP.getOptionInt("minTalent", -1);
 		if (unitMinTalent>this.minTalent){

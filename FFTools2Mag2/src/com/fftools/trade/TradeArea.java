@@ -18,6 +18,7 @@ import com.fftools.pools.circus.CircusPoolManager;
 import com.fftools.pools.circus.CircusPoolRelation;
 import com.fftools.pools.matpool.MatPool;
 import com.fftools.pools.matpool.MatPoolManager;
+import com.fftools.pools.seeschlangen.MonsterJagdManager_MJM;
 import com.fftools.pools.treiber.TreiberPool;
 import com.fftools.pools.treiber.TreiberPoolManager;
 import com.fftools.scripts.Vorrat;
@@ -104,7 +105,17 @@ public class TradeArea {
 	 */
 	private TradeAreaBauManager tradeAreaBauManager = null;
 	
+	private boolean hasInsektenTransporter = false;
 	
+	
+	public boolean isHasInsektenTransporter() {
+		return hasInsektenTransporter;
+	}
+
+	public void setHasInsektenTransporter(boolean hasInsektenTransporter) {
+		this.hasInsektenTransporter = hasInsektenTransporter;
+	}
+
 	public int getAdjustedBalance(ItemType itemType) {
 		if (this.adjustedBalance==null){
 			return 0;
@@ -1052,6 +1063,9 @@ public class TradeArea {
 		}
 		if (!this.transporters.contains(t)){
 			this.transporters.add(t);
+			if (t.getScriptUnit().isInsekt()) {
+				this.setHasInsektenTransporter(true);
+			}
 		}
 	}
 	
@@ -1542,12 +1556,14 @@ public class TradeArea {
 			return 0;
 		}
 		int erg = 0;
+		MonsterJagdManager_MJM MJM = this.overlord.getMJM();
 		for (TradeRegion TA:this.tradeRegions) {
 			Region r = TA.getRegion();
 			int countMonster=0;
 			int countAttackedMonster=0;
 			int countAttackingPersons = 0;
 			String exampleMonsterUnitNumber = "";
+			boolean RegionIsTargetted = false;
 			for (Unit u:r.getUnits().values()) {
 				// wenn Monster
 				if (u.getFaction()!=null && u.getFaction().getID().toString().equalsIgnoreCase("ii")) {
@@ -1570,12 +1586,26 @@ public class TradeArea {
 							}
 						}
 					}
+					
+					if (MJM.isMonsterTargetted(u)) {
+						RegionIsTargetted=true;
+					}
 				}
 			}
 			
-			if (countMonster>0 && (!alertOnlyUnattacked || countAttackingPersons==0)) {
-				outText.addOutLine("!!! Monster [" + exampleMonsterUnitNumber + "] (" + countMonster + " Monster) in " + r.toString() + ", attackiert: " + countAttackedMonster + " Monster von " + countAttackingPersons + " Angreifern", true);
-				erg++;
+			if (countMonster>0) {
+				boolean listThisCase=true;
+				if (countAttackingPersons>0 && alertOnlyUnattacked) {			
+					listThisCase=false;
+				}
+				if (RegionIsTargetted && alertOnlyUnattacked) {
+					listThisCase=false;
+				}
+
+				if (listThisCase) {
+					outText.addOutLine("!!! Monster [" + exampleMonsterUnitNumber + "] (" + countMonster + " Monster) in " + r.toString() + ", attackiert: " + countAttackedMonster + " Monster von " + countAttackingPersons + " Angreifern", true);
+					erg++;
+				}
 			}
 		}
 		return erg;

@@ -55,10 +55,10 @@ public class TreiberPoolRelation implements Comparable<TreiberPoolRelation> {
 		SkillType treibenSkillType =  treiberPool.treiberPoolManager.scriptMain.gd_ScriptMain.getRules().getSkillType("Steuereintreiben");
 		
 		// kann die Einheit treiben? Falls nicht kommt null zurück.
-		if (scriptUnit.getUnit().getSkill(treibenSkillType) != null){
+		if (scriptUnit.getUnit().getModifiedSkill(treibenSkillType) != null){
             // ja, dann kann man das talent abgreifen. 		
 			// sonst bleibt es eben bei Stufe 0.
-			talentStufe = scriptUnit.getUnit().getSkill(treibenSkillType).getLevel();
+			talentStufe = scriptUnit.getUnit().getModifiedSkill(treibenSkillType).getLevel();
         }	
 		
 		verdienst=personenZahl*talentStufe*20;
@@ -132,6 +132,7 @@ public class TreiberPoolRelation implements Comparable<TreiberPoolRelation> {
 
 	public void setPersonenZahl(int personenZahl) {
 		this.personenZahl = personenZahl;
+		this.verdienst=this.personenZahl*talentStufe*20;
 	}
 
 

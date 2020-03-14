@@ -80,7 +80,7 @@ public class Ack extends Script {
 						// Wenn confirmUnitl >= null war
 						// der confirm-parameter eine gültige zahl.
 						if (confirmUntil >= 0) {
-							super.scriptUnit.doNotConfirmOrders("Unbestätigt durch Script ACK: Laufzeit abgelaufen");
+							super.scriptUnit.doNotConfirmOrders("Unbestätigt durch Script ACK: Laufzeit abgelaufen, actuelle Runde: " + actGameRunde);
 						}
 
 					}

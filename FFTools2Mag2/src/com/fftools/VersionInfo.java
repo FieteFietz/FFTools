@@ -27,6 +27,8 @@ public class VersionInfo {
 	
 	private static String FFTools2Path = "";
 	
+	public static String compileTime = "";
+	
 	/**
 	 * @return the versionInfo
 	 */
@@ -55,6 +57,7 @@ public class VersionInfo {
 			if (jarEntry!=null){
 				Date d = new Date(jarEntry.getTime());
 				toAdd ="compiled: " + FileCopy.getDateS(d);
+				compileTime = FileCopy.getDateS(d);
 			} else {
 				toAdd ="jarEntry not found";
 			}

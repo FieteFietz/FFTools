@@ -40,7 +40,7 @@ public class Bauen extends MatPoolScript implements Cloneable{
 	
 	
 	// private static final ReportSettings reportSettings = ReportSettings.getInstance();
-	private int Durchlauf_Baumanager = 59;
+	private int Durchlauf_Baumanager = 56;
 	private int Durchlauf_vorMatPool = 102;
 	private int Durchlauf_nachMatPool = 440;   // und nach Gebäudeunterhalt bei 340!!
 	
@@ -126,7 +126,13 @@ public class Bauen extends MatPoolScript implements Cloneable{
 	private int remainingLevels=0; // Wieviel Baustufen verbleiben noch ?
 	private int supportedLevels = 0; // Wieviele Level steuern supporter bei
 	private int AnzahlLevelNachRessourcen = 0; // für wieviele level hätten wir den Material
+	private int makingBurgLevelsNow = 0; // für wieviel geben wir uns den beim Burgenbau diese Runde den Befehl 
 	
+	public int getAnzahlLevelNachRessourcen() {
+		return AnzahlLevelNachRessourcen;
+	}
+
+
 	private ArrayList<Supporter> supporters;  // Liste aller Bauarbeiter für dieses Projekt
 	private boolean hasMovingSupporters = false;
 	
@@ -216,6 +222,11 @@ public class Bauen extends MatPoolScript implements Cloneable{
 	
 	private int minAuslastung = 75;
 	
+	public int getMinAuslastung() {
+		return minAuslastung;
+	}
+
+
 	private String LernfixOrder = "Talent=Burgenbau";
 	
 	
@@ -864,6 +875,8 @@ public void runScript(int scriptDurchlauf){
 			if (actAnz<anzRes){anzRes=actAnz;}
 		}
 		this.addComment("Bauen: Ressourcen für " + anzRes + " Stufen bei " + this.buildingType.getName() + " verfügbar.");
+		this.AnzahlLevelNachRessourcen = anzRes;
+		
 		
 		// Step 2 was könnten wir maximal nach Talentstand der Einheit bauen?
 		SkillType bauType = this.gd_Script.getRules().getSkillType("Burgenbau",false);
@@ -929,6 +942,15 @@ public void runScript(int scriptDurchlauf){
 			this.addComment("Bauen: " + this.buildingType.getName() + " wird diese Runde fertig!");
 		}
 		
+		
+		if (!complete && anzRes>anzTal){
+			int anzRunden = (int)Math.ceil((double)anzRes / (double) anzTal) - 1;
+			this.remainingLevels = (this.targetSize - this.getActSize()) - anzTal;
+			this.addComment("Bei meiner aktuellen Arbeitsleistung kann ich noch " + anzRunden + " weitere Runden bauen. (Verbleibend: " + this.remainingLevels + " Stufen.");
+			this.turnsToGo = anzRunden;
+		}
+		
+		
 		// wird Mindestauslastung eingehalten
 		boolean okAusl = false;
 		int Auslastung = (int)Math.floor(((double)actAnz/(double)anzTal) * 100);
@@ -950,6 +972,13 @@ public void runScript(int scriptDurchlauf){
 			this.setFinalStatusInfo("baut " + actAnz + " " + this.buildingType.getName());
 			this.setAutomode_hasPlan(true);
 			this.addComment("Debug: Baubefehl: " + this.bauBefehl + " (" + this.scriptUnit.getMainDurchlauf() + ")");
+			this.makingBurgLevelsNow=actAnz;
+			
+			Supporter sup = new Supporter();
+			sup.setETA(0);
+			sup.setLevels(actAnz);
+			sup.setBauen(this);
+			this.addSupporter(sup);
 		} else {
 			// nicht bauen
 			this.addComment("Bauen: " + this.buildingType.getName() + " wird diese Runde nicht weitergebaut.");
@@ -1001,6 +1030,7 @@ public void runScript(int scriptDurchlauf){
 				this.setBauBefehl( "MACHEN " + actAnz + " BURG","nach MP Burg");
 			}
 			this.setFinalStatusInfo("baut " + actAnz + " Burg");
+			this.makingBurgLevelsNow=actAnz;
 			
 			Supporter sup = new Supporter();
 			sup.setETA(0);
@@ -1447,11 +1477,39 @@ public void runScript(int scriptDurchlauf){
 		this.addComment("Unterstützung beim Bauen gefunden: " + b.unitDesc());
 		b.addComment("Wird als Unterstützer eingesetzt für: " + this.unitDesc());
 		int otherAnzTal = b.calcAnzTalBurg(this.actSize);
+		if (this.getActTyp()==Bauen.BUILDING && this.getBuildingType()!=null) {
+			otherAnzTal = b.calcAnzahlTalent(this.getBuildingType().getBuildSkillLevel());
+		}
 		this.addComment("kann nach Talenten für " + otherAnzTal + " bauen.");
 		
+		int availableRessourceLevels = this.AnzahlLevelNachRessourcen - this.supportedLevels - this.makingBurgLevelsNow;
+		this.addComment("Material noch verfügbar für " + availableRessourceLevels + " Stufen.");
+		
+		int possibleLevels = Math.min(availableRessourceLevels, otherAnzTal);
+		
+		int otherAuslastung = (int)Math.floor(((double)possibleLevels/(double)otherAnzTal) * 100);
+		this.addComment("damit Auslastung des Unterstützers bei " + otherAuslastung + "%. (" + possibleLevels + " Stufen)");
+		
+		boolean wirdFertig=false;
+		if (this.remainingLevels - possibleLevels<=0) {
+			wirdFertig=true;
+		}
+		
+		if (otherAuslastung<b.getMinAuslastung()) {
+			if (wirdFertig) {
+				this.addComment("da die Burg durch die Unterstützung fertig wird, wird die MindestAuslastung ignoriert. Auf geht's!");
+			} else {
+				this.addComment("damit unter Mindestauslastung, unterstützer wird ignoriert.");
+				b.addComment("Unterstützung nicht möglich, unter mindestAuslastung");
+				return;
+			}
+		}
+		
 		int actStufen = Math.min(this.getRemainingLevels(), otherAnzTal);
+		actStufen = Math.min(actStufen, availableRessourceLevels);
 		if (actStufen<=0){
-			this.addComment("!!! -> Unterstützer soll 0 Stufen bauen ?!");
+			this.addComment("!!! -> Unterstützer soll 0 Stufen bauen ?! Wird ignoriert.");
+			b.addComment("Unterstützung nicht möglich, keine gültiger Auftrag vergeben");
 			return;
 		}
 		
@@ -1459,24 +1517,55 @@ public void runScript(int scriptDurchlauf){
 		this.remainingLevels-=actStufen;
 		this.supportedLevels += actStufen;
 		this.addComment("Verbleibende Stufen diese Runde: " + this.remainingLevels);
+		this.addComment("Verbleibende Stufen nach Material diese Runde: " + (this.AnzahlLevelNachRessourcen - this.supportedLevels - this.makingBurgLevelsNow));
 		
-		// Liefere
-		Liefere L = new Liefere();
-		ArrayList<String> order = new ArrayList<String>(); 
-		order.add("Ware=Stein");
-		order.add("Menge=" + actStufen);
-		String targetNummer = b.getUnit().toString(false).replace(" ","_");
+		if (this.actTyp==Bauen.BURG) {
 		
-		order.add("Ziel=" + targetNummer);
-		L.setArguments(order);
-		this.addComment("Liefere-Befehl hinzugefügt: " + order.toString());
-		this.getOverlord().addOverlordInfo(L);
-		L.setScriptUnit(this.scriptUnit);
-		if (this.getOverlord().getScriptMain().client!=null){
-			L.setClient(this.getOverlord().getScriptMain().client);
+			// Liefere
+			Liefere L = new Liefere();
+			ArrayList<String> order = new ArrayList<String>(); 
+			order.add("Ware=Stein");
+			order.add("Menge=" + actStufen);
+			String targetNummer = b.getUnit().toString(false).replace(" ","_");
+			
+			order.add("Ziel=" + targetNummer);
+			L.setArguments(order);
+			this.addComment("Liefere-Befehl hinzugefügt: " + order.toString());
+			this.getOverlord().addOverlordInfo(L);
+			L.setScriptUnit(this.scriptUnit);
+			if (this.getOverlord().getScriptMain().client!=null){
+				L.setClient(this.getOverlord().getScriptMain().client);
+			}
+			L.setGameData(this.getOverlord().getScriptMain().gd_ScriptMain);
+			this.scriptUnit.addAScriptNow(L);
 		}
-		L.setGameData(this.getOverlord().getScriptMain().gd_ScriptMain);
-		this.scriptUnit.addAScriptNow(L);
+		
+		if (this.actTyp==Bauen.BUILDING && this.buildingType!=null) {
+			// alle ressourcen durchgehen und die Lieferscripte anlegen
+			for (Iterator<Item> iter = this.buildingType.getRawMaterials().iterator();iter.hasNext();){
+				Item actItem = (Item)iter.next();
+				
+				// Liefere
+				Liefere L = new Liefere();
+				ArrayList<String> order = new ArrayList<String>(); 
+				order.add("Ware=" + actItem.getItemType().getName());
+				order.add("Menge=" + (actStufen * actItem.getAmount()));
+				String targetNummer = b.getUnit().toString(false).replace(" ","_");
+				
+				order.add("Ziel=" + targetNummer);
+				L.setArguments(order);
+				this.addComment("Liefere-Befehl hinzugefügt: " + order.toString());
+				this.getOverlord().addOverlordInfo(L);
+				L.setScriptUnit(this.scriptUnit);
+				if (this.getOverlord().getScriptMain().client!=null){
+					L.setClient(this.getOverlord().getScriptMain().client);
+				}
+				L.setGameData(this.getOverlord().getScriptMain().gd_ScriptMain);
+				this.scriptUnit.addAScriptNow(L);
+			}
+		}
+		
+		
 		
 		// Plan setzen
 		b.setAutomode_hasPlan(true);
@@ -1490,6 +1579,9 @@ public void runScript(int scriptDurchlauf){
 		
 		// turns to go...
 		int newSum = this.calcAnzTalBurg(this.actSize) + this.supportedLevels;
+		if (this.actTyp==Bauen.BUILDING && this.buildingType!=null) {
+			newSum = this.calcAnzahlTalent(this.buildingType.getBuildSkillLevel());
+		}
 		int newTurnsToGo = (int)Math.ceil((double)this.AnzahlLevelNachRessourcen / (double)newSum);
 		this.addComment("Mit Unterstützer diese Runde ein Weiterbau von " + newSum + " Stufe an der Burg. (Baudauer: " + newTurnsToGo + " Runden.");
 		this.turnsToGo = newTurnsToGo;
@@ -1542,10 +1634,13 @@ public void runScript(int scriptDurchlauf){
 				
 				// turns to go irgendwie anpassen...
 				int otherAnzTal = b.calcAnzTalBurg(this.actSize);
+				if (this.actTyp==Bauen.BUILDING && this.buildingType!=null) {
+					otherAnzTal = b.calcAnzahlTalent(this.buildingType.getBuildSkillLevel());
+				}
 				this.addComment("Unterstützer kann nach Talenten für " + otherAnzTal + " bauen.");
 				
 				Supporter sup = new Supporter();
-				sup.setETA(0);
+				sup.setETA(gotoInfo.getAnzRunden());
 				sup.setLevels(otherAnzTal);
 				sup.setBauen(b);
 				this.addSupporter(sup);
@@ -1578,6 +1673,12 @@ public void runScript(int scriptDurchlauf){
 	
 	public int calcAnzTalBurg(int castleSize){
 		// Step 2 was könnten wir maximal nach Talentstand der Einheit bauen?
+		return calcAnzahlTalent(FFToolsGameData.getCastleSizeBuildSkillLevel(castleSize));
+	}
+	
+	
+	public int calcAnzahlTalent(int buildingNeededLevel) {
+		// Step 2 was könnten wir maximal nach Talentstand der Einheit bauen?
 		SkillType bauType = this.gd_Script.getRules().getSkillType("Burgenbau",false);
 		int anzTalPoints = 0;
 		if (bauType!=null){
@@ -1598,7 +1699,7 @@ public void runScript(int scriptDurchlauf){
 		
 		int anzTal=0;
 		
-		anzTal = (int)Math.floor((double)anzTalPoints/(double)FFToolsGameData.getCastleSizeBuildSkillLevel(castleSize));
+		anzTal = (int)Math.floor((double)anzTalPoints/(double)buildingNeededLevel);
 		
 		this.addComment("Bauen: Einheit ist fähig für " + anzTal + " Stufen bei der Burg");
 		
@@ -1630,8 +1731,8 @@ public void runScript(int scriptDurchlauf){
 		}
 		
 		return anzTal;
-		
 	}
+	
 	
 	private void addSupporter(Supporter sup){
 		if (this.supporters==null){

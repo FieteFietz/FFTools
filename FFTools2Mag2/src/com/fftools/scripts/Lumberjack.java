@@ -86,6 +86,7 @@ public class Lumberjack extends MatPoolScript{
 	 */
 	private void start(){
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Lumberjack");
+		OP.addOptionList(this.getArguments());
 		
 		int unitMinTalent = OP.getOptionInt("minTalent", -1);
 		if (unitMinTalent>this.minTalent){

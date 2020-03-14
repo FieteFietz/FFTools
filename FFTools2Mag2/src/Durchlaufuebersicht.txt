@@ -116,7 +116,9 @@ Overlord SkriptinfosOverlord Skriptinfos
 22:Gibnix
 25:Enterbuilding
 26:Rekrutieren
-28:Pferde
+27->Manager:MatPoolManager
+28:Rekrutieren
+29:Pferde
 30:Material
 32:Handeln
 33:Settradeareaconnection
@@ -181,7 +183,6 @@ Overlord SkriptinfosOverlord Skriptinfos
 666->Manager:AkademieManager
 700->Manager:MatPoolManager
 710:Trankeffekt
-720:Rekrutieren
 725:Bewachen
 730:Liefere
 800:Depot

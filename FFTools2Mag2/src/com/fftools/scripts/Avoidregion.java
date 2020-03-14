@@ -56,4 +56,8 @@ public class Avoidregion extends Script {
 		addOutLine("X....ungültiges AvoidRegion bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 	}
 	
+	public boolean allowMultipleScripts(){
+		return true;
+	}
+	
 }

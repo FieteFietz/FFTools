@@ -82,7 +82,7 @@ public class FileCopy {
 	}
 	
 	public static String getDateS(Date d) {
-		SimpleDateFormat fr = new SimpleDateFormat("yyyyMMdd_HHmmss");
+		SimpleDateFormat fr = new SimpleDateFormat("yyyyMMdd_HHmm");
   	  	String dateS =  fr.format(d);
   	  	return dateS;
 	}

@@ -970,7 +970,7 @@ private MatPool matPool = null;
 						schuelerId += schueler.getScriptUnit().getUnit().toString(false) + spacer;
 						anzSchueler += schueler.getSchuelerPlaetze();
 					}
-					relation.getScriptUnit().addComment("AusbildungsPool: Einheit ist Lehrer!");
+					relation.getScriptUnit().addComment("AusbildungsPool: Einheit ist Lehrer! (Lehrt insgesammt " + anzSchueler + " Schüler)");
 					Skill lehrfach = (Skill)relation.getSubject().values().toArray()[relation.getSubject().values().toArray().length-1];
 					relation.setOrderedSkillType(lehrfach.getSkillType());
 					// Tags setzen
@@ -1019,10 +1019,19 @@ private MatPool matPool = null;
 					relation.getScriptUnit().putTag(CRParser.TAGGABLE_STRING3, "Autodidakten - Pool");				
 					relation.getScriptUnit().addComment("AusbildungsPool: Einheit findet keinen Lehrer!");
 			    	} else {
-					// Schüler hat Liste mit Lehrer!
-			    	// Tag setzen	
-			    	relation.getScriptUnit().putTag(CRParser.TAGGABLE_STRING3, "Schüler - Pool");				
-					relation.getScriptUnit().addComment("AusbildungsPool: Einheit wird gelehrt!");
+			    		// Anzahl der Lehrer ermitteln
+			    		// Die zugepoolten Relations der Schüler des Lehrers abfragen
+			    		int anzLehrer=0;
+						for (Iterator<AusbildungsRelation> iter1 = relation.getPooledRelation().iterator(); iter1.hasNext();) {
+							AusbildungsRelation lehrer = (AusbildungsRelation) iter1.next();
+							// Schrittweise Liste der Lehrer checken
+							anzLehrer += lehrer.getSchuelerPlaetze();
+						}			    		
+			    		
+						// Schüler hat Liste mit Lehrer!
+				    	// Tag setzen	
+				    	relation.getScriptUnit().putTag(CRParser.TAGGABLE_STRING3, "Schüler - Pool");				
+						relation.getScriptUnit().addComment("AusbildungsPool: Einheit wird gelehrt! (von " + anzLehrer + " Lehrern)");
 				}
 
 			}

@@ -17,6 +17,7 @@ import com.fftools.pools.circus.CircusPoolManager;
 import com.fftools.pools.heldenregionen.HeldenRegionsManager;
 import com.fftools.pools.matpool.MatPoolManager;
 import com.fftools.pools.pferde.PferdeManager;
+import com.fftools.pools.seeschlangen.MonsterJagdManager_MJM;
 import com.fftools.pools.seeschlangen.SeeschlangenJagdManager_SJM;
 import com.fftools.pools.treiber.TreiberPoolManager;
 import com.fftools.trade.TradeAreaHandler;
@@ -74,6 +75,7 @@ public class Overlord {
 	private BauManager bauManager = null;
 	private WerftManager werftManager = null;
 	private SeeschlangenJagdManager_SJM SJM = null;
+	private MonsterJagdManager_MJM MJM = null;
 	
 	
 	/**
@@ -251,6 +253,21 @@ public class Overlord {
 				outText.addNewLine();
 			}
 			
+			if (mainDurchlauf==19) {
+				// test tefresh
+				scriptMain.updateRelations("run 19");
+			}
+			
+			if (mainDurchlauf==28) {
+				// test tefresh
+				scriptMain.updateRelations("run 28");
+			}
+			
+			if (mainDurchlauf==790) {
+				// test tefresh
+				scriptMain.updateRelations("run 790");
+			}
+			
 			
 			// maximalen Durchlauf erreicht?
 			if (mainDurchlauf>maxDurchLauf){
@@ -418,7 +435,7 @@ public class Overlord {
 	 */
 	private void addRunner(OverlordRun o){
 		if (this.runnings==null){
-			this.runnings = new ArrayList<OverlordRun>(1);
+			this.runnings = new ArrayList<OverlordRun>();
 		}
 		if (!this.runnings.contains(o)){
 			this.runnings.add(o);
@@ -478,10 +495,22 @@ public class Overlord {
 		if (this.SJM==null) {
 			this.SJM = new SeeschlangenJagdManager_SJM(this);
 			this.addRunner(SJM);
-			this.addOverlordInfo(SJM);
 		}
 		return this.SJM;
 	}
+	
+	/**
+	 * 
+	 * @return the MJM
+	 */
+	public MonsterJagdManager_MJM getMJM() {
+		if (this.MJM==null) {
+			this.MJM = new MonsterJagdManager_MJM(this);
+			this.addRunner(MJM);
+		}
+		return this.MJM;
+	}
+	
 
 
 	/**

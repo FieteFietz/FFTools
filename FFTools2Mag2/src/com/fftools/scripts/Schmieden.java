@@ -248,6 +248,19 @@ public void runScript(int scriptDurchlauf){
 		
 		this.maxProduction = maxMachenWare;
 		
+		int setMenge = OP.getOptionInt("menge", 0); 
+		
+		if (setMenge>0) {
+			this.addComment("vorgegebene Menge erkannt: " + setMenge);
+			if (setMenge<=this.maxProduction) {
+				this.maxProduction = setMenge;
+				maxMachenWare= setMenge;
+				this.addComment("Gewünschte Menge angepasst auf " + this.maxProduction);
+			} else {
+				this.addComment("Gewünschte Menge kann nicht umgesetzt werden, es bleibt bei " + this.maxProduction);
+			}
+		}
+		
 		// die prios Festlegen
 		Building actB = this.scriptUnit.getUnit().getModifiedBuilding();
 		if (actB!=null){

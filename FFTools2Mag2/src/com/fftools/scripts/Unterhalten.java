@@ -26,7 +26,7 @@ import com.fftools.utils.GotoInfo;
 public class Unterhalten extends TransportScript{
 	private static final ReportSettings reportSettings = ReportSettings.getInstance();
 	
-	private int Durchlauf_vorCircusPool = 59;
+	private int Durchlauf_vorCircusPool = 56;
 	private int Durchlauf_nachCircusPool = 78;
 	
 	private int[] runners = {Durchlauf_vorCircusPool,Durchlauf_nachCircusPool};

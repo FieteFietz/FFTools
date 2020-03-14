@@ -22,6 +22,7 @@ import magellan.library.utils.Regions;
 import com.fftools.overlord.Overlord;
 import com.fftools.pools.bau.TradeAreaBauManager;
 import com.fftools.pools.circus.CircusPoolManager;
+import com.fftools.pools.seeschlangen.MonsterJagdManager_MJM;
 import com.fftools.pools.treiber.TreiberPoolManager;
 import com.fftools.scripts.Script;
 import com.fftools.trade.TradeAreaHandler;
@@ -210,6 +211,8 @@ public class ScriptMain {
 		// Debug Tests
 		TradeAreaHandler TAH = this.getOverlord().getTradeAreaHandler();
 		
+		MonsterJagdManager_MJM MJM = this.getOverlord().getMJM();
+		
 		// just in case we run twice with changed excluded regions
 		Regions.setExcludedRegions(null);
 		
@@ -379,9 +382,17 @@ public class ScriptMain {
 		
 		
 		// doNotConfirmGründe extra ausgeben
+		// Zahlen mitzählen
+		int confirmedScripterUnits=0;
+		int unConfirmedScripterUnits=0;
 		for (Iterator<ScriptUnit> iter = scriptUnits.values().iterator();iter.hasNext();){
 			ScriptUnit scrU = (ScriptUnit)iter.next();
 			scrU.informDoNotConfirmReason();
+			if (scrU.getUnit().isOrdersConfirmed()) {
+				confirmedScripterUnits++;
+			} else {
+				unConfirmedScripterUnits++;
+			}
 		}
 		
 		
@@ -405,7 +416,7 @@ public class ScriptMain {
 		if (this.client!=null && this.client.getSelectedRegions()!=null && this.client.getSelectedRegions().size()>0){
 			outText.addOutLine("!Achtung. Nur selektierte Regionen wurden bearbeitet. Anzahl: " + this.client.getSelectedRegions().size());
 		}
-		
+		outText.addOutLine("Statistik: " + confirmedScripterUnits + " Script-Einheiten bestätigt, " + unConfirmedScripterUnits + " unbestätigt.");
 		outText.addOutLine("runScripts benötigte " + (endT-startT) + " ms.");
 
 	}
@@ -869,6 +880,17 @@ public void createFactionCompare(){
 	outText.setFile(oldFile);
 	outText.setScreenOut(oldScreenOut);
 	
+}
+
+public void updateRelations(String extraText) {
+	long bet_start = System.currentTimeMillis();
+	outText.addOutLine("Test - refreshing  - updating relations (" + extraText + ")");
+	this.restartRelationUpdates();
+	this.refreshScripterRegions();
+	this.refreshClient();
+	this.stopRelationUpdates();
+	long bet_end = System.currentTimeMillis();
+	outText.addOutLine("refreshing benötigte " + (bet_end-bet_start) + " ms.");
 }
 
 

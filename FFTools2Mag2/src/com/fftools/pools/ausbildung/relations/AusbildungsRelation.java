@@ -416,6 +416,7 @@ public class AusbildungsRelation {
 					s += " " + "NULL";
 				}
 			}
+			s += " (" + this.getTeachPlaetze() + " Schüler.)";
 			this.scriptUnit.addComment(s);
 		} else {
 			this.scriptUnit.addComment("kein Lehrereinsatz");
@@ -431,6 +432,7 @@ public class AusbildungsRelation {
 					s += " " + "NULL";
 				}
 			}
+			s += " (" + this.getSchuelerPlaetze() + " Pers.)";
 			this.scriptUnit.addComment(s);
 		} else {
 			this.scriptUnit.addComment("kein Lernbedarf");

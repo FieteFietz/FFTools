@@ -23,7 +23,7 @@ import com.fftools.utils.GotoInfo;
 public class Pferde extends MatPoolScript{
 	
 	
-	private static final int Durchlauf_vorMP1 = 28;
+	private static final int Durchlauf_vorMP1 = 29;
 	private static final int Durchlauf_nachMP1 = 310;
 	
 	/**
@@ -124,7 +124,7 @@ public class Pferde extends MatPoolScript{
 	private void scriptStart(){
 		// Optionen Parsen
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Pferde");
-		
+		OP.addOptionList(this.getArguments());
 		
 		int unitMinTalent = OP.getOptionInt("minTalent", -1);
 		if (unitMinTalent>this.minTalent){

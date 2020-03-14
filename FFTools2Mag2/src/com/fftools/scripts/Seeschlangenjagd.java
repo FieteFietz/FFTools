@@ -21,13 +21,14 @@ import magellan.library.utils.Regions;
 
 public class Seeschlangenjagd extends MatPoolScript{
 
-	int Durchlauf_Attacker = 460; // bei Manager registrieren
-	// 462: der manager verteilt aufgaben
-	int Durchlauf_Mover = 465; // Prüfungen, infos, etc
+	int Durchlauf_Attacker = 58; // bei Manager registrieren, nach MatPool nach Request und Lohn 
+	// 54: der manager verteilt aufgaben  // vor Lernfix!
+	int Durchlauf_Mover = 65; // Prüfungen, infos, etc
 	private int[] runners = {Durchlauf_Attacker,Durchlauf_Mover};
 	
 	public boolean is_attacking = false;
 	public boolean is_moving_home = false;
+	public boolean is_Learning = false;
 	
 	public CoordinateID targetRegionCoord = null;
 	public CoordinateID actRegionCoord = null;
@@ -42,6 +43,14 @@ public class Seeschlangenjagd extends MatPoolScript{
 	private SeeschlangenJagdManager_SJM SJM=null;
 	
 	public int speed = 0;
+	
+	/*
+	 * freies Patroullieren ohne Ziel?
+	 */
+	public boolean mayPatrol = true;
+	
+	private String Lernplan="";
+	private String Lerntalent="";
 	
 	
 	/**
@@ -88,8 +97,9 @@ public class Seeschlangenjagd extends MatPoolScript{
 		}
 		
 		
-		// die Basics checken - wir benötigen Zwingen Parameter HOME und Entfernung
+		// die Basics checken - wir benötigen Zwingend Parameter HOME und Entfernung
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"SeeschlangenJagd");
+		OP.addOptionList(this.getArguments());
 		
 		String homeString=OP.getOptionString("home");
 		if (homeString.length()>2){
@@ -118,7 +128,17 @@ public class Seeschlangenjagd extends MatPoolScript{
 			this.ReserveWochen = setReserveWochen;
 		}
 		
-		this.addComment("SJ: HOME=" + this.HomeRegionCoord.toString(",", false) + ", Entfernung=" + this.Entfernung + " Regionen, ReserveWochen=" + this.ReserveWochen);
+		this.mayPatrol = OP.getOptionBoolean("Patrouille", true);
+		this.mayPatrol = OP.getOptionBoolean("Patrol", this.mayPatrol);
+		
+		String patrolInfo = "darf Patrouille fahren";
+		if (!this.mayPatrol) {
+			patrolInfo = "soll keine Patrouille fahren";
+		}
+		
+		this.addComment("SJ: HOME=" + this.HomeRegionCoord.toString(",", false) + ", Entfernung=" + this.Entfernung + " Regionen, ReserveWochen=" + this.ReserveWochen + ", " + patrolInfo);
+		this.Lernplan = OP.getOptionString("Lernplan");
+		this.Lerntalent = OP.getOptionString("Talent");
 		
 		// meldet nur an, wenn einsatzfähig + auf Ozean
 		// Silber feststellen
@@ -248,6 +268,33 @@ public class Seeschlangenjagd extends MatPoolScript{
 	}
 	
 	
-	
+	/*
+	 * vom SJM
+	 */
+	public void Lerne() {
+		String LernfixOrder=null;
+		if (this.Lernplan.length()>2) {
+			LernfixOrder="Lernplan=" + this.Lernplan;
+		}
+		if (LernfixOrder==null && this.Lerntalent.length()>2) {
+			LernfixOrder="Talent=" + this.Lerntalent;
+		}
+		if (LernfixOrder==null) {
+			this.doNotConfirmOrders("Seeschlangenjäger soll Lernen, aber was denn?");
+			return;
+		}
+		this.scriptUnit.addComment("Lernfix wird initialisiert mit dem Parameter: " + LernfixOrder);
+		Script L = new Lernfix();
+		ArrayList<String> order = new ArrayList<String>();
+		order.add(LernfixOrder);
+		L.setArguments(order);
+		L.setScriptUnit(this.scriptUnit);
+		L.setGameData(this.scriptUnit.getScriptMain().gd_ScriptMain);
+		if (this.scriptUnit.getScriptMain().client!=null){
+			L.setClient(this.scriptUnit.getScriptMain().client);
+		}
+		this.scriptUnit.addAScript(L);
+	}
+
 
 }

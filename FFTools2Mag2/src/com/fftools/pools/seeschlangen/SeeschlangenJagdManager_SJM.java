@@ -32,7 +32,7 @@ import magellan.library.utils.Regions;
  *
  */
 public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
-	
+
 	private static final OutTextClass outText = OutTextClass.getInstance();
 	
 	private Overlord overLord = null;
@@ -52,9 +52,9 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 		
 	/**
 	 * Wann soll er laufen
-	 * VOR Lernfix NACH Pferde
+	 * VOR Lernfix 
 	 */
-	private static final int Durchlauf = 462;
+	private static final int Durchlauf = 59;
 	
 	// Rückgabe als Array
 	private int[] runners = {Durchlauf};
@@ -314,7 +314,7 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 		int count_randomers=0;
 		int count_RTB = 0 ;
 		for (Seeschlangenjagd SJ:this.availableMovers) {
-			if (SJ.targetRegionCoord==null && !SJ.is_attacking && !SJ.is_moving_home) {
+			if (SJ.targetRegionCoord==null && !SJ.is_attacking && !SJ.is_moving_home && SJ.mayPatrol) {
 				// freier Mover
 				// Sicherheitscheck: bin ich - warum auch immer, innerhalb der Entfernug zu HOME?
 				int dist = Regions.getDist(SJ.actRegionCoord, SJ.HomeRegionCoord);
@@ -368,7 +368,7 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 						count_RTB++;
 					} else {
 						// SJ.addComment("SJM: Suche zufälliges neues Ziel aus: " + possibleRegions.toString());
-						SJ.addComment("SJM: Suche zufälliges neues Ziel aus...(" + possibleRegions.size() + " Regionen möglioch)");
+						SJ.addComment("SJM: Suche zufälliges neues Ziel aus...(" + possibleRegions.size() + " Regionen möglich)");
 						Region targetR = null;
 						if (possibleRegions.size()==1) {
 							SJ.addComment("SJM: nur ein Ziel, die Wahl fällt nicht schwer...");
@@ -386,6 +386,14 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 				}
 			}
 		}
+		long cntLearnen=0;
+		for (Seeschlangenjagd SJ:this.availableMovers) {
+			if (SJ.targetRegionCoord==null && !SJ.is_attacking && !SJ.is_moving_home && !SJ.is_Learning) {
+				// die haben nix bekommen
+				SJ.Lerne();
+				cntLearnen++;
+			}
+		}
 		
 		
 		// Informationen
@@ -395,7 +403,7 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 			su.addComment("SJM: Seeschlangen Schlacht überlebt in: " + SchlangenSchlachten.toString());
 			su.addComment("SJM: Seeschlangen vermutet nach Sichtung in: " + vermuteteSchlangen.size() + " Regionen");
 			su.addComment("SJM: Seeschlangen vermutet nach Schlacht in: " + SchlangenSchlachtenUmgebung.size()+ " Regionen");
-			su.addComment("SJM: SJ als verfügbar gemeldet: " + this.availableMovers.size() + ", davon " + count_randomers + " auf Zufallskurs, " + count_RTB + " RTB");
+			su.addComment("SJM: SJ als verfügbar gemeldet: " + this.availableMovers.size() + ", davon " + count_randomers + " auf Zufallskurs, " + count_RTB + " RTB, " + cntLearnen + " lernen.");
 			su.addComment("SJM: zu schützende Schiffe: " + protectedShips.size() + ", davon " + countProtectedShips + " geschützt.");
 		}
 		

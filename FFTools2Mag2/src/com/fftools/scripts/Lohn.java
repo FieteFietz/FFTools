@@ -86,7 +86,7 @@ public class Lohn extends MatPoolScript{
 		// anzahl der in Frage kommenden Personen bestimmen
 		int personenAnzahl = super.scriptUnit.getUnit().getModifiedPersons();
 		// wurde was dazurekrutiert?
-		personenAnzahl += super.scriptUnit.getRecruitedPersons();
+		// personenAnzahl += super.scriptUnit.getRecruitedPersons();
 		
 		// Menge benoetigten Silbers...Trivial
 		// int silber = personenAnzahl * 10 * this.AnzRunden;

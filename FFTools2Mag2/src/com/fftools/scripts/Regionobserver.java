@@ -345,6 +345,9 @@ public class Regionobserver extends MatPoolScript{
 		if (countWeapons>this.getUnit().getModifiedPersons()) {
 			this.addComment("Hinweis: es sind mehr Waffen als benötigt bei dieser Einheit !!!");
 		}
+		if (countWeapons==0) {
+			this.addComment("Hinweis: der RegionObserver hat keine Waffe zum Bewachen...");
+		}
 		
 		if (alertStatus==0) {
 			// Falls die Einheit noch nicht bewacht, setze Befehle
@@ -354,7 +357,7 @@ public class Regionobserver extends MatPoolScript{
 				// erhaltene Waffen zählen
 				if (countWeapons > 0){
 					// reicht
-					this.scriptUnit.addOrder("BEWACHEN", false);
+					this.scriptUnit.addOrder("BEWACHEN ;RegionObserver ohne Feind. Waffen: " + countWeapons, false);
 					if (!this.GuardIfEnemey) {
 						this.scriptUnit.addOrder("KÄMPFE NICHT", false);
 					}
@@ -387,7 +390,11 @@ public class Regionobserver extends MatPoolScript{
 			} else {
 				// wir bewachen noch nicht
 				if (this.GuardIfEnemey) {
-					this.scriptUnit.addOrder("BEWACHEN", false);
+					if (countWeapons>0) {
+						this.scriptUnit.addOrder("BEWACHEN ;RegionObserver trotz Feind, Waffen: " + countWeapons, false);
+					} else {
+						this.scriptUnit.addComment("RegionObserver: Hätte ich auch nur eine Waffe, dann würde ich das Bewachen jetzt beginnen.");;
+					}
 					if (this.scriptUnit.getUnit().getCombatStatus()==EresseaConstants.CS_FLEE) {
 						this.doNotConfirmOrders("!!! RegionObserver: Kampfstatus ist FLIEHE, bitte prüfen!!!");
 					}

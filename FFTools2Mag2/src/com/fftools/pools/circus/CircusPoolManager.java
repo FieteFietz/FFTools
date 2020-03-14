@@ -180,13 +180,20 @@ public class CircusPoolManager implements OverlordRun,OverlordInfo {
     				// jetzt checken, ob ein Unterhalter in die aktuelle Bedarfslage passt...
     				// dazu muss sein maximalVerdienst < remainingUnterhal sein
     				if (cpr.getUnterhalten().isUnterMindestAuslastung() && cpr.getUnterhalten().getTargetRegion()==null && cpr.getUnterhalten().isAutomode() && cpr.getVerdienst()<cp.getRemainingUnterhalt()){
-    					// Bingo
-    					// schicken wir ihn los.
-    					cpr.getUnterhalten().setTargetRegion(cp.region);
-    					// und jetzt paar Infos
-    					// im Zielgebiet
-    					informTargetCP(cp, cpr);
-    					break;
+    					boolean istGeeignet=true;
+    					
+    					if (cp.region.getRegionType().getName().equalsIgnoreCase("Gletscher") && cpr.getUnterhalten().scriptUnit.isInsekt()) {
+    						istGeeignet=false;
+    					}
+    					if (istGeeignet) {
+	    					// Bingo
+	    					// schicken wir ihn los.
+	    					cpr.getUnterhalten().setTargetRegion(cp.region);
+	    					// und jetzt paar Infos
+	    					// im Zielgebiet
+	    					informTargetCP(cp, cpr);
+	    					break;
+    					}
     				}
     			}
     		}
@@ -271,14 +278,23 @@ public class CircusPoolManager implements OverlordRun,OverlordInfo {
     				// jetzt checken, ob ein Unterhalter in die aktuelle Bedarfslage passt...
     				// dazu muss sein maximalVerdienst < remainingUnterhal sein
     				if (cpr.getVerdienst()<r.getRegion().maxEntertain() && cpr.getUnterhalten().getTargetRegion()==null && cpr.getUnterhalten().isAutomode() && cpr.getUnterhalten().isUnterMindestAuslastung()){
-    					// Bingo
-    					// schicken wir ihn los.
-    					cpr.getUnterhalten().setTargetRegion(r.getRegion());
-    					// und jetzt paar Infos
-    					// im Zielgebiet
-    					informTargetRegion(r, cpr);
-    					foundOne=true;
-    					break;
+    					boolean istGeeignet=true;
+    					if (r.getRegion().getRegionType().getName().equalsIgnoreCase("Gletscher") && cpr.getUnterhalten().scriptUnit.isInsekt()) {
+    						istGeeignet=false;
+    					}
+    					if (cpr.getDist()<0) {
+    						istGeeignet=false;
+    					}
+    					if (istGeeignet) {
+	    					// Bingo
+	    					// schicken wir ihn los.
+	    					cpr.getUnterhalten().setTargetRegion(r.getRegion());
+	    					// und jetzt paar Infos
+	    					// im Zielgebiet
+	    					informTargetRegion(r, cpr);
+	    					foundOne=true;
+	    					break;
+    					}
     				}
     			}
     			if (!foundOne){

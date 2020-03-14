@@ -168,7 +168,7 @@ public class ScriptUnit {
 	 * Loescht alle orderzeilen bis auf scriptzeilen (mit //)
 	 * und welche mit do_not_touch
 	 * und welche mit @ vorne
-	 * 
+	 * 20200304 und welche mit ATTACKIERE vorne
 	 * @return int Anzahl der geloeschten orderzeilen
 	 */
 	
@@ -203,6 +203,9 @@ public class ScriptUnit {
 				newOrders.add(this.getUnit().createOrder(s));
 			} else if (s.startsWith("!@")){
 				// permanente orders mit Fehlerunterdrückung
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("ATTACKIERE")){
+				// Attackiere befehle...
 				newOrders.add(this.getUnit().createOrder(s));
 			} else {
 				cnt++;
@@ -1322,6 +1325,8 @@ public class ScriptUnit {
 			if (unit_may_confirm){
 				this.setUnitOrders_adjusted(true);
 			}			
+		} else {
+			this.addComment("addOrder: wg double nicht ergänzt: " + s, false);
 		}
 	}
 
@@ -2029,6 +2034,13 @@ public class ScriptUnit {
 			s= s.replace("_"," ");
 			this.addOrder(s + " ; scripterOption allUnitOrder", true);
 		}
+	}
+	
+	public boolean isInsekt() {
+		if (this.getUnit().getRace().getName().equalsIgnoreCase("Insekten")) {
+			return true;
+		}
+		return false;
 	}
 	
 	

@@ -12,18 +12,24 @@ public class PathDistLandInfo {
 	private GameData data=null;
 	private CoordinateID von = null;
 	private CoordinateID nach = null;
+	private boolean Insekten=false;
 	
+	public boolean isInsekten() {
+		return Insekten;
+	}
+
 	/**
 	 * Konstruktor
 	 * @param data
 	 * @param von
 	 * @param nach
 	 */
-	public PathDistLandInfo(GameData data, CoordinateID von, CoordinateID nach) {
+	public PathDistLandInfo(GameData data, CoordinateID von, CoordinateID nach, boolean _Insekten) {
 		super();
 		this.data = data;
 		this.von = von;
 		this.nach = nach;
+		this.Insekten = _Insekten;
 	}
 	
 	public boolean equals(Object o){
@@ -41,10 +47,14 @@ public class PathDistLandInfo {
 		if (!other.getNach().equals(this.nach)){
 			return false;
 		}
+		if (this.Insekten!=other.isInsekten()) {
+			return false;
+		}
+		
 		return retVal;
 	}
 	
-	public boolean is(GameData _data, CoordinateID _von,CoordinateID _nach){
+	public boolean is(GameData _data, CoordinateID _von,CoordinateID _nach, boolean _Insekten){
 		boolean retVal=true;
 
 		if (!_data.equals(this.data)){
@@ -56,6 +66,11 @@ public class PathDistLandInfo {
 		if (!_nach.equals(this.nach)){
 			return false;
 		}
+		
+		if (!_Insekten==this.Insekten){
+			return false;
+		}
+		
 		return retVal;
 	}
 

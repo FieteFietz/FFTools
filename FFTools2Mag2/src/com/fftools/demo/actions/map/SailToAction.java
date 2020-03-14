@@ -22,6 +22,7 @@ import java.util.List;
 import magellan.client.event.OrderConfirmEvent;
 import magellan.client.event.UnitOrdersEvent;
 import magellan.library.GameData;
+import magellan.library.Order;
 import magellan.library.Region;
 import magellan.library.Ship;
 import magellan.library.Unit;
@@ -103,10 +104,13 @@ public class SailToAction extends MenuAction {
 	public void actionPerformed(ActionEvent e) {
 		ArrayList<Object> units = this.selectionObserver.getObjectsOfClass(Unit.class);
 		if (units!=null && units.size()>0){
+			List<Unit> units2 = new LinkedList<Unit>();
 			for (Iterator<Object> iter = units.iterator();iter.hasNext();){
 				Unit actUnit = (Unit)iter.next();
 				this.Goto(actUnit);
+				units2.add(actUnit);
 			}
+			this.selectionObserver.getClient().getDispatcher().fire(new OrderConfirmEvent(this, units2));
 		} else {
 			new MsgBox(this.selectionObserver.getClient(),"Kein Goton möglich.","Fehler",true);
 		}
@@ -145,7 +149,30 @@ public class SailToAction extends MenuAction {
   	    	 order = "; !!! Kein Weg gefunden!";
   	    	 PathNotFound=true;
   	     }
-	   
+	    
+  	    // 20200211: alte // script SailTo Oders entfernen
+  	    List<Order> orders =  u.getOrders2();
+  	    List<Order> newOrders = new LinkedList<Order>();
+  	    if (orders!=null && orders.size() >0) {
+	  	    for (Order o:orders) {
+	  	    	boolean isOK=true;
+	  	    	if (o.getText().toUpperCase().startsWith("// SCRIPT SAILTO")) {
+	  	    		isOK=false;
+	  	    	}
+	  	    	if (o.getText().toUpperCase().startsWith("// SCRIPT ROUTE")) {
+	  	    		isOK=false;
+	  	    	}
+	  	    	if (o.getText().toUpperCase().startsWith("NACH")) {
+	  	    		isOK=false;
+	  	    	}
+	  	    	if (isOK) {
+	  	    		newOrders.add(o);
+	  	    	}
+	  	    }
+	  	    u.setOrders2(newOrders);
+  	    }
+  	     
+  	     
 	    u.addOrder(order);   
 		u.addOrder(command);
 		int speed=6;
@@ -163,9 +190,6 @@ public class SailToAction extends MenuAction {
 		if (!PathNotFound){
 			u.setOrdersConfirmed(true);
 		}
-		List<Unit> units = new LinkedList<Unit>();
-		units.add(u);
-		this.selectionObserver.getClient().getDispatcher().fire(new OrderConfirmEvent(this, units));
 		this.selectionObserver.getClient().getDispatcher().fire(new UnitOrdersEvent(this,u));
 	}
 	

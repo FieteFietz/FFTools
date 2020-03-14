@@ -26,12 +26,14 @@ public class MatPoolManager implements OverlordRun,OverlordInfo{
 	 */
 	private boolean reportOFF = false;
 	
+	private static final int Durchlauf0 = 27;  // nur für Rekrutiere
+	private static final int Durchlauf0_2 = 57;
 	private static final int Durchlauf1 = 200;
 	private static final int Durchlauf2 = 400;
 	private static final int Durchlauf3 = 600; // Lernpool braucht den sehr spät
 	private static final int Durchlauf4 = 700;
 	
-	private int[] runners = {Durchlauf1,Durchlauf2,Durchlauf3, Durchlauf4};
+	private int[] runners = {Durchlauf0,Durchlauf0_2,Durchlauf1,Durchlauf2,Durchlauf3, Durchlauf4};
 	
 	public ScriptMain scriptMain = null;
 	private Hashtable<Region,MatPool> matPoolMap = null;

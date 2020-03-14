@@ -27,6 +27,7 @@ import magellan.library.Item;
 import magellan.library.Region;
 import magellan.library.Rules;
 import magellan.library.Skill;
+import magellan.library.StringID;
 import magellan.library.Unit;
 import magellan.library.gamebinding.EresseaConstants;
 import magellan.library.gamebinding.EresseaMapMetric;
@@ -92,7 +93,7 @@ public class FFToolsRegions {
 	 * @param nextHold wenn Übergeben, wird darin FFToolsCoordinateID des nächsten Halts der Unit abgelegt
 	 * @return Anzahl benötigter Runden
 	 */
-	public static int getPathDistLand(GameData data, CoordinateID von, CoordinateID nach,boolean reitend,FFToolsCoordinateID nextHold){
+	public static int getPathDistLand(GameData data, CoordinateID von, CoordinateID nach,boolean reitend,FFToolsCoordinateID nextHold, boolean Insekten){
 		if (!data.getRegions().contains(data.getRegion(von))){
 			return -1;
 		}
@@ -106,6 +107,14 @@ public class FFToolsRegions {
 		// Path organisieren
 		Map<ID,RegionType> excludeMap = Regions.getOceanRegionTypes(data.getRules());
 		RegionType Feuerwand = Regions.getFeuerwandRegionType(data);
+		if (Insekten) {
+			// Geltscher ergänzen
+			// wir gehen davion aus, dass keine Nestwärme vorhanden ist
+			RegionType actRT = data.getRules().getRegionType(StringID.create("Gletscher"));
+			if (actRT!=null) {
+				excludeMap.put(actRT.getID(), actRT);
+			}
+		}
 		excludeMap.put(Feuerwand.getID(), Feuerwand);
 		// String path = Regions.getDirections(data, von, nach, excludeMap,1);
 		String path =  Regions.getDirections(Regions.getLandPath(data, von, nach, excludeMap,2, 3));
@@ -206,7 +215,7 @@ public class FFToolsRegions {
 	 * @param reitend  reitet die Einheit oder zu Fuss?
 	 * @return GotoInfo
 	 */
-	public static GotoInfo getPathDistLandGotoInfo(GameData data, CoordinateID von, CoordinateID nach,boolean reitend){
+	public static GotoInfo getPathDistLandGotoInfo(GameData data, CoordinateID von, CoordinateID nach,boolean reitend, boolean Insekten){
 		if (!data.getRegions().contains(data.getRegion(von))){
 			return null;
 		}
@@ -223,6 +232,14 @@ public class FFToolsRegions {
 		// Path organisieren
 		Map<ID,RegionType> excludeMap = Regions.getOceanRegionTypes(data.getRules());
 		RegionType Feuerwand = Regions.getFeuerwandRegionType(data);
+		if (Insekten) {
+			// Geltscher ergänzen
+			// wir gehen davion aus, dass keine Nestwärme vorhanden ist
+			RegionType actRT = data.getRules().getRegionType(StringID.create("Gletscher"));
+			if (actRT!=null) {
+				excludeMap.put(actRT.getID(), actRT);
+			}
+		}
 		excludeMap.put(Feuerwand.getID(), Feuerwand);
 		// String path = Regions.getDirections(data, von, nach, excludeMap,1);
 		String path =  Regions.getDirections(Regions.getLandPath(data, von, nach, excludeMap,2, 3));
@@ -299,7 +316,7 @@ public class FFToolsRegions {
 	 * @param reitend
 	 * @return
 	 */
-	public static int getPathDistLand(GameData data, CoordinateID von, CoordinateID nach,boolean reitend){
+	public static int getPathDistLand(GameData data, CoordinateID von, CoordinateID nach,boolean reitend, boolean Insekten){
 		// cache check
 		cntCacheRequests++;
 		if (pathDistCache==null){
@@ -308,7 +325,7 @@ public class FFToolsRegions {
 		// schon vorhanden ?
 		for (Iterator<PathDistLandInfo> iter = pathDistCache.keySet().iterator();iter.hasNext();){
 			PathDistLandInfo info = (PathDistLandInfo)iter.next();
-			if (info.is(data, von, nach) || info.is(data, nach, von)){
+			if (info.is(data, von, nach, Insekten) || info.is(data, nach, von,Insekten)){
 				// Treffer
 				Integer actI = pathDistCache.get(info);
 				cntCacheHits++;
@@ -316,9 +333,9 @@ public class FFToolsRegions {
 			}
 		}
 		
-		int retVal =  getPathDistLand(data, von, nach, reitend,null);
+		int retVal =  getPathDistLand(data, von, nach, reitend,null, Insekten);
 		// in den Cache
-		PathDistLandInfo neueInfo = new PathDistLandInfo(data,von,nach);
+		PathDistLandInfo neueInfo = new PathDistLandInfo(data,von,nach,Insekten);
 		Integer cacheValue = Integer.valueOf(retVal);
 		pathDistCache.put(neueInfo,cacheValue);
 		return retVal;
@@ -338,9 +355,17 @@ public class FFToolsRegions {
 		GotoInfo erg = new GotoInfo();
 		
 		erg.setDestRegion(u.getScriptMain().gd_ScriptMain.getRegion(dest));
-		
+
 		Map<ID,RegionType> excludeMap = Regions.getOceanRegionTypes(u.getScriptMain().gd_ScriptMain.getRules());
 		RegionType Feuerwand = Regions.getFeuerwandRegionType(u.getScriptMain().gd_ScriptMain);
+		if (u.isInsekt()) {
+			// Geltscher ergänzen
+			// wir gehen davion aus, dass keine Nestwärme vorhanden ist
+			RegionType actRT = u.getScriptMain().gd_ScriptMain.getRules().getRegionType(StringID.create("Gletscher"));
+			if (actRT!=null) {
+				excludeMap.put(actRT.getID(), actRT);
+			}
+		}
 		excludeMap.put(Feuerwand.getID(), Feuerwand);
 		String path =  Regions.getDirections(Regions.getLandPath(u.getScriptMain().gd_ScriptMain, act, dest, excludeMap,2, 3));
 		if (path!=null && path.length()>0) {
@@ -362,7 +387,7 @@ public class FFToolsRegions {
 				reitend = true;
 			}
 			FFToolsCoordinateID nextHold = FFToolsCoordinateID.create(0,0,0);
-			int _anzRunden = FFToolsRegions.getPathDistLand(u.getScriptMain().gd_ScriptMain, act, dest, reitend,nextHold);
+			int _anzRunden = FFToolsRegions.getPathDistLand(u.getScriptMain().gd_ScriptMain, act, dest, reitend,nextHold, u.isInsekt());
 			if (_anzRunden>0){
 				CoordinateID _nextRegionCoord = CoordinateID.create(nextHold.getX(),nextHold.getY(),nextHold.getZ());
 				Region _nextHoldRegion = u.getScriptMain().gd_ScriptMain.getRegion(_nextRegionCoord);
@@ -383,8 +408,8 @@ public class FFToolsRegions {
 			}
 		} else {
 			// path nicht gefunden
-			u.doNotConfirmOrders("Es konnte kein Weg gefunden werden. (GOTO)");
-			outText.addOutLine("X....kein Weg gefunden für " + u.unitDesc());
+			u.doNotConfirmOrders("Es konnte kein Weg gefunden werden. (GOTO) nach " + dest.toString());
+			outText.addOutLine("X....kein Weg gefunden für " + u.unitDesc() + " nach " + dest.toString());
 		}
 		return erg;
 	}

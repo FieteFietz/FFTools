@@ -154,6 +154,7 @@ public class Alchemist extends MatPoolScript{
 	private void requestAllKraut(){
 		ArrayList<ItemType> itemTypes = new ArrayList<ItemType>();
 		if (this.gd_Script.potions()==null || this.gd_Script.potions().size()==0){
+			this.doNotConfirmOrders("Keine Tränke im CR erkannt - Krautdepot funktioniert nicht!");
 			return;
 		}
 		if (this.itemGroup==""){
@@ -184,12 +185,14 @@ public class Alchemist extends MatPoolScript{
 	
 	/**
 	 * versucht, zubehör zu organisieren (Schaffenstrunk, Gehirnschmalz, Ring der Flinken Finger)
+	 * 20200218: nur, wenn mache true ist
 	 *
 	 */
-	private void getZubehoer(){
+	private void getZubehoer(){		
 		this.getZubehoerDetail("Schaffenstrunk", 1);
 		this.getZubehoerDetail("Gehirnschmalz", 1);
 		// this.getZubehoerDetail("Ring der flinken Finger", 1);
+		
 	}
 	
 	/**
@@ -198,7 +201,7 @@ public class Alchemist extends MatPoolScript{
 	 * @param Anzahl
 	 */
 	public void getZubehoerDetail(String Name,int Anzahl){
-		ItemType testType = this.region().getData().rules.getItemType(Name,false);
+		ItemType testType = this.region().getData().getRules().getItemType(Name,false);
 		if (testType!=null){
 			MatPoolRequest MPR = new MatPoolRequest(this,Anzahl,Name,this.zubehoerPrio + this.talentLevel,"Zubehoer");
 			this.addMatPoolRequest(MPR);
@@ -215,7 +218,7 @@ public class Alchemist extends MatPoolScript{
 	private int getSchaffenspunkte(){
 		int erg = 0;
 		// normal: Personenanzahl * Talentpunkte
-		SkillType skillType = this.gd_Script.rules.getSkillType(StringID.create("Alchemie"));
+		SkillType skillType = this.gd_Script.getRules().getSkillType(StringID.create("Alchemie"));
 		int actTalentLevel = 0;
 		Skill skill = this.scriptUnit.getUnit().getModifiedSkill(skillType);
 		if (skill!=null) {
@@ -229,7 +232,8 @@ public class Alchemist extends MatPoolScript{
 		erg = persAnzahl * actTalentLevel;
 		
 		// Schaffenstrunk?
-		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,true)){
+		// wenn machen, erlaube Benutzung
+		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,this.machen)){
 			erg = erg * 2;
 			scriptUnit.addComment("Trankeffekt berücksichtigt");
 		}

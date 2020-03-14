@@ -27,7 +27,7 @@ public class Ontradeareaconnection extends TradeAreaScript{
 	private static final int Durchlauf_vorMP1 = 110;
 	private static final int Durchlauf_vorMP1_2 = 120;
 	
-	private static final int onRouteRequestPrio=10;
+	private static final int onRouteRequestPrio=51;
 	
 	private int[] runners = {Durchlauf_vorMP1,Durchlauf_vorMP1_2};
 	

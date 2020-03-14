@@ -39,8 +39,6 @@ public class MatPool2 implements MatPool{
 	private static final int pferdeOffset=20000;
 	private static final int wagenOffset= 10000;
 
-	
-	private int actDurchlauf=0;
 
 	/**
 	 * enthaelt die grundlegende Region
@@ -167,7 +165,7 @@ public class MatPool2 implements MatPool{
 	 * poolt die Region: Versucht, alle Requests anhand der Offers zu bedienen
 	 */
 	public void runPool(int durchlauf) {
-		this.actDurchlauf = durchlauf;
+		
 		long startT = System.currentTimeMillis();
         //	Löschen der ungeschützten orders im Zusammenhang mit GIB, Reserviere
 		// dass machen wir immer, dann können wir immer gleich GIB orders schreiben...

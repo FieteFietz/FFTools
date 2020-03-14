@@ -66,6 +66,7 @@ public class Laen extends MatPoolScript{
 	private void start(){
 		super.addVersionInfo();
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Laen");
+		OP.addOptionList(this.getArguments());
 		
 		int unitMinTalent = OP.getOptionInt("minTalent", -1);
 		if (unitMinTalent>this.minTalent){

@@ -56,6 +56,10 @@ public class ReportSettings {
 	private Hashtable<Region,ReportOptions> regionOptions = null;
 	
 	
+	private ArrayList<MonsterBedrohung> monsterBedrohungsList = null;
+	
+	
+	
 	/**
 	 * Ordnet Categorienamen den Detailsätzen zu
 	 */
@@ -679,11 +683,21 @@ public class ReportSettings {
 		}
 		public int getMinTaktikLevel() {
 			return minTaktikLevel;
+		}		
+	}
+	
+	
+	public void addMonsterBedrohungsList(String _raceName, double _Faktor, int _minTaktikLevel) {
+		if (this.monsterBedrohungsList==null) {
+			this.monsterBedrohungsList = new ArrayList<ReportSettings.MonsterBedrohung>();
 		}
 		
 		
 		
+		
+		
 	}
+	
 	
 	
 }

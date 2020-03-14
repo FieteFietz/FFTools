@@ -20,7 +20,7 @@ import com.fftools.utils.FFToolsOptionParser;
 public class Rekrutieren extends MatPoolScript{
 	
 	private static final int Durchlauf_vorMP = 26;
-	private static final int Durchlauf_nachMP = 720;
+	private static final int Durchlauf_nachMP = 28; // war 720
 	
 	private int[] runsAt = {Durchlauf_vorMP,Durchlauf_nachMP};
 	
@@ -31,6 +31,14 @@ public class Rekrutieren extends MatPoolScript{
 	private MatPoolRequest myMPR = null;
 	
 	public static final String scriptCreatedTempMark = "// autoTEMP XXX!!!";
+	
+	private boolean ConfirmLessRecruitment=false;
+	
+	private boolean weAreOrk=false;
+	
+	private int recruitCosts = 10;
+	
+	private int anzahlGeplant=0;
 	
 	/**
 	 * Parameterloser Constructor
@@ -64,6 +72,9 @@ public class Rekrutieren extends MatPoolScript{
 	
 	public void vorMatPool(int scriptDurchlauf){
 		
+		
+		// this.addComment("Rekrutieren - vorMP, Durchlauf: " + scriptDurchlauf);
+		
 		// falls kein parameter bzw zu viele
 		if (super.getArgCount()< 1){
 			addOutLine(super.scriptUnit.getUnit().toString(true) + ": Rekrutiere...unpassende Anzahl Parameter");
@@ -93,6 +104,7 @@ public class Rekrutieren extends MatPoolScript{
 				if (ra.equals(orkRace)){
 					anzahl = anzahl*2;
 					this.addComment("Rekrutieren: Orks erkannt. Maximal mögliche Rekruten verdoppelt auf:" + anzahl);
+					this.weAreOrk=true;
 				}
 			}
 			
@@ -105,10 +117,16 @@ public class Rekrutieren extends MatPoolScript{
 			super.scriptUnit.doNotConfirmOrders("Rekrutiere...unpassende Anzahl Rekruten -> Unit unbestaetigt");
 			return;
 		}
-		
+		// this.addComment("Rekrutieren - Anzahl: " + anzahl);
 		// Optionen Parsen
-		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit);
+		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Rekrutieren");
 		OP.addOptionList(this.getArguments());
+		
+		this.ConfirmLessRecruitment = OP.getOptionBoolean("ConfirmLessRecruitment", this.ConfirmLessRecruitment);
+		if (this.ConfirmLessRecruitment) {
+			this.addComment("Option erkannt: ConfirmLessRecruitment -> es wird rekrutiert, soweit das Silber reicht.");
+		}
+		
 		// RegionMax -> anzahl
 		int regionsBestand=OP.getOptionInt("regionsBestand", -1);
 		if (regionsBestand>-1){
@@ -117,43 +135,47 @@ public class Rekrutieren extends MatPoolScript{
 			if (nochFrei<=0){
 				anzahl = 0;
 				this.addComment("Regionsbestand von " + regionsBestand + " unterschritten.");
-				return;
 			} else {
 				anzahl = Math.min(anzahl,nochFrei);
 				this.addComment("zu Rekrutieren: " + anzahl + " Bauern");
 			}
 		}		
 		
+		this.anzahlGeplant=anzahl;
+		
+		
+		// 20200202 FF EON nur bis zu einer bestimmten größe der Einheit
+		int maxPersonen = OP.getOptionInt("maxPersonen", 0);
+		if (maxPersonen>0 && this.getUnit().getPersons()>=maxPersonen) {
+			this.addComment("!!!Rekrutieren: maxPersonen erreicht -> Einheit rekrutiert nicht und verbleibt unbestätigt");
+			this.anzahlGeplant=0;
+			this.doNotConfirmOrders("!!!Rekrutieren: maxPersonen erreicht -> Einheit rekrutiert nicht und verbleibt unbestätigt");
+		}
 		
 		// Silber berechen
+		this.recruitCosts = ra.getRecruitmentCosts();
+		this.silber_benoetigt = anzahl * this.recruitCosts;
 		
-		this.silber_benoetigt = anzahl * ra.getRecruitmentCosts();
+		if (this.anzahlGeplant>0) {
 		
-		
-		// silberprio eventuell anders?
-		int newSilberPrio=reportSettings.getOptionInt("Rekrutieren_SilberPrio", super.region());
-		if (newSilberPrio>-1){
-			this.rekrutierungskostenPrio=newSilberPrio;
+			// silberprio eventuell anders?
+			int newSilberPrio=reportSettings.getOptionInt("Rekrutieren_SilberPrio", super.region());
+			if (newSilberPrio>-1){
+				this.rekrutierungskostenPrio=newSilberPrio;
+			}
+			
+			
+			
+			// debug
+			// int test = this.scriptUnit.getUnit().getModifiedPersons();
+			
+			// Rekrutierungskosten vom Pool anfordern
+			myMPR = new MatPoolRequest(this,this.silber_benoetigt,"Silber",this.rekrutierungskostenPrio,this.kommentar);
+			myMPR.setOnlyRegion(true);
+			this.addMatPoolRequest(myMPR);
+			// this.addComment("Rekrutieren - fordere an: " + this.silber_benoetigt + " Silber mit Prio " + this.rekrutierungskostenPrio);
+			
 		}
-		// order ergaenzen
-		// eigentlich erst, wenn wir Silber erhalten haben..also nach MatPool...
-		
-		super.addOrder("REKRUTIEREN " + anzahl, true);
-		
-		// ?? sonderfall ??
-		// this.region().refreshUnitRelations(true);
-		this.getUnit().reparseOrders();
-		this.scriptUnit.incRecruitedPersons(anzahl);
-		
-		
-		// debug
-		// int test = this.scriptUnit.getUnit().getModifiedPersons();
-		
-		// Rekrutierungskosten vom Pool anfordern
-		myMPR = new MatPoolRequest(this,this.silber_benoetigt,"Silber",this.rekrutierungskostenPrio,this.kommentar);
-		myMPR.setOnlyRegion(true);
-		this.addMatPoolRequest(myMPR);
-		
 		
 		// Anhängsel....Bauern automatisch versenden?
 		// wenn eigene (unmodifizierte) Personenanzahl> Limit
@@ -162,8 +184,9 @@ public class Rekrutieren extends MatPoolScript{
 		int tempAB = OP.getOptionInt("tempAB", 0);
 		if (tempAB>0){
 			// checken
-			if (this.scriptUnit.getUnit().getPersons()>tempAB){
-				int personen = this.scriptUnit.getUnit().getPersons();
+			int personen = this.scriptUnit.getUnit().getPersons();
+			if (personen>tempAB){
+				
 				// bingo !
 				this.addComment("-> automatische TEMP Erstellung");
 				while (personen>tempAB){
@@ -187,7 +210,7 @@ public class Rekrutieren extends MatPoolScript{
 					// Personen übergeben
 					String newCommand = "GIB TEMP " + id.toString() + " " + tempAB + " Personen ;script Rekrutieren";
 					super.addOrder(newCommand, true);
-					personen = personen - tempAB;
+					personen -= tempAB;
 				}
 
 			} else {
@@ -195,6 +218,7 @@ public class Rekrutieren extends MatPoolScript{
 			}
 		
 		}
+		// this.addComment("Rekrutieren - EOM 1 ");
 		
 	}
 	
@@ -203,22 +227,38 @@ public class Rekrutieren extends MatPoolScript{
 		if (this.myMPR!=null && this.myMPR.getOriginalGefordert()>0) {
 			int diff = myMPR.getOriginalGefordert() - myMPR.getBearbeitet();
 			if (diff!=0){
-				outText.addOutLine("Nicht genügend Silber zum Rekrutieren! " + this.unitDesc(), true);
-				this.scriptUnit.doNotConfirmOrders("!!! Rekrut: nicht genügend Silber. " + diff + " Fehlen. (Prio:" + this.rekrutierungskostenPrio + ")");
+				if (this.ConfirmLessRecruitment) {
+					// mit weniger zufrieden geben
+					int neueAnzahl = myMPR.getBearbeitet() / this.recruitCosts;
+					if (neueAnzahl>0) {
+						this.addComment("nur " + myMPR.getBearbeitet() + " Silber erhalten, wird für " + neueAnzahl + " Rekruten verwendet");
+						doRekrutiere(neueAnzahl);
+					} else {
+						this.addComment("nur " + myMPR.getBearbeitet() + " Silber erhalten, es wird nicht rekrutiert");
+					}
+				} else {
+					outText.addOutLine("Nicht genügend Silber zum Rekrutieren! " + this.unitDesc(), true);
+					this.scriptUnit.doNotConfirmOrders("!!! Rekrut: nicht genügend Silber. " + diff + " Fehlen. (Prio:" + this.rekrutierungskostenPrio + ")");
+				}
+			} else {
+				// alles OK
+				doRekrutiere(this.anzahlGeplant);
 			}
+		} else {
+			this.addComment("!!!Rekrutieren: überraschend keine Silberanforderung gefunden - Abbruch.");
 		}
 	}
 	
 	
-	
-	
-	
-	/**
-	 * sollte falsch liefern, wenn nur jeweils einmal pro scriptunit
-	 * dieserart script registriert werden soll
-	 * wird überschrieben mit return true z.B. in ifregion, ifunit und request...
-	 */
-	public boolean allowMultipleScripts(){
-		return true;
+	private void doRekrutiere(int anzahl) {
+		// order ergaenzen
+		// eigentlich erst, wenn wir Silber erhalten haben..also nach MatPool...
+		
+		super.addOrder("REKRUTIEREN " + anzahl, true);
+		
+		// ?? sonderfall ??
+		// this.region().refreshUnitRelations(true);
+		this.getUnit().reparseOrders();
+		this.scriptUnit.incRecruitedPersons(anzahl);
 	}
 }

@@ -125,6 +125,7 @@ public class Depot extends TransportScript{
 		// noch neuer: Lernpool wird verwendet
 		
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Depot");
+		OP.addOptionList(this.getArguments());
 		if (OP.getOptionBoolean("Lernen", true)){
 			super.lerneTalent("Tarnung", true);
 		}
@@ -204,6 +205,7 @@ public class Depot extends TransportScript{
 			if (TR!=null){
 				TR.setTradeAreaName(setAreaName);
 				this.addComment("trying to name TradeArea as: " + setAreaName);
+				this.scriptUnit.getScriptMain().getOverlord().getTradeAreaHandler().recalcTradeAreas();
 			} else {
 				this.doNotConfirmOrders("!!! could not set TradeArea Name: no TradeRegion found.");
 			}

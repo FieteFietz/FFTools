@@ -246,7 +246,7 @@ private boolean allShips = false;
 			
 			if (!needRepair){
 				isWeiterbau=true;
-				if (s.getSize()==s.getShipType().getMaxSize()){
+				if (s.getSize()==(s.getShipType().getMaxSize() * s.getAmount())){
 					isWeiterbau=false;
 				}
 			}
@@ -313,12 +313,12 @@ private boolean allShips = false;
 		
 		if (s.getDamageRatio()>0){
 			double actDamage = s.getDamageRatio();
-			double normalSize = s.getShipType().getMaxSize();
+			double normalSize = (s.getShipType().getMaxSize() * s.getAmount());
 			erg = (int) (Math.ceil(normalSize * (actDamage/100)));
 		}
 		
 		if (erg==0){
-			erg = s.getShipType().getMaxSize() - s.getSize();
+			erg = (s.getShipType().getMaxSize() * s.getAmount()) - s.getSize();
 		}
 		
 		

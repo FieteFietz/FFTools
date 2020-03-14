@@ -119,12 +119,14 @@ public void runScript(int scriptDurchlauf){
 		}
 		
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Treiben");
+		OP.addOptionList(this.getArguments());
+		
 		int unitMinLevel = OP.getOptionInt("minTalent", -1);
-		if (unitMinLevel>this.mindestTalent){
+		if (unitMinLevel>0){
 			this.mindestTalent=unitMinLevel;
 		}
 		unitMinLevel = OP.getOptionInt("mindestTalent", -1);
-		if (unitMinLevel>this.mindestTalent){
+		if (unitMinLevel>0){
 			this.mindestTalent=unitMinLevel;
 		}
 		
@@ -204,8 +206,12 @@ public void runScript(int scriptDurchlauf){
 					waffenanzahl = this.scriptUnit.getUnit().getModifiedPersons();
 					this.doNotConfirmOrders("!!! Zu viele Waffen beim Treiber?!");
 				}
-				
-				treiberPoolRelation.setPersonenZahl(waffenanzahl);
+				if (waffenanzahl<this.scriptUnit.getUnit().getModifiedPersons()){
+					this.doNotConfirmOrders("!!! Treiber hat nicht genügend Waffen! (" + waffenanzahl + "/" + this.scriptUnit.getUnit().getModifiedPersons() + ")");
+				}
+				int treibfPers = Math.min(waffenanzahl, this.getUnit().getModifiedPersons());
+				treiberPoolRelation.setPersonenZahl(treibfPers);
+				this.addComment("Treiben: treibfähige Personen: " + treibfPers);
 				if (waffenanzahl<=0 && !this.unitIsLearning){
 					this.addOrder("LERNEN Steuereintreiben", true);
 					this.doNotConfirmOrders("Keine Waffen für Treiber gefunden.");

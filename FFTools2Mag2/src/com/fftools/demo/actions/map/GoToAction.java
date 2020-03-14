@@ -26,6 +26,7 @@ import magellan.client.event.UnitOrdersEvent;
 import magellan.library.CoordinateID;
 import magellan.library.GameData;
 import magellan.library.ID;
+import magellan.library.Order;
 import magellan.library.Region;
 import magellan.library.Unit;
 import magellan.library.gamebinding.EresseaConstants;
@@ -132,6 +133,30 @@ public class GoToAction extends MenuAction {
 		   order = "; !! not on same island!";
 		   PathNotFound=true;
 	   }
+	   
+	    // 20200211: alte // script GoTo Oders entfernen
+ 	    List<Order> orders =  u.getOrders2();
+ 	    List<Order> newOrders = new LinkedList<Order>();
+ 	    if (orders!=null && orders.size() >0) {
+	  	    for (Order o:orders) {
+	  	    	boolean isOK=true;
+	  	    	if (o.getText().toUpperCase().startsWith("// SCRIPT GOTO")) {
+	  	    		isOK=false;
+	  	    	}
+	  	    	if (o.getText().toUpperCase().startsWith("// SCRIPT ROUTE")) {
+	  	    		isOK=false;
+	  	    	}
+	  	    	if (o.getText().toUpperCase().startsWith("NACH")) {
+	  	    		isOK=false;
+	  	    	}
+	  	    	if (isOK) {
+	  	    		newOrders.add(o);
+	  	    	}
+	  	    }
+	  	    u.setOrders2(newOrders);
+ 	    }
+	   
+	   
 	   u.addOrder(order);   
 		u.addOrder(command);
 		if (!PathNotFound){

@@ -69,6 +69,7 @@ public class Beschreibung extends Script{
 	private void scriptStart(){
 		// Optionen Parsen
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Beschreibung");
+		OP.addOptionList(this.getArguments());
 		
 		this.showTalente = OP.getOptionBoolean("Talente", this.showTalente);
 		this.showRunde = OP.getOptionBoolean("Runde", this.showRunde);

@@ -67,7 +67,10 @@ public class Lernfix extends MatPoolScript{
 	
 	public void scriptStart(){
 		
-		
+		if (this.getUnit().getModifiedPersons()<=0) {
+			this.addComment("Lernfix nicht aktiviert, da keine Personen in der Einheit sind");
+			return;
+		}
 		// Pool holen, man das ist umständlich....
 		ausbildungsPool = super.scriptUnit.getScriptMain().getOverlord().getAusbildungsManager().getAusbildungsPool(super.scriptUnit);
 		// reation abschicken... 
@@ -196,7 +199,7 @@ public class Lernfix extends MatPoolScript{
 	   */
 	  private HashMap<SkillType,Skill> erzeugeSingleSkillList(String talentName){
 		  HashMap<SkillType,Skill> liste = new HashMap<SkillType,Skill>();
-		  SkillType actSkillType = this.gd_Script.rules.getSkillType(talentName);
+		  SkillType actSkillType = this.gd_Script.getRules().getSkillType(talentName);
 		  SkillType magieType = null;
 		  Skill magieSkill = null;
 		  
@@ -211,10 +214,10 @@ public class Lernfix extends MatPoolScript{
 				  actSkill = new Skill(actSkillType,0,0,this.scriptUnit.getUnit().getModifiedPersons(),true);
 			  }
 			  // Wenns ein Magier ist müssen wir fiktive Skills unterschieben...
-			  if (actSkill.getSkillType().equals(this.scriptUnit.getScriptMain().gd_ScriptMain.rules.getSkillType("Magie"))){
+			  if (actSkill.getSkillType().equals(this.scriptUnit.getScriptMain().gd_ScriptMain.getRules().getSkillType("Magie"))){
 				  // OK ist ein Magier...
 				  
-				  magieType = this.scriptUnit.getScriptMain().gd_ScriptMain.rules.getSkillType(this.scriptUnit.getUnit().getFaction().getSpellSchool(), true);
+				  magieType = this.scriptUnit.getScriptMain().gd_ScriptMain.getRules().getSkillType(this.scriptUnit.getUnit().getFaction().getSpellSchool(), true);
 				  if (magieType==null){
 					  this.doNotConfirmOrders("!!!Für diese Einheit konnte das Magiegebiet nicht erkannt werden!!!");
 				  } else {
@@ -240,7 +243,7 @@ public class Lernfix extends MatPoolScript{
 
 
 	  private void addGratisTalent(AusbildungsRelation AR,String Name){
-		  SkillType actSkillType = this.gd_Script.rules.getSkillType(Name);
+		  SkillType actSkillType = this.gd_Script.getRules().getSkillType(Name);
 		  if (actSkillType==null){
 			  // Screibweise falsch?!
 			  addComment("!!!Lernfix: GratisTalent nicht erkannt");

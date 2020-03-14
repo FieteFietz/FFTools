@@ -84,6 +84,8 @@ public class Eisen extends MatPoolScript{
 	private void start(){
 		super.addVersionInfo();
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Eisen");
+		OP.addOptionList(this.getArguments());
+		
 		int unitMinTalent = OP.getOptionInt("minTalent", -1);
 		if (unitMinTalent>this.minTalent){
 			this.minTalent = unitMinTalent;

@@ -329,7 +329,7 @@ public class Transporter {
 			this.gotoInfo = FFToolsRegions.makeOrderNACH(this.scriptUnit, this.getActRegion().getCoordinate(), destRegion.getCoordinate(),true,"Transporter-  process Dest Region");
 			
 			// test more info
-			GotoInfo test = FFToolsRegions.getPathDistLandGotoInfo(this.scriptUnit.getScriptMain().gd_ScriptMain, this.getActRegion().getCoordinate(), destRegion.getCoordinate(), this.isRiding);
+			GotoInfo test = FFToolsRegions.getPathDistLandGotoInfo(this.scriptUnit.getScriptMain().gd_ScriptMain, this.getActRegion().getCoordinate(), destRegion.getCoordinate(), this.isRiding, this.scriptUnit.isInsekt());
 			if (test!=null){
 				if (test.getAnzRunden()>0){
 					if (test.getAnzRunden()>1){
@@ -346,7 +346,7 @@ public class Transporter {
 					this.scriptUnit.addComment("extended GoToInfo: " + test.getAnzRunden() + " Runden (?)");
 				}
 			} else {
-				this.scriptUnit.addComment("no extended GoToInfo available");
+				this.scriptUnit.addComment("no extended GoToInfo available - can not reach target region.");
 			}
 			
 			

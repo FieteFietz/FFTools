@@ -62,6 +62,7 @@ public class Runde extends Script{
 		}
 		
 		int actRunde = this.gd_Script.getDate().getDate();
+		this.addComment("Runde: erkannte Runde aktuell: " + actRunde);
 		if (actRunde>sollRunde && sollRunde>0){
 			// diese Zeile aus den orders entfernen
 			this.scriptUnit.removeScriptOrder("Runde " + sollRunde);
@@ -80,6 +81,7 @@ public class Runde extends Script{
 					for (int i = 3;i<super.getArgCount();i++){
 						newOrderLine = newOrderLine.concat(super.getArgAt(i) + " ");
 					}
+					this.addComment("Runde: Befehl aufgerufen " + super.getArgAt(2) + ", Params: " + newOrderLine);
 					super.scriptUnit.findScriptClass(super.getArgAt(2), newOrderLine,true);
 				} else {
 					// die befehlszeile endet mit dem keyWord script
@@ -95,8 +97,12 @@ public class Runde extends Script{
 					newOrderLine = newOrderLine.concat(super.getArgAt(i) + " ");
 				}
 				if (newOrderLine.length()>0){
+					this.addComment("Runde - neuer Befehl: " + newOrderLine);
 					// nun denn ... fertig und irgendetwas zu schreiben
+					newOrderLine = newOrderLine.concat(" ;script Runde");
 					super.addOrder(newOrderLine,true);
+				} else {
+					this.addComment("Runde - kein neuer Befehl erkannt");
 				}
 			}
 		}

@@ -132,7 +132,7 @@ public class Usetradeareaconnection extends TradeAreaScript{
 		boolean useIT = true;
 		// 20161019
 		if (OP.getOptionBoolean("depotAusgleich", false)){
-			this.addComment("Depotausgleich für " + Zielbestand + " " + Ware + " nach " + Name + " erkannt. Prüfe Vorraussetzungen...(ZielDepot muss weniger als " + Zielbestand + "besitzen, maximaler Transport: " + Summe + ", nur wenn mehr als " + Bestand + " vorrätig)",false);
+			this.addComment("Depotausgleich für " + Zielbestand + " " + Ware + " nach " + Name + " erkannt. Prüfe Vorraussetzungen...(ZielDepot muss weniger als " + Zielbestand + " besitzen, maximaler Transport: " + Summe + ", nur wenn mehr als " + Bestand + " vorrätig)",false);
 			String realWare = FFToolsGameData.translateItemShortform(Ware);
 			if (!realWare.equalsIgnoreCase(Ware)){
 				this.addComment("Name der Ware geändert in: " + realWare,false);
@@ -180,19 +180,18 @@ public class Usetradeareaconnection extends TradeAreaScript{
 									// Summe anpassen?
 									if (AnzahlDa>0){
 										Zielbestand = Zielbestand - AnzahlDa;
-										this.addComment("Menge angepasst auf " + Zielbestand + " " + Ware + " ",false);
+										this.addComment("Menge angepasst auf " + Zielbestand + " " + Ware + ",  " + AnzahlDa + " " + Ware + " sind am Ziel vorhanden.",false);
 									}
 									if (Zielbestand>Summe) {
 										Zielbestand = Summe;
 										this.addComment("Menge beschränkt auf " + Zielbestand + " " + Ware + ".(Limit pro Schiff)",false);
 									}
-									// Den Bestand aber hier lassen
-									Zielbestand -= Bestand;
-									if (Zielbestand<0) {
-										Zielbestand = 0;
+									// Den Bestand aber hier nicht unterschreiten
+									int neueAnzahlHier = AnzahlHier-Zielbestand;
+									if (neueAnzahlHier<Bestand) {
+										Zielbestand-=(Bestand - neueAnzahlHier);
+										this.addComment("Menge reduziert auf " + Zielbestand + " " + Ware + ".(Damit Mindestbestand (" + Bestand + " " + Ware + " nicht unterschritten wird.)",false);
 									}
-									this.addComment("Menge reduziert auf " + Zielbestand + " " + Ware + ".(Bestand von " + Ware + " verbleibt hier)",false);
-									
 								} else {
 									this.addComment("Fazit: depotAusgleich ist NICHT aktiv für " + Ware + " (ist gegenüber ausreichend vorrätig)",false);
 									useIT=false;

@@ -206,7 +206,7 @@ public class TradeAreaBauManager {
 		for (Bauen b:autoBauer){
 			this.infoLines.add(b.getUnitBauInfo());
 		}
-
+		boolean istGeeignet=true;
 		// Abarbeiten
 		ArrayList<Bauen> availableBauarbeiter = new ArrayList<Bauen>();
 		for (Bauen b:auftragsBauscripte){
@@ -231,7 +231,14 @@ public class TradeAreaBauManager {
 				availableBauarbeiter.clear();
 				for (Bauen arbeiter:autoBauer){
 					if (!arbeiter.hasPlan() && arbeiter.scriptUnit.getSkillLevel(actTalentName)>=level_needed){
-						availableBauarbeiter.add(arbeiter);
+						istGeeignet=true;
+						// Insektenprüfung
+						if (b.getUnit().getRegion().getRegionType().getName().equalsIgnoreCase("Gletscher") && arbeiter.scriptUnit.isInsekt()) {
+							istGeeignet=false;
+						}
+						if (istGeeignet) {
+							availableBauarbeiter.add(arbeiter);
+						}
 					}
 				}
 				if (availableBauarbeiter.size()>0) {
@@ -272,10 +279,14 @@ public class TradeAreaBauManager {
 	private void checkForIddleSupporterInRegion(Bauen b){
 		// mit welchem level
 		int	level_needed = FFToolsGameData.getCastleSizeBuildSkillLevel(b.getActSize());
+		if (b.getActTyp()==Bauen.BUILDING) {
+			if (b.getBuildingType()!=null) {
+				level_needed = b.getBuildingType().getBuildSkillLevel();
+			}
+		}
 		// Abarbeiten
 		ArrayList<Bauen> availableBauarbeiter = new ArrayList<Bauen>();
 		String actTalentName = "Burgenbau";
-		
 		
 		// noch verfügbare Bauarbeiter zusammensuchen
 		availableBauarbeiter.clear();
@@ -318,6 +329,11 @@ public class TradeAreaBauManager {
 	private void checkForWaitingSupporterInRegion(Bauen b){
 		// mit welchem level
 		int	level_needed = FFToolsGameData.getCastleSizeBuildSkillLevel(b.getActSize());
+		if (b.getActTyp()==Bauen.BUILDING) {
+			if (b.getBuildingType()!=null) {
+				level_needed = b.getBuildingType().getBuildSkillLevel();
+			}
+		}
 		// Abarbeiten
 		ArrayList<Bauen> availableBauarbeiter = new ArrayList<Bauen>();
 		String actTalentName = "Burgenbau";
@@ -368,6 +384,11 @@ public class TradeAreaBauManager {
 	private void checkForIddleSupporterInTA(Bauen b){
 		// mit welchem level
 		int	level_needed = FFToolsGameData.getCastleSizeBuildSkillLevel(b.getActSize());
+		if (b.getActTyp()==Bauen.BUILDING) {
+			if (b.getBuildingType()!=null) {
+				level_needed = b.getBuildingType().getBuildSkillLevel();
+			}
+		}
 		// Abarbeiten
 		ArrayList<Bauen> availableBauarbeiter = new ArrayList<Bauen>();
 		String actTalentName = "Burgenbau";
@@ -502,8 +523,8 @@ public class TradeAreaBauManager {
 		// 20120331 - fangen wir vorsichtig mit den Burgenbauern an
 		if (this.supportableBuilder!=null && this.supportableBuilder.size()>0){
 			for (Bauen b:this.supportableBuilder){
-				b.addComment("Prüfe Bauarbeiter auf Unterstützer...");
-				if (!b.isFertig() && b.getTurnsToGo()>1 && b.getActTyp()==Bauen.BURG){
+				if (!b.isFertig() && b.getTurnsToGo()>1 && (b.getActTyp()==Bauen.BURG || b.getActTyp()==Bauen.BUILDING)){
+					b.addComment("Prüfe Bauarbeiter auf Unterstützer...");
 					// noch nicht fertig
 					// müsste noch diverse (>1) runden arbeiten (hat also genug ressourcen)
 					// ist BURGenbauer
@@ -524,7 +545,7 @@ public class TradeAreaBauManager {
 					}
 					b.addComment("Suche abgeschlossen. Aktuell verbleibende Runden: " + b.getTurnsToGo());
 				} else {
-					b.addComment("Bauarbeiter benötigt keine Unterstützung");
+					b.addComment("Bauarbeiter sucht keine Unterstützung (Typ=" + b.getActTyp() + ")");
 					b.addComment("DEBUG: fertig: " + b.isFertig() + ", Turns: " + b.getTurnsToGo() + ", Typ:" + b.getActTyp());
 				}
 			}

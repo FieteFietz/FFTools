@@ -341,11 +341,18 @@ public class PferdeManager implements OverlordRun,OverlordInfo {
 				istGeeignet=false;
 				grund = "MindestAuslastung";
 			}
+			
+			if (istGeeignet && actMover.scriptUnit.isInsekt() && actR.getRegionType().getName().equalsIgnoreCase("Gletscher")) {
+				istGeeignet=false;
+				grund = "Insekt kann nicht in Gletscher";
+			}
+			
+			
 			if (istGeeignet){
 				// ist geeignet!
 				// Kommen wir hin?
-				GotoInfo gotoInfo = FFToolsRegions.getPathDistLandGotoInfo(overLord.getScriptMain().gd_ScriptMain, actMover.region().getCoordinate(), actR.getCoordinate(), false);
-				if (gotoInfo.getAnzRunden()>0){
+				GotoInfo gotoInfo = FFToolsRegions.getPathDistLandGotoInfo(overLord.getScriptMain().gd_ScriptMain, actMover.region().getCoordinate(), actR.getCoordinate(), false, actMover.scriptUnit.isInsekt());
+				if (gotoInfo!=null && gotoInfo.getAnzRunden()>0){
 					// wir kommen hin
 					gotoInfo = FFToolsRegions.makeOrderNACH(actMover.scriptUnit, actMover.region().getCoordinate(),actR.getCoordinate(), true,"Pferdemanager");
 					// aus der Liste der Mover entfernen

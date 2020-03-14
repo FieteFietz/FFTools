@@ -11,7 +11,7 @@ import com.fftools.utils.FFToolsOptionParser;
 
 public class Request extends MatPoolScript{
 	
-	private int Durchlauf_VorMatPool = 108;
+	private int Durchlauf_VorMatPool = 52;
 	private int Durchlauf_NachMatPool = 410;
 	
 	private final int requestDefaultPrio=10;

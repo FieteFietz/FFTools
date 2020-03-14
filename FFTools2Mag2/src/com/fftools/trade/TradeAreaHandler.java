@@ -293,6 +293,16 @@ public class TradeAreaHandler implements OverlordRun,OverlordInfo{
 				return tA;
 			}
 			
+			// alle originSetters finden und vergleichen
+			if (tA.getTradeRegions()!=null) {
+				for (TradeRegion tR:tA.getTradeRegions()) {
+					if (tR.isSetAsTradeAreaOrigin() && tR.getRegion().equals(r)) {
+						return tA;
+					}
+				}
+			}
+			
+			
 			if (TradeUtils.onSameIsland(r, actOriginRegion, this.data)) {
 				String path = Regions.getDirections(this.data, actOriginRegion.getID() , r.getID(), excludeMap,1);
 				if (path!=null && path.length()>0) {

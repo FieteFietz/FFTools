@@ -48,6 +48,7 @@ public class Auramaxwarning extends Script{
 		
 		// Optionen parsen - bei mode=auto verändertes Verhalten!
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Auramaxwarning");
+		OP.addOptionList(this.getArguments());
 		boolean automode = OP.isOptionString("mode", "auto");
 		if (automode){
 			this.addComment("Auramaxwarning - AutoMode erkannt.");

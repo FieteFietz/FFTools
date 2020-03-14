@@ -7,7 +7,6 @@ import com.fftools.trade.TradeArea;
 import com.fftools.trade.TradeRegion;
 import com.fftools.utils.FFToolsOptionParser;
 import com.fftools.utils.FFToolsRegions;
-import com.fftools.utils.GotoInfo;
 
 import magellan.library.CoordinateID;
 import magellan.library.ID;
@@ -18,8 +17,15 @@ import magellan.library.rules.SkillType;
 
 public class Jagemonster extends Script{
 	
+	public static int role_Undef=0;
+	public static int role_AttackFront=1;
+	public static int role_AttackBack=2;
+	public static int role_Support=3;
 	
-	private static final int Durchlauf = 36;
+	private static final int Durchlauf_1 = 36;
+	private static final int Durchlauf_2 = 38;
+	
+	private int[] runners = {Durchlauf_1,Durchlauf_2};
 	
 	
 	/**
@@ -43,22 +49,56 @@ public class Jagemonster extends Script{
 	 */
 	private String AttackLernPlan = null;
 	
-	
-	/**
-	 * soll die einheit wirklich einen attackiere befehl bekommen?
-	 * Nein bei Taktiker oder Dieben...
+	/*
+	 * Rolle
 	 */
-	private boolean attackiere = true;
+	private int role=role_Undef;
+
+	public int getRole() {
+		return role;
+	}
+	
+	private boolean Ready4AttackThisWeek = false;
+
+
+	public boolean isReady4AttackThisWeek() {
+		return Ready4AttackThisWeek;
+	}
+
+   
+	private boolean MJM_setAttack = false;
+	
+	 
+	
+	public boolean isMJM_setAttack() {
+		return MJM_setAttack;
+	}
+
+
+	public void setMJM_setAttack(boolean mJM_setAttack) {
+		MJM_setAttack = mJM_setAttack;
+	}
 	
 	
+	private boolean isTactican = false;
 	
+	public boolean isTactican() {
+		return isTactican;
+	}
+
+
+	public void setTactican(boolean isTactican) {
+		this.isTactican = isTactican;
+	}
+
+
 	/**
 	 * Parameterloser Constructor
 	 * Drinne Lassen fuer die Instanzierung des Objectes
 	 */
 	
 	public Jagemonster() {
-		super.setRunAt(Durchlauf);
+		super.setRunAt(runners);
 	}
 	
 	
@@ -75,9 +115,13 @@ public class Jagemonster extends Script{
 	
 	public void runScript(int scriptDurchlauf){
 		
-		if (scriptDurchlauf==Durchlauf){
+		if (scriptDurchlauf==Durchlauf_1){
 			this.scriptStart();
 		}
+		if (scriptDurchlauf==Durchlauf_2){
+			this.afterDecision();
+		}
+		
 	}
 	
 	private void scriptStart(){
@@ -163,15 +207,37 @@ public class Jagemonster extends Script{
 			}
 		}
 		
+		String setRolle = OP.getOptionString("Rolle");
+		if (setRolle.length()==0) {
+			setRolle = OP.getOptionString("role");
+		}
+		
+		if (setRolle.equalsIgnoreCase("FRONT") || setRolle.equalsIgnoreCase("VORNE") || setRolle.equalsIgnoreCase("VORN")) {
+			this.role = role_AttackFront;
+		}
+		if (setRolle.equalsIgnoreCase("BACK") || setRolle.equalsIgnoreCase("HINTEN")) {
+			this.role = role_AttackBack;
+		}
+		if (setRolle.equalsIgnoreCase("SUPPORT")) {
+			this.role = role_Support;
+		}
+		
+		if (this.role==role_Undef) {
+			this.doNotConfirmOrders("!!! Jagemonster: keine Rolle erkannt (FRONT|HINTEN|SUPPORT)");
+			return;
+		}
+		
+		
 		String test = OP.getOptionString("AttackLernTalent");
 		if (test.length()>2) {
 			// Prüfen
+			test = test.substring(0, 1).toUpperCase() + test.substring(1).toLowerCase();
 			SkillType actSkillType = this.gd_Script.getRules().getSkillType(test);
-			if (actSkillType==null) {
+			if (actSkillType!=null) {
 				this.AttackLernTalent = test;
 				this.addComment("JageMonster - beim Attackieren wird Lernfix Talent=" + this.AttackLernTalent + " befohlen.");
 			} else {
-				this.doNotConfirmOrders("!!! JageMonster - AttackLernTalent ist ungültig! -> Unbestaetigt!!");
+				this.doNotConfirmOrders("!!! JageMonster - AttackLernTalent ist ungültig! -> Unbestaetigt!! (check war: " + test + ")");
 				return;
 			}
 		}
@@ -179,30 +245,50 @@ public class Jagemonster extends Script{
 		test = OP.getOptionString("AttackLernPlan");
 		if (test.length()>2) {
 			Lernplan L = super.getOverlord().getLernplanHandler().getLernplan(this.scriptUnit, test, false);
-			if (L==null) {
+			if (L!=null) {
 				this.AttackLernPlan = test;
 				this.addComment("JageMonster - beim Attackieren wird Lernfix LernPlan=" + this.AttackLernPlan + " befohlen.");
 			} else {
-				this.doNotConfirmOrders("!!! JageMonster - AttackLernPlan ist unbekannt! -> Unbestaetigt!!");
+				this.doNotConfirmOrders("!!! JageMonster - AttackLernPlan ist unbekannt! -> Unbestaetigt!! (gesucht wurde " + test + ")");
 				return;
 			}
 		}
 		
-		this.attackiere=OP.getOptionBoolean("attackiere", this.attackiere);
-		this.attackiere=OP.getOptionBoolean("angreifen", this.attackiere);
-		this.attackiere=OP.getOptionBoolean("Angriff", this.attackiere);
+		
 		int cc = this.getUnit().getModifiedCombatStatus();
-		if (this.attackiere) {
+		if (this.role==role_AttackFront || this.role==role_AttackBack) {
 			this.addComment("JageMonster - Ich werde angreifen!");
 			if (cc==EresseaConstants.CS_FLEE || cc==EresseaConstants.CS_NOT) {
 				this.doNotConfirmOrders("!!! JageMonster - Ich soll angreifen, habe dazu aber den falschen Kampfstatus!");
+				return;
 			}
+			if (this.role==role_AttackFront) {
+				if (cc==EresseaConstants.CS_REAR) {
+					this.doNotConfirmOrders("!!! JageMonster - Ich soll FRONT angreifen, habe dazu aber den falschen Kampfstatus HINTEN !");
+					return;
+				}
+			}
+			if (this.role==role_AttackBack) {
+				if (cc==EresseaConstants.CS_AGGRESSIVE || cc==EresseaConstants.CS_DEFENSIVE || cc==EresseaConstants.CS_FRONT) {
+					this.doNotConfirmOrders("!!! JageMonster - Ich soll HINTEN angreifen, habe dazu aber den falschen Kampfstatus VORNE !");
+					return;
+				}
+			}
+			
 		} else {
 			this.addComment("JageMonster - Ich werde mich zurückhalten und nicht angreifen!");
 			if (cc==EresseaConstants.CS_AGGRESSIVE || cc==EresseaConstants.CS_FRONT || cc==EresseaConstants.CS_REAR || cc==EresseaConstants.CS_DEFENSIVE) {
 				this.doNotConfirmOrders("!!! JageMonster - Ich sollte nicht kämpfen müssen, habe dazu aber den falschen Kampfstatus!");
+				return;
 			}
 		}
+		
+		
+		this.isTactican = OP.getOptionBoolean("Taktiker", this.isTactican);
+		this.isTactican = OP.getOptionBoolean("Taktik", this.isTactican);
+		this.isTactican = OP.getOptionBoolean("tactican", this.isTactican);
+		this.isTactican = OP.getOptionBoolean("tactic", this.isTactican);
+		
 		
 		/*
 		 * *******************     T A S K   *****************************************
@@ -214,7 +300,7 @@ public class Jagemonster extends Script{
 			if (this.getUnit().getRegion().getCoordinate().equals(this.homeDest)) {
 				// wir sind (wieder) in der Home Region
 				this.addComment("JageMonster - Ziel im TA nicht auffindbar, ich wieder zu Hause, kein Auftrag mehr.");
-				// Einheit erhält keinen langen befehl und bleibt (vermutlich) unbestätigt
+				// Einheit erhält keinen langen Befehl und bleibt (vermutlich) unbestätigt
 			} else {
 				// wir müssen zur Home Region
 				this.moveTo(this.homeDest);
@@ -225,14 +311,43 @@ public class Jagemonster extends Script{
 			if (this.getUnit().getRegion().equals(this.targetUnit.getRegion())) {
 				// wir sind vor Ort
 				// Check, ob Attackiere Sinnvoll, und ich kenne nur mich (diese Einheit), ich weiss nicht, wer sonst noch angreift...
-				
+				// melde die Bereitschaft zum Angriff, warte auf GO durch MJM
+				// MJM prüft, ob Bedingungen erfüllt sind
+				//	- genug Angreifer
+				//  - kein BACK ohne FRONT
+				this.Ready4AttackThisWeek=true;
+				this.addComment("Melde dem MJM: bereit zum Angriff");
+				this.getOverlord().getMJM().addJäger(this);
 			} else {
 				// wir müssen zum Ziel
 				this.moveTo(this.targetUnit.getRegion().getCoordinate());
+				this.getOverlord().getMJM().addTargetUnit(this.targetUnit);
 			}
-			
 		}
 	}
+	
+	/**
+	 * MJM hat ggf eine Entscheidung gefällt, angriff oder nicht
+	 */
+	private void afterDecision() {
+		if (!this.Ready4AttackThisWeek) {
+			// wir waren gar nicht kampfwillig
+			return;
+		}
+		// Auf jeden Fall Lern-Befehl geben
+		this.AttackLerne();
+		if (MJM_setAttack) {
+			// Angreifen - ATTACKIERE und FOLGE sind schon gesetzt, BEWACHE kommt von BEWACHE ?! Nope, wir beachen auch
+			this.addOrder("BEWACHEN ;Jagemonster - angreifende Einheiten bewachen.", true);
+		} else {
+			// ok, wir wollten angreifen, MJM hat aber kein GO gegeben, wir sind wohl zu wenige
+			// fürs erste: nicht bestätigen
+			this.doNotConfirmOrders("angriffsbereit, aber vom MJM fehlt das OK!");
+		}
+	}
+	
+	
+	
 	
 	/**
 	 * setzt NACH-Befehle - soweit möglich

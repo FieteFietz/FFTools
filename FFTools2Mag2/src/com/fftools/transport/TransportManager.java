@@ -224,7 +224,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 			if (this.transporters.size()>0){
 				outText.setScreenOut(false);
 				long startT = System.currentTimeMillis();
-				this.runRegions(tradeRegions,TA.getName());
+				this.runRegions(tradeRegions,TA.getName(), TA);
 				// Transporter inform UNits
 				int countEmpty = 0 ;
 				int countIdle = 0 ;
@@ -290,7 +290,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 	 * @param regions
 	 */
 	@SuppressWarnings("unused")
-	private void runRegions(ArrayList<TradeRegion> tradeRegions, String infoName){
+	private void runRegions(ArrayList<TradeRegion> tradeRegions, String infoName, TradeArea actTA){
 		// eigene Region Liste bauen
 		// neu: unter berücksichtigung der selektierten Regionen
 		ArrayList<Region> regions = new ArrayList<Region>();
@@ -422,7 +422,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		}
 		
 		
-		this.orderTransports(areaRequests, areaOffers);
+		this.orderTransports(areaRequests, areaOffers,actTA);
 		
 		
 		// abschliessend wieder infos
@@ -575,7 +575,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 	 * @param requests
 	 * @param offers
 	 */
-	private void orderTransports(ArrayList<TransportRequest> requests, ArrayList<TransportOffer> offers){
+	private void orderTransports(ArrayList<TransportRequest> requests, ArrayList<TransportOffer> offers, TradeArea actTA){
 		long startT = System.currentTimeMillis();
 		long endT = System.currentTimeMillis();
 		int cnter = 0;
@@ -591,7 +591,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 				}
 			}
 			if (actOffers.size()>0){
-				this.processRequest(actRequest, actOffers);
+				this.processRequest(actRequest, actOffers,actTA);
 			}
 			
 			// userInfo
@@ -620,7 +620,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 	 * @param offers
 	 * @return
 	 */
-	private void processRequest(TransportRequest request, ArrayList<TransportOffer> offers){
+	private void processRequest(TransportRequest request, ArrayList<TransportOffer> offers, TradeArea actTA){
 		
 		// kleine info an den user
 		outText.addPoint();
@@ -648,7 +648,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		// neu: dist setzen
 		for (Iterator<TransportOffer> iter = offers.iterator();iter.hasNext();){
 			TransportOffer offer = (TransportOffer)iter.next();
-			int dist = FFToolsRegions.getPathDistLand(this.scriptMain.gd_ScriptMain, offer.getRegion().getCoordinate(),request.getRegion().getCoordinate(), true);
+			int dist = FFToolsRegions.getPathDistLand(this.scriptMain.gd_ScriptMain, offer.getRegion().getCoordinate(),request.getRegion().getCoordinate(), true, actTA.isHasInsektenTransporter());
 			offer.setActDist(dist);
 		}
 
@@ -845,7 +845,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		// neu: dist vorher setzen
 		for (Iterator<Transporter> iter = actTransporters.iterator();iter.hasNext();){
 			Transporter actTransporter = (Transporter)iter.next();
-			int dist = FFToolsRegions.getPathDistLand(this.scriptMain.gd_ScriptMain, actTransporter.getActRegion().getCoordinate(),offer.getRegion().getCoordinate(), true);
+			int dist = FFToolsRegions.getPathDistLand(this.scriptMain.gd_ScriptMain, actTransporter.getActRegion().getCoordinate(),offer.getRegion().getCoordinate(), true, actTransporter.getScriptUnit().isInsekt());
 			actTransporter.setActDist(dist);
 		}
 		
@@ -860,7 +860,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		// Transporter durchgehen
 		for (Iterator<Transporter> iter = actTransporters.iterator();iter.hasNext();){
 			Transporter actTransporter = (Transporter)iter.next();
-			if (actTransporter.getKapa_frei()>0){
+			if (actTransporter.getKapa_frei()>0 && actTransporter.getActDist()>=0){
 				// diese Transporter bearbeiten
 				// nur in dieser Region ?
 				if (!onlyInRegion || actTransporter.getActDist()==0){
@@ -1022,7 +1022,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 					r = gotoInfo.getNextHold();
 				}
 			}
-			int dist = FFToolsRegions.getPathDistLand(this.scriptMain.gd_ScriptMain, r.getCoordinate(),offer.getRegion().getCoordinate(), true);
+			int dist = FFToolsRegions.getPathDistLand(this.scriptMain.gd_ScriptMain, r.getCoordinate(),offer.getRegion().getCoordinate(), true, actTransporter.getScriptUnit().isInsekt());
 			actTransporter.setActDist(dist);
 		}
 		
@@ -1036,7 +1036,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		// Transporter durchgehen
 		for (Iterator<Transporter> iter = actTransporters.iterator();iter.hasNext();){
 			Transporter actTransporter = (Transporter)iter.next();
-			if (actTransporter.getKapa_frei()>0){
+			if (actTransporter.getKapa_frei()>0 && actTransporter.getActDist()>=0){
 				// diese Transporter bearbeiten
 				this.processUsedTransporter(request, offer, actTransporter);
 			}
@@ -1095,7 +1095,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		for (Iterator<Transporter> iter = actTransporters.iterator();iter.hasNext();){
 			Transporter actTransporter = (Transporter)iter.next();
 			Region r = actTransporter.getActRegion();
-			int dist = FFToolsRegions.getPathDistLand(this.scriptMain.gd_ScriptMain, r.getCoordinate(),offer.getRegion().getCoordinate(), actTransporter.isRiding());
+			int dist = FFToolsRegions.getPathDistLand(this.scriptMain.gd_ScriptMain, r.getCoordinate(),offer.getRegion().getCoordinate(), actTransporter.isRiding(), actTransporter.getScriptUnit().isInsekt());
 			actTransporter.setActDist(dist);
 		}
 		
@@ -1109,7 +1109,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		// Transporter durchgehen
 		for (Iterator<Transporter> iter = actTransporters.iterator();iter.hasNext();){
 			Transporter actTransporter = (Transporter)iter.next();
-			if (actTransporter.getKapa_frei_planung()>0){
+			if (actTransporter.getKapa_frei_planung()>0 && actTransporter.getActDist()>=0){
 				// diese Transporter bearbeiten
 				this.processLeerfahrtTransporter(request, offer, actTransporter);
 			}
@@ -1151,7 +1151,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		
 		int distOffer = FFToolsRegions.getPathDistLand(offer.getScriptUnit().getScriptMain().gd_ScriptMain, 
 					offer.getRegion().getCoordinate(), request.getRegion().getCoordinate(), 
-						reitend);
+						reitend, transporter.getScriptUnit().isInsekt());
 		
 		if (gotoInfo==null || gotoInfo.getNextHold()==null) {
 			// für die Fälle, indenen kein Weg gefunden werden konnte
@@ -1161,7 +1161,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		
 		int distNextHold = FFToolsRegions.getPathDistLand(offer.getScriptUnit().getScriptMain().gd_ScriptMain, 
 				gotoInfo.getNextHold().getCoordinate(), request.getRegion().getCoordinate(), 
-					reitend);
+					reitend,transporter.getScriptUnit().isInsekt());
 		
 		if (distOffer<=distNextHold){
 			// hat keinen sinn

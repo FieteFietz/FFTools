@@ -17,15 +17,28 @@ public class MsgBox extends Dialog implements ActionListener {
 	 public boolean id = false;
 	 Button ok,can;
 
-	 public MsgBox(Frame frame, String msg, String title,boolean okcan){
+	 public MsgBox(Frame frame, String msg, String title,boolean okcan, String msg2){
 	  super(frame, title, true);
 	  setLayout(new BorderLayout());
-	  add("Center",new Label(msg));
+	  add("North",new Label(msg));
+	  if (msg2.length()>1) {
+		  add("Center",new Label(msg2));
+	  }
 	  addOKCancelPanel(okcan);
 	  createFrame();
 	  pack();
 	  setVisible(true);
 	  }
+	 
+	 public MsgBox(Frame frame, String msg, String title,boolean okcan){
+		  super(frame, title, true);
+		  setLayout(new BorderLayout());
+		  add("Center",new Label(msg));
+		  addOKCancelPanel(okcan);
+		  createFrame();
+		  pack();
+		  setVisible(true);
+		  }
 
 	 void addOKCancelPanel( boolean okcan ) {
 	  Panel p = new Panel();

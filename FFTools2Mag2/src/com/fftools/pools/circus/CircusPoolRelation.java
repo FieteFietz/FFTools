@@ -38,6 +38,7 @@ public class CircusPoolRelation implements Comparable<CircusPoolRelation> {
 	// hilfsvariabkle zum Vergleichen von Entfernungen
 	private int dist = -1;
 	private GotoInfo gotoInfo = null;
+	private Region distRegion = null;
 	
 	
 	public CircusPoolRelation(Unterhalten _unterhalten, CircusPool _cp){
@@ -158,8 +159,13 @@ public class CircusPoolRelation implements Comparable<CircusPoolRelation> {
 	
 	// setzt den dest wert auf die entfernung zur Region "to"
 	public void setDistToRegion(Region to){
+		/*
 		this.gotoInfo = FFToolsRegions.makeOrderNACH(this.unterhalten.scriptUnit, this.unterhalten.scriptUnit.getUnit().getRegion().getCoordinate(), to.getCoordinate(), false,"CircusPoolRelation");
 		this.dist = this.gotoInfo.getAnzRunden();
+		*/
+		
+		this.dist = FFToolsRegions.getPathDistLand(this.scriptUnit.getScriptMain().gd_ScriptMain, this.unterhalten.scriptUnit.getUnit().getRegion().getCoordinate(), to.getCoordinate(), false, this.unterhalten.scriptUnit.isInsekt());
+		this.distRegion = to;
 	}
 
 
@@ -168,6 +174,11 @@ public class CircusPoolRelation implements Comparable<CircusPoolRelation> {
 	 * @return the gotoInfo
 	 */
 	public GotoInfo getGotoInfo() {
+		
+		if (this.gotoInfo==null && this.distRegion!=null) {
+			this.gotoInfo = FFToolsRegions.makeOrderNACH(this.unterhalten.scriptUnit, this.unterhalten.scriptUnit.getUnit().getRegion().getCoordinate(), this.distRegion.getCoordinate(), false,"CircusPoolRelation");
+		}
+		
 		return gotoInfo;
 	}
 	

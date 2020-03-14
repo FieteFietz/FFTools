@@ -85,7 +85,7 @@ public class BauManager implements OverlordRun,OverlordInfo{
 			return;
 		}
 		tA.getTradeAreaBauManager().addBauScript(bauen);
-		bauen.addComment("zugeordnet zum TA: " + tA.getName());
+		bauen.addComment("BM-bauen: zugeordnet zum TA: " + tA.getName());
 	}
 	
 	public void addInformationListener(ScriptUnit su){
@@ -106,7 +106,7 @@ public class BauManager implements OverlordRun,OverlordInfo{
 			return;
 		}
 		tA.getTradeAreaBauManager().addBauAuftrag(bauAuftrag);
-		bauAuftrag.addComment("zugeordnet zum TA: " + tA.getName());
+		bauAuftrag.addComment("BM-auftrag: zugeordnet zum TA: " + tA.getName());
 	}
 	
 	

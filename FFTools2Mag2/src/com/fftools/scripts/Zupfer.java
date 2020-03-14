@@ -57,6 +57,7 @@ public class Zupfer extends MatPoolScript{
 	 * ToDo: Comment
 	 */
 	private void start(){
+		super.addVersionInfo();
 		// Eigene Talentstufe ermitteln
 		int skillLevel = 0;
 		SkillType skillType = this.gd_Script.getRules().getSkillType("Kräuterkunde", false);
@@ -72,6 +73,7 @@ public class Zupfer extends MatPoolScript{
 		}
 		
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Zupfer");
+		OP.addOptionList(this.getArguments());
 		int neuerMindestZupfBestandProzent = OP.getOptionInt("MindestZupfBestandProzent", 0); 
 		if (neuerMindestZupfBestandProzent>0 && neuerMindestZupfBestandProzent<101) {
 			this.addComment("neuer Wert für MindestZupfBestandProzent erkannt, ändere von " + MindestZupfBestandProzent + "% auf " + neuerMindestZupfBestandProzent + "%");
@@ -80,7 +82,8 @@ public class Zupfer extends MatPoolScript{
 		
 		
 		int unitMinLevel = OP.getOptionInt("minTalent", 5);
-		int menge = OP.getOptionInt("menge", 5);
+		int menge = OP.getOptionInt("menge", 0);
+		int testMenge = 5;
 		String talent=OP.getOptionString("LernTalent");
 		if (talent.length()<2) {
 			talent=OP.getOptionString("Talent");
@@ -96,7 +99,7 @@ public class Zupfer extends MatPoolScript{
 			}
 		}
 		
-		this.addComment("erkanntes minTalent: " + unitMinLevel + ", erkannte Menge " + menge);
+		this.addComment("erkanntes minTalent: " + unitMinLevel + ", erkannte vorgegebene Menge " + menge);
 		
 		if (LernTalentSkillType!=null) {
 			this.addComment("erkanntes LernTalent: " + LernTalentSkillType.toString());
@@ -315,7 +318,7 @@ public class Zupfer extends MatPoolScript{
 		
 		if (sollProdLetzteRunde==-1) {
 			// keine Info...wir gehen von menge aus
-			sollProdLetzteRunde = menge;
+			sollProdLetzteRunde = testMenge;
 			this.addComment("keine Information zur geplanten Zupfmenge aus letzter Runde vorhanden, gehe von " + sollProdLetzteRunde + " aus.");
 		}
 		
@@ -553,19 +556,19 @@ public class Zupfer extends MatPoolScript{
 				
 				
 				int maxProdTotal = 18;
-				if (menge>maxProdTotal) {
-					maxProdTotal = menge;
+				if (menge==0) {
+					menge=maxProdTotal;
 				}
 				int maxSkillMenge = skillLevel * this.getUnit().getModifiedPersons();
 				if (regionsBestand>=MindestZupfBestandProzent) {
 					// genügend da, maximal zupfen
 					
-					if (maxSkillMenge<=maxProdTotal) {
+					if (maxSkillMenge<=menge) {
 						this.addOrder("mache " + maxSkillMenge + " Kräuter", true);
 						this.addOrder("// Zupferinfo Runde=" + Runde + " Sollmenge=" + maxSkillMenge, true);
 					} else {
-						this.addOrder("mache " + maxProdTotal + " Kräuter ;maximale ProdMenge", true);
-						this.addOrder("// Zupferinfo Runde=" + Runde + " Sollmenge=" + maxProdTotal, true);
+						this.addOrder("mache " + menge + " Kräuter ;maximale ProdMenge", true);
+						this.addOrder("// Zupferinfo Runde=" + Runde + " Sollmenge=" + menge, true);
 					}
 				}
 				if (regionsBestand>=0 && regionsBestand<MindestZupfBestandProzent) {
@@ -641,7 +644,10 @@ public class Zupfer extends MatPoolScript{
 						this.addComment("Region hat unbekannten Kräuterbestand, ich Forsche...");
 						this.addOrder("FORSCHE KRÄUTER ;Regionsbestand niedrig" , true);
 					} else {
-						int testZupfmenge= 8; // ToDo: setscripteroption konfigurierbar machen
+						int testZupfmenge= testMenge; // ToDo: setscripteroption konfigurierbar machen
+						if (menge>0) {
+							testZupfmenge= menge;
+						}
 						if (maxSkillMenge<testZupfmenge) {
 							testZupfmenge=maxSkillMenge;
 						}

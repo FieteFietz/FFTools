@@ -39,6 +39,7 @@ public class Material extends MatPoolScript {
 	private boolean isSpotter = false;
 	private boolean isStealth = false;
 	
+	private boolean MaterialWundsalbe = true;
 	
 	private int basisPrio = default_basisPrio;
 	
@@ -71,13 +72,14 @@ public class Material extends MatPoolScript {
 		}
 		
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Material");
+		OP.addOptionList(this.getArguments());
 		
 		// als relevante Waffenlevel gibts entweder Hiebwaffen oder Stangenwaffen
 		// oder Bogenschieﬂen oder Armbrustschieﬂen
 		Skill relevantSkill = null;
 		for (int i = 0;i<this.talentNamen.length;i++){
 			String actName = this.talentNamen[i];
-			SkillType actSkillType = this.gd_Script.rules.getSkillType(actName);
+			SkillType actSkillType = this.gd_Script.getRules().getSkillType(actName);
 			if (actSkillType!=null){
 				Skill actSkill = this.scriptUnit.getUnit().getModifiedSkill(actSkillType);
 				if (actSkill!=null){
@@ -432,32 +434,45 @@ public class Material extends MatPoolScript {
 			if (reitSkill!=null && reitSkill.getLevel()>0){
 				mpr = new MatPoolRequest(this,anz_pferde,"Pferd",prio,comment);
 				this.addMatPoolRequest(mpr);
+				this.addComment("Material: Pferde angefordert.");
 			} else {
 				this.addComment("Material: nicht gen¸gend Reittalent f¸r Pferde");
 			}
 		}
 		
-		// Wundsalbe
 		
-		// um wieviele Wundsalben soll es denn gehen...pro 100 eine als ansatz
-		// das vielleicht mal als scripteroption
-		// 1 Wundsalbe = 400 Trefferpunkte
-		// 1 Halbling 18 TP, ein Mensch 20 TP...Zwerg 24 TP, Troll 30 TP
-		// 20 MM -> 400 TP, 50% wundsalbendurchsatz-> 50 Mann 1 Wundsalbe
-		// hier das entscheidende Setting
-		int personenProWundsalbe = 10;
-		// wieviel Wundsalbe sollte diese Einheit also haben?
-		int wishWS = persons / personenProWundsalbe ;
-		if (wishWS>0){
-			super.setPrioParameter(prio,-0.5,0,2);
-			for (int i = 1;i<=wishWS;i++){
-				int actPrio = super.getPrio(i-1);
-				mpr = new MatPoolRequest(this,1,"Wundsalbe",actPrio,comment + "(WS:" + i + ")",kapa_policy,kapa_benutzer);
-				if (this.inRegion){
-					mpr.setOnlyRegion(true);
+		
+		
+		if (reportSettings.getOptionString("MaterialWundsalbe", this.region())!=null) {
+			this.MaterialWundsalbe = reportSettings.getOptionBoolean("MaterialWundsalbe", this.region());
+		}
+		
+		this.MaterialWundsalbe = OP.getOptionBoolean("MaterialWundsalbe", this.MaterialWundsalbe);
+		
+		if (this.MaterialWundsalbe) {
+			// Wundsalbe
+			// um wieviele Wundsalben soll es denn gehen...pro 100 eine als ansatz
+			// das vielleicht mal als scripteroption
+			// 1 Wundsalbe = 400 Trefferpunkte
+			// 1 Halbling 18 TP, ein Mensch 20 TP...Zwerg 24 TP, Troll 30 TP
+			// 20 MM -> 400 TP, 50% wundsalbendurchsatz-> 50 Mann 1 Wundsalbe
+			// hier das entscheidende Setting
+			int personenProWundsalbe = 10;
+			// wieviel Wundsalbe sollte diese Einheit also haben?
+			int wishWS = persons / personenProWundsalbe ;
+			if (wishWS>0){
+				super.setPrioParameter(prio,-0.5,0,2);
+				for (int i = 1;i<=wishWS;i++){
+					int actPrio = super.getPrio(i-1);
+					mpr = new MatPoolRequest(this,1,"Wundsalbe",actPrio,comment + "(WS:" + i + ")",kapa_policy,kapa_benutzer);
+					if (this.inRegion){
+						mpr.setOnlyRegion(true);
+					}
+					this.addMatPoolRequest(mpr);
 				}
-				this.addMatPoolRequest(mpr);
 			}
+		} else {
+			this.addComment("Material: keine Anforderung von Wundsalbe, weil nicht gew¸nscht.");
 		}
 		
 		
