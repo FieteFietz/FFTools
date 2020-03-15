@@ -236,8 +236,14 @@ public class Steine extends MatPoolScript{
 			addComment("Anpassung auf gut teilbare Produktionsmenge erfolgt, Änderung von " + machbareMenge + " auf " + mengeResult);
 		}
 		machbareMenge=mengeResult;
-		this.addOrder("machen " + machbareMenge + " Stein ;(script Steine)", true);
-		
+
+		if (machbareMenge>0) {
+			this.addOrder("machen " + machbareMenge + " Steine ;(script Steine)", true);
+		} else {
+			this.addComment("daraus folgt -> ich Lerne, leider ohne Lernpool, dafür ist es jetzt zu spät..");
+			this.makeStein=false;
+			this.addOrder("Lerne Steinbau ;(script Steine)", true);
+		}		
 	}
 	
 	private void Lerne() {
