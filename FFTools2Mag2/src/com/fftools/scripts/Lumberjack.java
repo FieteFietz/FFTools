@@ -248,11 +248,11 @@ public class Lumberjack extends MatPoolScript{
 		
 		// wenn es sich um Mallorn handelt, das braucht minTalent=2 !! halbierte Produktionsmenge
 		if (this.Gut=="Mallorn"){
-			machbareMenge *= 2;
+			machbareMenge /= 2;
 			this.addComment("Lumberjack: Mallorn soll geschlagen werden. Mögliche Produktion halbiert auf: " + machbareMenge);
 		}
 		
-		// Schaffenstrunk oder RdF verdoppeln prodPoints 
+		// Schaffenstrunk verdoppelt prodPoints 
 		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,true)){
 			machbareMenge *= 2;
 			this.addComment("Lumberjack: Einheit nutzt Schaffenstrunk. Produktion verdoppelt auf: " + machbareMenge);
@@ -260,7 +260,7 @@ public class Lumberjack extends MatPoolScript{
 		
 		
 		// 20170708: berücksichtigung von RdfF
-		ItemType rdfType=this.gd_Script.rules.getItemType("Ring der flinken Finger",false);
+		ItemType rdfType=this.gd_Script.getRules().getItemType("Ring der flinken Finger",false);
 		if (rdfType!=null){
 			Item rdfItem = this.scriptUnit.getModifiedItem(rdfType);
 			if (rdfItem!=null && rdfItem.getAmount()>0){
