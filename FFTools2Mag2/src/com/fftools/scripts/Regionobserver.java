@@ -359,7 +359,7 @@ public class Regionobserver extends MatPoolScript{
 					// reicht
 					this.scriptUnit.addOrder("BEWACHEN ;RegionObserver ohne Feind. Waffen: " + countWeapons, false);
 					if (!this.GuardIfEnemey) {
-						this.scriptUnit.addOrder("KÄMPFE NICHT", false);
+						this.scriptUnit.addOrder("KÄMPFE NICHT ;RegionObserver", false);
 					}
 					if (this.scriptUnit.getUnit().getCombatStatus()==EresseaConstants.CS_FLEE) {
 						this.doNotConfirmOrders("!!! RegionObserver: Kampfstatus ist FLIEHE, bitte prüfen!!!");
@@ -382,7 +382,7 @@ public class Regionobserver extends MatPoolScript{
 				// wir bewachen bereits
 				if (!this.GuardIfEnemey) {
 					this.scriptUnit.addOrder("BEWACHEN NICHT", false);
-					this.scriptUnit.addOrder("KÄMPFE FLIEHE", false);
+					this.scriptUnit.addOrder("KÄMPFE FLIEHE ;RegionObserver", false);
 				} else {
 					this.addComment("RegionObserver: Obwohl mir mulmig ist, werde ich nicht weichen! (Option GuardIfEnemy ist aktiv)");
 					

@@ -169,6 +169,7 @@ public class ScriptUnit {
 	 * und welche mit do_not_touch
 	 * und welche mit @ vorne
 	 * 20200304 und welche mit ATTACKIERE vorne
+	 * 20200327: weitere Befehle sollen nicht gelöscht werden, wir setzen ein Array auf
 	 * @return int Anzahl der geloeschten orderzeilen
 	 */
 	
@@ -204,8 +205,58 @@ public class ScriptUnit {
 			} else if (s.startsWith("!@")){
 				// permanente orders mit Fehlerunterdrückung
 				newOrders.add(this.getUnit().createOrder(s));
-			} else if (s.toUpperCase().startsWith("ATTACKIERE")){
-				// Attackiere befehle...
+			} else if (s.toUpperCase().startsWith("ATTACKIERE") && s.toLowerCase().indexOf(";mjm checked")<0 && s.toLowerCase().indexOf("; sj von")<0){
+				// Attackiere befehle..., die nicht vom MJM oder SJM kommen
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("BETRETE") && s.toLowerCase().indexOf("; akapool->")<0 && s.toLowerCase().indexOf(";enterbuilding")<0 && s.toLowerCase().indexOf(";script auramaxwarning")<0){
+				// Betrete ausser ; AkaPool->
+				// ausser ;EnterBuilding
+				// ausser ;script Auramaxwarning
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("BESCHREIBE")){
+				// Beschreibe
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("BENENNE")){
+				// Benenne
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("BANNER")){
+				// Banner
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("BOTSCHAFT")){
+				// Botschaft
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("EMAIL")){
+				// Email
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("GRUPPE")){
+				// Gruppe
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("KÄMPFE")  && s.toLowerCase().indexOf(";bewachen")<0  && s.toLowerCase().indexOf(";regionobserver")<0){
+				// Kämpfe
+				// ausser ;RegionObserver
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("KONTAKTIERE")){
+				// Kontaktiere
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("NUMMER")){
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("OPTION")){
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("PASSWORT")){
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("PRÄFIX")){
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("SABOTIERE")){
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("TARNE")){
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("VERGISS")){
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("VERLASSE") && s.toLowerCase().indexOf("; akapool")<0 && s.toLowerCase().indexOf(";von goto")<0 && s.toLowerCase().indexOf("; werftarbeiter")<0){
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("ZEIGE")){
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (s.toUpperCase().startsWith("ZERSTÖRE")){
 				newOrders.add(this.getUnit().createOrder(s));
 			} else {
 				cnt++;

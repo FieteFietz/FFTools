@@ -91,7 +91,7 @@ public class Enterbuilding extends MatPoolScript{
 		
 		
 		// ich muss da noch rein
-		this.addOrder("Betreten BURG " + target, true);
+		this.addOrder("Betreten BURG " + target + " ;EnterBuilding", true);
 		this.addComment("EnterBuilding: Betrete-Befehl für " + target + " generiert");
 		
 	}

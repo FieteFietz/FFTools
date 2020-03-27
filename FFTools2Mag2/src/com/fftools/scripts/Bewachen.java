@@ -231,7 +231,7 @@ public class Bewachen extends Script{
 		
 		if (this.getUnit().getModifiedCombatStatus()==this.getUnit().getCombatStatus() && this.getUnit().getModifiedCombatStatus()>=4) {
 			this.addComment("Bewache: befehle neuen Kampfstatus");
-			this.addOrder("KÄMPFE " + bestStand, true);
+			this.addOrder("KÄMPFE " + bestStand + " ;Bewachen", true);
 		}
 		
 		// bis hierhin gekommen - also bewache neu befehlen...
