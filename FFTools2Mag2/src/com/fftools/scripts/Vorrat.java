@@ -2,6 +2,7 @@ package com.fftools.scripts;
 
 import magellan.library.rules.ItemType;
 
+import com.fftools.OutTextClass;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.trade.TradeArea;
 import com.fftools.trade.TradeUtils;
@@ -13,6 +14,8 @@ import com.fftools.utils.FFToolsOptionParser;
 
 
 public class Vorrat extends TransportScript{
+	
+	private static final OutTextClass outText = OutTextClass.getInstance();
 	
 	private static final int Durchlauf_vorMP = 190;
 	private static final int Durchlauf_nachMP = 320;
@@ -174,7 +177,11 @@ public class Vorrat extends TransportScript{
 		// TradeArea mal feststellen, damit später danach sortiert werden kann
 		this.tradeArea = this.getTradeAreaHandler().getTAinRange(this.region());
 		// Eintrag ion requestAl
-		this.tradeArea.addVorratScript2ALL(this);
+		if (this.tradeArea!=null) {
+			this.tradeArea.addVorratScript2ALL(this);
+		} else {
+			outText.addOutLine("!!! Vorrat ohne TA !!! bei " + this.unitDesc(), true);
+		}
 		
 	}
 	

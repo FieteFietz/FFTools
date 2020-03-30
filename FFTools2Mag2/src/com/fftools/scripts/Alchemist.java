@@ -85,6 +85,11 @@ public class Alchemist extends MatPoolScript{
 	 */
 	private String itemGroup = "";
 	
+	/**
+	 * Soll der Alchemist Schaffenstrunk anfordern und nehmen?
+	 */
+	private boolean nutzeSchaffenstrunk = true;
+	
 	
 	/**
 	 * Parameterloser Constructor
@@ -126,6 +131,9 @@ public class Alchemist extends MatPoolScript{
 		this.krautPrio = OP.getOptionInt("prio", DEFAULT_KRAUT_PRIO);
 		this.minAuslastung = OP.getOptionInt("minAuslastung", DEFAULT_MIN_AUSLASTUNG);
 		this.zubehoerPrio = OP.getOptionInt("zubehoerPrio",DEFAULT_ZUBEHOER_PRIO);
+		this.nutzeSchaffenstrunk = OP.getOptionBoolean("Schaffenstrunk", this.nutzeSchaffenstrunk);
+		this.nutzeSchaffenstrunk = OP.getOptionBoolean("ST", this.nutzeSchaffenstrunk);
+		
 		
 		this.talentPunkte = this.getSchaffenspunkte();
 		
@@ -188,8 +196,10 @@ public class Alchemist extends MatPoolScript{
 	 * 20200218: nur, wenn mache true ist
 	 *
 	 */
-	private void getZubehoer(){		
-		this.getZubehoerDetail("Schaffenstrunk", 1);
+	private void getZubehoer(){
+		if (this.nutzeSchaffenstrunk) {
+			this.getZubehoerDetail("Schaffenstrunk", 1);
+		}
 		this.getZubehoerDetail("Gehirnschmalz", 1);
 		// this.getZubehoerDetail("Ring der flinken Finger", 1);
 		
@@ -233,7 +243,7 @@ public class Alchemist extends MatPoolScript{
 		
 		// Schaffenstrunk?
 		// wenn machen, erlaube Benutzung
-		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,this.machen)){
+		if (this.nutzeSchaffenstrunk && FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,this.machen)){
 			erg = erg * 2;
 			scriptUnit.addComment("Trankeffekt berücksichtigt");
 		}
