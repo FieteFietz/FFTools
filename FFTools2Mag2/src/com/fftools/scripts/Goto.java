@@ -9,17 +9,33 @@ import com.fftools.utils.GotoInfo;
 public class Goto extends Script implements WithGotoInfo{
 	
 	private int Durchlauf1 = 44;
+	private int Durchlauf2 = 214;
 	
-	private int[] runners = {Durchlauf1};
+	private int[] runners = {Durchlauf1,Durchlauf2};
 	
 	private GotoInfo gotoInfo= null;
+	
+	private CoordinateID move_dest = null;
+	private CoordinateID move_act = null;
+	
 	
 	// Parameterloser constructor
 	public Goto() {
 		super.setRunAt(this.runners);
 	}
 	
-	public void runScript(int scriptDurchlauf){		
+public void runScript(int scriptDurchlauf){
+		
+		if (scriptDurchlauf==Durchlauf1){
+			this.firstRun();
+		}
+		if (scriptDurchlauf==Durchlauf2){
+			this.sndRun();
+		}
+	}
+	
+	
+	public void firstRun(){		
 		// hier code fuer GoTo
 		// addOutLine("....start GoTo mit " + super.getArgCount() + " Argumenten");
 		if (super.getArgCount()<1) {
@@ -92,8 +108,8 @@ public class Goto extends Script implements WithGotoInfo{
 	}
 	
 	private void makeOrderNACH(CoordinateID act,CoordinateID dest){		
-		this.gotoInfo = new GotoInfo();
-		this.gotoInfo = FFToolsRegions.makeOrderNACH(this.scriptUnit, act, dest,true,"Goto - makeOrderNach");
+		this.move_act=act;
+		this.move_dest = dest;
 		// Falls wir im Gebäude sind, und da nicht schon raus gehen, verlassen setzen
 		// Hat den Effekt, was wir keinen Gebäudeunterhalt mehr bekommen, welcher
 		// uns eventuell überlädt
@@ -102,6 +118,14 @@ public class Goto extends Script implements WithGotoInfo{
 			this.addOrder("VERLASSEN ;von GOTO", true);
 		}
 	}
+	
+	private void sndRun() {
+		this.gotoInfo = new GotoInfo();
+		if (this.move_act!=null && this.move_dest!=null) {
+			this.gotoInfo = FFToolsRegions.makeOrderNACH(this.scriptUnit, this.move_act, this.move_dest,true,"Goto - makeOrderNach 2ndRun");
+		}
+	}
+	
 
 	public GotoInfo getGotoInfo(){
 		return this.gotoInfo;

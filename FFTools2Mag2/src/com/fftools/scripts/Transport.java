@@ -243,6 +243,7 @@ public class Transport extends TransportScript{
 	private void scriptMitte(){
 		if (this.transporter.isLearning()){return ;}
 		this.transporter.recalcKapa();
+		this.transporter.checkFesteRoute();
 	}
 	
 	

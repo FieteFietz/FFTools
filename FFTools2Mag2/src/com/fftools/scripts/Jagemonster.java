@@ -7,6 +7,7 @@ import com.fftools.trade.TradeArea;
 import com.fftools.trade.TradeRegion;
 import com.fftools.utils.FFToolsOptionParser;
 import com.fftools.utils.FFToolsRegions;
+import com.fftools.utils.GotoInfo;
 
 import magellan.library.CoordinateID;
 import magellan.library.ID;
@@ -24,14 +25,26 @@ public class Jagemonster extends Script{
 	
 	private static final int Durchlauf_1 = 36;
 	private static final int Durchlauf_2 = 38;
+	private static final int Durchlauf_3 = 215;
 	
-	private int[] runners = {Durchlauf_1,Durchlauf_2};
+	private int[] runners = {Durchlauf_1,Durchlauf_2,Durchlauf_3};
 	
 	
 	/**
 	 * kann gesetzt werden als Heimatbasis
 	 */
 	private CoordinateID homeDest = null;
+	
+	
+	/**
+	 * falls jetzt Bewegung ansteht - hier ist das Ziel
+	 */
+	private CoordinateID targetDest = null;
+	
+	/**
+	 * wird im Lauf 3 gesetzt, wenn wir uns denn bewegen
+	 */
+	private GotoInfo gotoInfo = null;
 	
 	/**
 	 * Ziel des Jägers
@@ -91,7 +104,29 @@ public class Jagemonster extends Script{
 		this.isTactican = isTactican;
 	}
 
+	
+	/*
+	 * möchte volle MJM_Settings Informationen vom MJM haben
+	 */
+	private boolean info_MJM_Settings = false;
+	
+	public boolean wants_info_MJM_Settings() {
+		return this.info_MJM_Settings;
+	}
+	
 
+	/*
+	 * möchte regionale MJM_Settings zu den Monstern vor Ort haben
+	 */
+	private boolean info_MJM_Region = false;
+	
+	public boolean wants_info_MJM_Region() {
+		return this.info_MJM_Region;
+	}
+	
+	
+	
+	
 	/**
 	 * Parameterloser Constructor
 	 * Drinne Lassen fuer die Instanzierung des Objectes
@@ -120,6 +155,9 @@ public class Jagemonster extends Script{
 		}
 		if (scriptDurchlauf==Durchlauf_2){
 			this.afterDecision();
+		}
+		if (scriptDurchlauf==Durchlauf_3){
+			this.orderMove();
 		}
 		
 	}
@@ -150,6 +188,25 @@ public class Jagemonster extends Script{
 		
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Jagemonster");
 		OP.addOptionList(this.getArguments());
+		
+		// Informant
+		this.info_MJM_Settings = OP.getOptionBoolean("info_MJM_settings", this.info_MJM_Settings);
+		
+		// RegionInfo  info_MJM_Region
+		this.info_MJM_Region = OP.getOptionBoolean("info_MJM_Region", this.info_MJM_Region);
+		
+		// Falls eine info angefordert worden ist, dann beim MJM registrieren
+		if (this.info_MJM_Settings || this.info_MJM_Region) {
+			this.getOverlord().getMJM().addInformant(this);
+			String erg = "JageMonster: als Informant beim MJM registriert";
+			if (this.info_MJM_Settings) {
+				erg += " (MJM_Settings)";
+			}
+			if (this.info_MJM_Region) {
+				erg += " (MJM_Region)";
+			}
+			this.addComment(erg); 
+		}
 		
 		// home
 		String homeString=OP.getOptionString("home");
@@ -355,7 +412,18 @@ public class Jagemonster extends Script{
 	 */
 	private void moveTo(CoordinateID dest) {
 		this.addComment("JageMonster - befehle GOTO nach " + dest.toString());
-		super.scriptUnit.findScriptClass("Goto",dest.toString(","));
+		this.targetDest = dest;
+		
+	}
+	
+	/**
+	 * setzt Goto um, *nachdem* wir Pferde haben....berechnet dadurch die ETA richtig(er)
+	 */
+	private void orderMove() {
+		if (this.targetDest!=null) {
+			this.gotoInfo = new GotoInfo();
+			this.gotoInfo = FFToolsRegions.makeOrderNACH(this.scriptUnit, super.region().getCoordinate(), this.targetDest,true,"JageMonster");
+		}
 	}
 	
 	

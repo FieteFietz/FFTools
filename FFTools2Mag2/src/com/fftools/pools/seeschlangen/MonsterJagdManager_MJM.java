@@ -1,8 +1,8 @@
 package com.fftools.pools.seeschlangen;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
-import com.fftools.OutTextClass;
 import com.fftools.overlord.Overlord;
 import com.fftools.overlord.OverlordInfo;
 import com.fftools.overlord.OverlordRun;
@@ -20,9 +20,6 @@ import magellan.library.Unit;
  */
 public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
 
-	private static final OutTextClass outText = OutTextClass.getInstance();
-	
-	private Overlord overLord = null;
 	
 	private ArrayList<Jagemonster> Jäger = new ArrayList<Jagemonster>(0);
 	
@@ -31,7 +28,47 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
 	private ArrayList<Region> needTacticRegions = new ArrayList<Region>(0);
 	private ArrayList<Unit> attackedMonsterUnits = new ArrayList<Unit>(0);
 	private ArrayList<Unit> targettedMonsterUnits = new ArrayList<Unit>(0);
+	
+	private HashMap<String, MonsterThreat> monsterThreats = new HashMap<String, MonsterJagdManager_MJM.MonsterThreat>();
+	private ArrayList<String> monsterThreatInfos = new ArrayList<String>(0);
+	
+	private ArrayList<Jagemonster> MJM_Informanten = new ArrayList<Jagemonster>(0);
+	
+	
+	private class MonsterThreat {
+		private double factor=1;
+		private boolean needTactican = false;
+		private String RaceName = "";
 		
+		public double getFactor() {
+			return factor;
+		}
+		public boolean needTactican() {
+			return needTactican;
+		}
+		public String getRaceName() {
+			return RaceName;
+		}
+		public MonsterThreat(String RaceName, double factor) {
+			this(RaceName, factor, false);
+		}
+		
+		public MonsterThreat(String RaceName, double factor, boolean needTactican) {	
+			this.RaceName = RaceName;
+			this.factor = factor;
+			this.needTactican = needTactican;
+		}	
+		
+		public String toString() {
+			String erg = "MonsterBedrohungsFaktor - " + this.getRaceName() + ": Faktor=" + this.getFactor();
+			if (this.needTactican) {
+				erg += " (erfordert Taktiker)";
+			}
+			return erg;
+		}
+		
+	}
+	
 	/**
 	 * Wann soll er laufen
 	 * VOR Lernfix , zwischen den beiden Läufen von Jagemonster
@@ -42,7 +79,23 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
 	private int[] runners = {Durchlauf};
 
 	public MonsterJagdManager_MJM(Overlord overlord){
-		this.overLord = overlord;
+		// this.overLord = overlord;
+		
+		// Standard Bedrohungswerte
+		this.monsterThreats.put("Skelette", new MonsterThreat("Skelette", 0.6));
+		this.monsterThreats.put("Ghoule", new MonsterThreat("Ghoule", 0.6));
+		this.monsterThreats.put("Untote", new MonsterThreat("Untote", 0.6));
+		this.monsterThreats.put("Zombies", new MonsterThreat("Zombies", 0.6));
+		this.monsterThreats.put("Dracoide", new MonsterThreat("Dracoide", 0.6));
+		this.monsterThreats.put("Skelettherren", new MonsterThreat("Skelettherren", 7));
+		this.monsterThreats.put("Ghaste", new MonsterThreat("Ghaste", 10));
+		this.monsterThreats.put("Juju-Zombies", new MonsterThreat("Juju-Zombies", 20));
+		this.monsterThreats.put("Juju-Ghaste", new MonsterThreat("Juju-Ghaste", 20));
+		this.monsterThreats.put("Juju-Drachen", new MonsterThreat("Juju-Drachen", 30));
+		this.monsterThreats.put("Jungdrachen", new MonsterThreat("Jungdrachen", 15));
+		this.monsterThreats.put("Drachen", new MonsterThreat("Drachen", 100,true));
+		this.monsterThreats.put("Wyrme", new MonsterThreat("Wyrme", 500,true));
+		this.monsterThreats.put("Hirntöter", new MonsterThreat("Hirntöter", 10,true));
 	}
 
 	
@@ -71,6 +124,37 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
 			// Scheinbar noch nicht entschieden worden, also für diese Region die Entscheidung anstoßen
 			this.decideRegion(r);
 		}
+		
+		
+		// InformationsService
+		for (Jagemonster jm : this.MJM_Informanten) {
+			if (jm.wants_info_MJM_Settings()) {
+				// Überblick über aktuelle Settings des MJM
+				jm.addComment("MJM: Monster Bedrohungs Settings");
+				for (String s:this.monsterThreats.keySet()) {
+					MonsterThreat MT = this.monsterThreats.get(s);
+					String erg = "- " + s + ": Faktor " + MT.getFactor();
+					if (MT.needTactican()) {
+						erg += " (erfordert Taktiker)";
+					}
+					jm.addComment(erg);
+				}
+			}
+			
+			if (jm.wants_info_MJM_Region()) {
+				int i = countMonsterValue(jm.region());
+				if (i>0) {
+					jm.addComment("MJM_RegionInfo: Bedrohungswert in der Region: " + i);
+				} else {
+					jm.addComment("MJM_RegionInfo: keine Bedrohung in der Region.");
+				}
+				if (this.monsterThreatInfos.size()>0) {
+					for (String s:this.monsterThreatInfos) {
+						jm.addComment("MJM_Region: " + s);
+					}
+				}
+			}
+		}
 	}
 	
 	/**
@@ -97,7 +181,7 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
 		if (this.needTacticRegions.contains(r)) {
 			informJägerRegion(r, "MJM: es werden taktische Talente benötigt.");
 		}
-		informJägerRegion(r, "MJM: eigene Kräfte in der Region: " + (Reihe1 + Reihe2) + " (" + Reihe1 + "|" + Reihe2 +")");
+		informJägerRegion(r, "MJM: Kampfwert eigene Kräfte in der Region: " + (Reihe1 + Reihe2) + " (" + Reihe1 + "|" + Reihe2 +")");
 		
 		// Kann die 1. Reihe überrannt werden ?
 		// Faktor ist 3
@@ -257,68 +341,40 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
 	private int countMonsterValue(Region r) {
 		int monsterValue=0;
 		boolean needTaktik = false;
-		double factor=1;
+		String erg="";
+		this.monsterThreatInfos = new ArrayList<String>(0);
 		for(Unit u: r.units()) {
 			if (u.getFaction()!=null && u.getFaction().getID().toString().equals("ii")) {
-				// Monster
-				factor = 1;
-				if (u.getRace().toString().equalsIgnoreCase("Skelette")) {
-					factor = 0.6;
+				// Monster		
+				MonsterThreat MT = this.monsterThreats.get(u.getRace().toString());
+				if (MT!=null) {
+					long actMonsterValue = Math.round(MT.getFactor() * (double)u.getPersons()); 
+					monsterValue += actMonsterValue;
+					erg = u.getPersons() + " " + u.getRace().toString() + ", Faktor: " + MT.getFactor() + "; Wert: " + actMonsterValue;
+					if (MT.needTactican()) {
+						needTaktik=true;
+						erg += " (erfordert Taktiker)";
+					}
+					
+				} else {
+					erg = "!!! keine Vorgabe für " + u.getRace().toString() + " vorhanden !!! (" + u.getPersons() + " Monster)";
 				}
-				if (u.getRace().toString().equalsIgnoreCase("Ghoule")) {
-					factor = 0.6;
-				}
-				if (u.getRace().toString().equalsIgnoreCase("Untote")) {
-					factor = 0.6;
-				}
-				if (u.getRace().toString().equalsIgnoreCase("Zombies")) {
-					factor = 0.6;
-				}
-				if (u.getRace().toString().equalsIgnoreCase("Dracoide")) {
-					factor = 0.6;
-				}
-				
-				if (u.getRace().toString().equalsIgnoreCase("Skelettherren")) {
-					factor = 5;
-				}
-				if (u.getRace().toString().equalsIgnoreCase("Ghaste")) {
-					factor = 5;
-				}
-				
-				if (u.getRace().toString().equalsIgnoreCase("Juju-Zombies")) {
-					factor = 20;
-				}
-				if (u.getRace().toString().equalsIgnoreCase("Juju-Ghaste")) {
-					factor = 20;
-				}
-				if (u.getRace().toString().equalsIgnoreCase("Juju-Drachen")) {
-					factor = 30;
-				}
-				if (u.getRace().toString().equalsIgnoreCase("Jungdrachen")) {
-					factor = 15;
-				}
-				if (u.getRace().toString().equalsIgnoreCase("Drachen")) {
-					factor = 200;
-					needTaktik=true;
-				}
-				if (u.getRace().toString().equalsIgnoreCase("Wyrme")) {
-					factor = 500;
-					needTaktik=true;
-				}
-				
-				if (u.getRace().toString().equalsIgnoreCase("Hirntöter")) {
-					factor = 100;
-					needTaktik=true;
-				}
-				
-				monsterValue += Math.round(factor * (double)u.getPersons());
+				this.monsterThreatInfos.add(erg);
 			}
 		}
-		
 		if (needTaktik && !this.needTacticRegions.contains(r)) {
 			this.needTacticRegions.add(r);
 		}
 		return monsterValue;
+	}
+	
+	/**
+	 * liefert die Infos von der Threat-Berechnung
+	 * vorher!!! countMonsterValue aufrufen
+	 * @return
+	 */
+	public ArrayList<String> getMonsterThreatInfo() {
+		return this.monsterThreatInfos;
 	}
 	
 	
@@ -342,6 +398,17 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
     	}
     }
     
+    /**
+     * fügt Jagdeinheiten dem MJM hinzu, die über Settings des MJM umfassend informiert werden wollen
+     * 
+     * @param JM
+     */
+    public void addInformant(Jagemonster JM) {
+    	if (!this.MJM_Informanten.contains(JM)) {
+    		this.MJM_Informanten.add(JM);
+    	}
+    }
+    
     
     public void addTargetUnit(Unit monsterUnit) {
     	if (!this.targettedMonsterUnits.contains(monsterUnit)) {
@@ -354,5 +421,12 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
     }
     
     
+    public String addMonsterThreat(String s, double d, boolean t) {
+    	String erg="";
+    	MonsterThreat MT = new MonsterThreat(s, d, t);
+    	erg = MT.toString();
+    	this.monsterThreats.put(s, MT);
+    	return erg;
+    }
 
 }

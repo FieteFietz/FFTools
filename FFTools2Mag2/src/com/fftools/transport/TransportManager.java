@@ -995,6 +995,9 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 				// und die auf Automatik stehen
 				if (T.getActRegion().equals(offer.getRegion()) && T.getDestRegion()!=null && T.getMode()==Transporter.transporterMode_fullautomatic){
 					actTransporters.add(T);
+					if (!this.reportOFF) {
+						outText.addOutLine("Debug: evtl passender benutzter T: " + T.getScriptUnit().unitDesc());
+					}
 				}
 			}
 		}
@@ -1024,6 +1027,9 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 			}
 			int dist = FFToolsRegions.getPathDistLand(this.scriptMain.gd_ScriptMain, r.getCoordinate(),offer.getRegion().getCoordinate(), true, actTransporter.getScriptUnit().isInsekt());
 			actTransporter.setActDist(dist);
+			if (!this.reportOFF) {
+				outText.addOutLine("Debug setDist für " + actTransporter.getScriptUnit().unitDesc() + " -> " + dist);
+			}
 		}
 		
 		long start1 = System.currentTimeMillis();
@@ -1038,7 +1044,12 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 			Transporter actTransporter = (Transporter)iter.next();
 			if (actTransporter.getKapa_frei()>0 && actTransporter.getActDist()>=0){
 				// diese Transporter bearbeiten
+				if (!this.reportOFF) {
+					outText.addOutLine("Debug, bearbeite benutzten T: " + actTransporter.getScriptUnit().unitDesc());
+				}
 				this.processUsedTransporter(request, offer, actTransporter);
+			} else {
+				outText.addOutLine("Debug, ignoriere benutzten T: " + actTransporter.getScriptUnit().unitDesc());
 			}
 			// abbruch kriterium
 			if (request.getForderung()<=0){
@@ -1136,14 +1147,14 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		
 		// sicherheitscheck: wir müssen schon näher ran ans Ziel, sonst hats keinen Zweck.
 		if (transporter.getGotoInfo()==null){
+			if (!this.reportOFF) {
+				outText.addOutLine("Debug, GotoInfo==null T: " + transporter.getScriptUnit().unitDesc());
+			}
 			return;
 		}
 		
 		GotoInfo gotoInfo = transporter.getGotoInfo();
-		if (gotoInfo==null){
-			return;
-		}
-		
+
 		boolean reitend = false;
 		if (transporter.isRiding()){
 			reitend = true;
@@ -1155,6 +1166,9 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		
 		if (gotoInfo==null || gotoInfo.getNextHold()==null) {
 			// für die Fälle, indenen kein Weg gefunden werden konnte
+			if (!this.reportOFF) {
+				outText.addOutLine("Debug, getNextHold==null T: " + transporter.getScriptUnit().unitDesc());
+			}
 			return;
 		}
 		
@@ -1162,9 +1176,15 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		int distNextHold = FFToolsRegions.getPathDistLand(offer.getScriptUnit().getScriptMain().gd_ScriptMain, 
 				gotoInfo.getNextHold().getCoordinate(), request.getRegion().getCoordinate(), 
 					reitend,transporter.getScriptUnit().isInsekt());
+		if (!this.reportOFF) {
+			outText.addOutLine("Debug, distNextHold=" + distNextHold + ", T: " + transporter.getScriptUnit().unitDesc());
+		}
 		
 		if (distOffer<=distNextHold){
 			// hat keinen sinn
+			if (!this.reportOFF) {
+				outText.addOutLine("Debug, hat keinen Sinn T: " + transporter.getScriptUnit().unitDesc());
+			}
 			return;
 		}
 		
@@ -1181,6 +1201,9 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		
 		// check
 		if (Anzahl<=0){
+			if (!this.reportOFF) {
+				outText.addOutLine("Debug, kann nix transportieren T: " + transporter.getScriptUnit().unitDesc());
+			}
 			return;
 		}
 		

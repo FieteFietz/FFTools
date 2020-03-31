@@ -192,12 +192,8 @@ public class Transporter {
 	}
 	
 	
-	private void parseOrders(){
-		if (this.scriptUnit==null){return;}
-		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Transport");
-		
-		if (OP.getOptionString("Route").equalsIgnoreCase("fest")){
-			this.useUserRoute = true;
+	public void checkFesteRoute() {
+		if (this.useUserRoute){
 			// in diesem Fall müsste bereits jetzt ein script eine GoTo info erzeugt haben
 			Object o = this.getScriptUnit().getScript(WithGotoInfo.class);
 			if (o!=null){
@@ -206,16 +202,27 @@ public class Transporter {
 				if (otherGotoInfo!=null){
 					this.destRegion = otherGotoInfo.getDestRegion();
 					this.scriptUnit.addComment("TM_T, Route=fest: Ziel übernommen: " + this.destRegion.toString());
+					this.gotoInfo = otherGotoInfo;
 				} else {
      				// GotoInfo = null
 					this.scriptUnit.addComment("!!! Route=fest aber keine Route festgelegt durch Script: " + o.getClass().getName());
+					this.useUserRoute=false;
 				}
 			} else {
 				// kein Script mit GotoInfo...
 				this.scriptUnit.addComment("!!! Route=fest aber kein Script, welches ein Goto produziert!");
+				this.useUserRoute=false;
 			}
-			
-			
+		}
+	}
+	
+	
+	private void parseOrders(){
+		if (this.scriptUnit==null){return;}
+		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Transport");
+		
+		if (OP.getOptionString("Route").equalsIgnoreCase("fest")){
+			this.useUserRoute = true;
 		}
 		
 		if (!OP.getOptionBoolean("maxWagen",true)){
