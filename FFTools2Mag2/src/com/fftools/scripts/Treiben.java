@@ -543,7 +543,7 @@ public void runScript(int scriptDurchlauf){
 						}
 						if (treiberPoolRelation.getDoTreiben() < 0 ){
 							this.lerneTalent("Warnung: Überzählige Treiber Einheit!");
-							if (!this.confirmIfunemployed){
+							if (!this.confirmIfunemployed && this.getUnit().getRegion().getRegionType().isLand()){
 								super.scriptUnit.doNotConfirmOrders("Warnung: Überzählige Treiber Einheit!");
 							} 
 						} else{
@@ -564,7 +564,7 @@ public void runScript(int scriptDurchlauf){
 									this.lerneTalent("Warnung: Einheit ist nicht ausgelastet!");
 									
 								}
-								if (!this.confirmIfunemployed){
+								if (!this.confirmIfunemployed && this.getUnit().getRegion().getRegionType().isLand()){
 									super.scriptUnit.doNotConfirmOrders("Warnung: Einheit ist NICHT ausgelastet!" + Math.round((treiberPoolRelation.getVerdienst()-treiberPoolRelation.getDoTreiben())/treiberPoolRelation.getProKopfVerdienst()) + " Treiber überflüssig");
 								}
 							} else {
