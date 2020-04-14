@@ -64,6 +64,11 @@ public class Transporter {
 	 */
 	private int kapa = 0;
 	
+	private int setAnzahlPferde=-1;
+	private int setPferdePrio=-1;
+	private int setAnzahlWagen=-1;
+	private int setWagenPrio=-1;
+	
 	/**
 	 * was ist davon noch frei?
 	 */
@@ -169,7 +174,7 @@ public class Transporter {
 	
 	
 	/**
-	 * zum einfacheren Checken, wieviele Pferde erhalten worden sind
+	 * zum einfacheren Checken, wieviele Wagen erhalten worden sind
 	 */
 	private ArrayList<MatPoolRequest> wagenMPRs;
 	
@@ -311,6 +316,15 @@ public class Transporter {
 			this.minReitTalent = OP.getOptionInt("minTalent", -1);
 			this.scriptUnit.addComment("parse Orders: minReitTalent gesetzt auf " + this.minReitTalent);
 		}
+		
+		
+		this.setAnzahlPferde = OP.getOptionInt("Pferde", this.setAnzahlPferde);
+		this.setAnzahlWagen = OP.getOptionInt("Wagen", this.setAnzahlWagen);
+		this.setPferdePrio = OP.getOptionInt("PferdePrio", this.setPferdePrio);
+		this.setPferdePrio = OP.getOptionInt("PrioPferde", this.setPferdePrio);
+		this.setWagenPrio = OP.getOptionInt("WagenPrio", this.setWagenPrio);
+		this.setWagenPrio = OP.getOptionInt("PrioWagen", this.setWagenPrio);
+		
 		
 	}
 
@@ -1128,6 +1142,26 @@ public class Transporter {
 	 */
 	public void setLearning(boolean isLearning) {
 		this.isLearning = isLearning;
+	}
+
+
+	public int getSetPferdePrio() {
+		return setPferdePrio;
+	}
+
+
+	public int getSetAnzahlWagen() {
+		return setAnzahlWagen;
+	}
+
+
+	public int getSetWagenPrio() {
+		return setWagenPrio;
+	}
+
+
+	public int getSetAnzahlPferde() {
+		return setAnzahlPferde;
 	}
 	
 }

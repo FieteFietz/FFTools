@@ -158,10 +158,23 @@ public void runScript(int scriptDurchlauf){
 		// sind wir in einer Mallornregion?
 		ItemType IT = this.gd_Script.getRules().getItemType("Mallorn");
 		RegionResource RR = this.region().getResource(IT);
+		this.isMallornregion = false;
 		if (RR!=null){
 			// tatsächlich
-			this.addComment("Forester: Mallornregion erkannt, fordere Mallorn statt Holz an");
+			this.addComment("Forester: Mallornregion am Mallorn erkannt, fordere Mallorn statt Holz an");
 			this.isMallornregion = true;
+		} else {
+			// 20200413: auch auf Schösslinge prüfen
+			IT = this.gd_Script.getRules().getItemType("Mallornschößlinge");
+			RR = this.region().getResource(IT);
+			if (RR!=null){
+				// tatsächlich
+				this.isMallornregion = true;
+				this.addComment("Forester: Mallornregion an Mallornschößlingen erkannt, fordere Mallorn statt Holz an");
+			}
+		}
+		
+		if (this.isMallornregion) {
 			this.holzRequest = new MatPoolRequest(this,MengeHolz,"Mallorn",this.holzPrio,infoText);
 			this.addMatPoolRequest(this.holzRequest);
 		} else {
@@ -169,6 +182,7 @@ public void runScript(int scriptDurchlauf){
 			this.holzRequest = new MatPoolRequest(this,MengeHolz,"Holz",this.holzPrio,infoText);
 			this.addMatPoolRequest(this.holzRequest);
 		}
+		
 		
 		this.WDL_Request = new MatPoolRequest(this,MengeWDL,"Wasser des Lebens",this.WDL_Prio,infoText);
 		this.addMatPoolRequest(this.WDL_Request);

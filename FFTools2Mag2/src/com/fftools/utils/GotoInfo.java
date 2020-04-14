@@ -78,6 +78,9 @@ public class GotoInfo {
 		if (this.pathRegions==null){
 			return null;
 		}
+		if (Planungsrunde>(this.pathRegions.length-1)) {
+			return null;
+		}
 		erg = this.pathRegions[Planungsrunde];
 		return erg;
 	}

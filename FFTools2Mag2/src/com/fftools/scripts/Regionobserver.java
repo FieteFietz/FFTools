@@ -192,10 +192,12 @@ public class Regionobserver extends MatPoolScript{
 		}
 		
 		// Amulett bestellen, aber mit niedriger Prio
+		/*   laut Doku soll der das nicht anfordern, sondern ein extra Request dies tun,
+		 * durch Zarox auch so gewünscht
 		MatPoolRequest MPR = new MatPoolRequest(this,1,"Amulett des wahren Sehens",30,"RegionObserver-Amulett");
 		this.addMatPoolRequest(MPR);
 		this.addComment("RegionObserver (debug): fordere " + MPR.getOriginalGefordert() + " " + MPR.getOriginalGegenstand() + " mit Prio " + MPR.getPrio() + " an.");
-		
+		*/
 		
 		
 		// 3. Bewachen, falls keine Gegner in der Region sind, sonst Alarm 

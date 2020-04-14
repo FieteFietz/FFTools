@@ -214,7 +214,6 @@ public class Depot extends TransportScript{
 		
 		// requestInfo
 		this.scriptUnit.findScriptClass("RequestInfo");
-		
 	}
 	
 	private int getKostenProRunde(){

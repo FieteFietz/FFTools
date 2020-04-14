@@ -90,6 +90,12 @@ public class Transport extends TransportScript{
 		
 		ItemType wagenType = super.gd_Script.getRules().getItemType("Wagen");
 		int actPferdePolicy = MatPoolRequest.KAPA_max_zuPferd;
+		if (this.scriptUnit.getSetKapaPolicy()!=MatPoolRequest.KAPA_unbenutzt) {
+			actPferdePolicy = this.scriptUnit.getSetKapaPolicy();
+			this.addComment("Transport: vorhandene Kapa-Policy übernommen (" + actPferdePolicy +")");
+		} else {
+			this.addComment("Transport: keine gesetzte Kapa Policy erkannt, es bleibt bei kapa=Reiten");
+		}
 		MatPoolRequest mpr = null;
 		if (!this.transporter.isLearning()){
 			// jetzt pferde und wagen anfordern
@@ -105,53 +111,61 @@ public class Transport extends TransportScript{
 					menge = pferdItem.getAmount();
 				}
 			}
+			if (this.transporter.getSetAnzahlPferde()>=0) {
+				menge = this.transporter.getSetAnzahlPferde();
+			}
 			// Requests aber nur basteln, wenn sollPferde > 0
 			if (menge > 0){
 				// dann auch keine Wagen....TrollTransporter bleiben aussen vor...
 				mpr = null;
 				
-				
-				
-				
-				// erstmal jeder 1 Pferd
-				mpr = new MatPoolRequest(this,1,"Pferd",this.transporter.getPferdRequestPrio(),"Transporter",actPferdePolicy);
-				// lokal
-				mpr.setOnlyRegion(true);
-				this.addMatPoolRequest(mpr);
-				this.transporter.addPferdeMPR(mpr);
-				menge-=1;
-				if (menge>0) {
-					// nu jeder ein wenig mehr...dass jeder ein Pferd hat
-					boolean einMehr = false;
-					if (this.scriptUnit.getUnit().getModifiedPersons()>1){
-						mpr = new MatPoolRequest(this,(this.scriptUnit.getUnit().getModifiedPersons()*2)-1,"Pferd",this.transporter.getPferdRequestPrio()-1,"Transporter",actPferdePolicy);
-						// lokal
+				// 20200413 neu, komplett, es wird pro Talentstufe 2x angefordert...
+				int runTalent = 1;
+				int actPrio=this.transporter.getPferdRequestPrio();
+				if (this.transporter.getSetPferdePrio()>=0) {
+					actPrio = this.transporter.getSetPferdePrio();
+				}
+				int actMenge=0;
+				while (runTalent<=this.scriptUnit.getSkillLevel("Reiten") && menge>0) {
+					actMenge = this.scriptUnit.getUnit().getModifiedPersons();
+					if (this.transporter.getSetAnzahlPferde()>=0) {
+						actMenge = this.transporter.getSetAnzahlPferde();
+					}
+					if (actMenge>menge) {
+						actMenge=menge;
+					}
+					
+					mpr = new MatPoolRequest(this,actMenge,"Pferd",actPrio,"Transporter (" + actMenge + " | " + menge + ")",actPferdePolicy);
+					mpr.setOnlyRegion(true);
+					this.addMatPoolRequest(mpr);
+					this.transporter.addPferdeMPR(mpr);
+					menge-=actMenge;
+					if (this.transporter.getSetPferdePrio()<0) {
+						actPrio-=1;
+						if (actPrio<2) {
+						    actPrio=2;
+						}
+					}
+					if (menge>0) {
+						// Zweiter Lauf für diese Talentstufe
+						actMenge = this.scriptUnit.getUnit().getModifiedPersons();
+						if (actMenge>menge) {
+							actMenge=menge;
+						}
+						mpr = new MatPoolRequest(this,actMenge,"Pferd",actPrio,"Transporter (" + actMenge + " | " + menge + ")",actPferdePolicy);
 						mpr.setOnlyRegion(true);
 						this.addMatPoolRequest(mpr);
 						this.transporter.addPferdeMPR(mpr);
-						menge-=((this.scriptUnit.getUnit().getModifiedPersons()*2)-1);
-					} else {
-						einMehr=true;
-					}
-					if (menge>0){
-						// jetzt pro Talentstufe weitere Anfragen
-						if (this.scriptUnit.getSkillLevel("Reiten")>0){
-							for(int i = 1;i<=this.scriptUnit.getSkillLevel("Reiten") && menge>0;i++){
-								int actMenge = this.scriptUnit.getUnit().getModifiedPersons() * 2;
-								if (einMehr){
-									actMenge-=1;
-									einMehr=false;
-								} 
-								mpr = new MatPoolRequest(this,actMenge,"Pferd",this.transporter.getPferdRequestPrio()-(1 + i),"Transporter",actPferdePolicy);
-								// lokal
-								mpr.setOnlyRegion(true);
-								this.addMatPoolRequest(mpr);
-								this.transporter.addPferdeMPR(mpr);
-								menge-=actMenge;
+						menge-=actMenge;
+						if (this.transporter.getSetPferdePrio()<0) {
+							actPrio-=1;
+							if (actPrio<2) {
+							    actPrio=2;
 							}
 						}
 					}
-				}
+					runTalent++;
+			    }
 			}
 			// und gleich Wagen...
 			// später einfach MAX bzw Zahl an MatPool übergeben
@@ -161,7 +175,7 @@ public class Transport extends TransportScript{
 			
 			if (this.transporter.isGetMaxWagen()){
 				// maximale Anzahl ermitteln
-				menge = Integer.MAX_VALUE;
+				menge = this.scriptUnit.getSkillLevel("Reiten") * this.scriptUnit.getUnit().getModifiedPersons();
 			} else {
 				// derzeitige Anzahl halten...
 				Item wagenItem = this.scriptUnit.getUnit().getItem(wagenType);
@@ -169,65 +183,54 @@ public class Transport extends TransportScript{
 					menge = wagenItem.getAmount();
 				}
 			}
+			
+			if (this.transporter.getSetAnzahlWagen()>=0) {
+				menge = this.transporter.getSetAnzahlWagen();
+			}
+			
 			if (menge>0){
-				
-				// erstmal jeder nur einen Wagen...
-				
-				if (this.transporter.isGetMaxWagen()){
-					mpr = new MatPoolRequest(this,1,"Wagen",this.transporter.getWagenRequestPrio(),"Transporter",actPferdePolicy);
-				} else {
-					mpr = new MatPoolRequest(this,1,"Wagen",this.transporter.getWagenRequestPrio(),"Transporter",MatPoolRequest.KAPA_unbenutzt);
+				// 20200413 komplett neu
+				int runTalent = 1;
+				int actPrio=this.transporter.getWagenRequestPrio();
+				if (this.transporter.getSetWagenPrio()>=0) {
+					actPrio = this.transporter.getSetWagenPrio();
 				}
-				// lokal
-				mpr.setOnlyRegion(true);
-				
-				// Prio runter für nicht automatisierte transporter
-				if (this.transporter.getMode()==Transporter.transporterMode_manuell){
-					mpr.setPrio(mpr.getPrio()-1);
-				}
-				
-				this.addMatPoolRequest(mpr);
-				this.transporter.addWagenMPR(mpr);
-				
-				menge-=1;
-				if (menge>0) {
-					// nu jeder ein wenig mehr...dass jeder ein Wagen hat
-					boolean einMehr = false;
-					if (this.scriptUnit.getUnit().getModifiedPersons()>1){
-						mpr = new MatPoolRequest(this,(this.scriptUnit.getUnit().getModifiedPersons())-1,"Wagen",this.transporter.getWagenRequestPrio()-1,"Transporter",actPferdePolicy);
-						// lokal
-						mpr.setOnlyRegion(true);
-						this.addMatPoolRequest(mpr);
-						this.transporter.addWagenMPR(mpr);
-						menge-=((this.scriptUnit.getUnit().getModifiedPersons())-1);
-					} else {
-						einMehr=true;
+				int actMenge=0;
+				while (runTalent<=this.scriptUnit.getSkillLevel("Reiten") && menge>0) {
+					actMenge = this.scriptUnit.getUnit().getModifiedPersons();
+					if (this.transporter.getSetAnzahlWagen()>=0) {
+						actMenge =  this.transporter.getSetAnzahlWagen();
 					}
-					if (menge>0){
-						// jetzt pro Talentstufe weitere Anfragen
-						if (this.scriptUnit.getSkillLevel("Reiten")>0){
-							for(int i = 1;i<=this.scriptUnit.getSkillLevel("Reiten") && menge>0;i++){
-								int actMenge = this.scriptUnit.getUnit().getModifiedPersons();
-								if (einMehr){
-									actMenge-=1;
-									einMehr=false;
-								} 
-								mpr = new MatPoolRequest(this,actMenge,"Wagen",this.transporter.getWagenRequestPrio()-(1 + i),"Transporter",actPferdePolicy);
-								// lokal
-								mpr.setOnlyRegion(true);
-								this.addMatPoolRequest(mpr);
-								this.transporter.addWagenMPR(mpr);
-								menge-=actMenge;
-							}
+					if (actMenge>menge) {
+						actMenge=menge;
+					}
+					if (this.transporter.isGetMaxWagen()){
+						mpr = new MatPoolRequest(this,actMenge,"Wagen",actPrio,"Transporter (" + actMenge + " | " + menge + ")",actPferdePolicy);
+					} else {
+						mpr = new MatPoolRequest(this,actMenge,"Wagen",actPrio,"Transporter (" + actMenge + " | " + menge + ")",MatPoolRequest.KAPA_unbenutzt);
+					}
+					// lokal
+					mpr.setOnlyRegion(true);
+					
+					// Prio runter für nicht automatisierte transporter
+					if (this.transporter.getMode()==Transporter.transporterMode_manuell){
+						mpr.setPrio(mpr.getPrio()-1);
+					}
+					this.addMatPoolRequest(mpr);
+					this.transporter.addWagenMPR(mpr);
+					menge-=actMenge;
+					if (this.transporter.getSetWagenPrio()<0) {
+						actPrio-=1;
+						if (actPrio<2) {
+						    actPrio=2;
 						}
 					}
+					runTalent++;
 				}
 			}
 
 			// fertig, pferde und wagen beantragt
-			
 		}
-		
 		
 		// später Einschub
 		this.getTradeArea().addTransporter(this.transporter);

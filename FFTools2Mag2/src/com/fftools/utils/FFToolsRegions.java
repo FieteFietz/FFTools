@@ -24,6 +24,7 @@ import magellan.library.CoordinateID;
 import magellan.library.GameData;
 import magellan.library.ID;
 import magellan.library.Item;
+import magellan.library.Message;
 import magellan.library.Region;
 import magellan.library.Rules;
 import magellan.library.Skill;
@@ -956,24 +957,78 @@ public class FFToolsRegions {
 		if (neededBuildingName=="") {
 			return false;
 		} else {
-			return hasRegionSpecificBuilding(r, neededBuildingName, neededSize);
+			return hasRegionSpecificBuilding(r, neededBuildingName, neededSize,false);
 		}
 	}
 	
-	public static boolean hasRegionSpecificBuilding(Region r, String BuildingTypeName, int neededSize) {
+	public static boolean hasRegionSpecificBuilding(Region r, String BuildingTypeName, int neededSize, boolean needOwner) {
 		for (Iterator<Building> iter =r.buildings().iterator();iter.hasNext();){
 			Building actBuilding = (Building)iter.next();
 			if (actBuilding.getBuildingType().getName().equalsIgnoreCase(BuildingTypeName)){
 				if (actBuilding.getSize()>=neededSize || neededSize==0) {
-					if (actBuilding.getModifiedOwnerUnit()!=null) {
-						// Treffer
+					if (needOwner) {
+						if (actBuilding.getModifiedOwnerUnit()!=null) {
+							// Treffer
+							return true;
+						} 
+					} else {
 						return true;
-					} 
+					}
 				} 
 			}
 		}
 		return false;
 	}
+	
+	public static boolean hasSupportedRegionSpecificBuilding(Region r, String BuildingTypeName) {
+		boolean erg=false;
+		// outText.addOutLine("hasSupportedRegionSpecificBuilding: region " + r.toString(), true);
+		for (Iterator<Building> iter =r.buildings().iterator();iter.hasNext();){
+			Building actBuilding = (Building)iter.next();
+			if (actBuilding.getBuildingType().getName().equalsIgnoreCase(BuildingTypeName)){
+				// ok, Building ist da
+				erg = true;
+				// outText.addOutLine("hasSupportedRegionSpecificBuilding: found " + BuildingTypeName + ": " + actBuilding.toString(), true);
+				if (r.getMessages()!=null && r.getMessages().size()>0) {
+					Iterator<Message> iterM = r.getMessages().iterator();					
+				    while (iterM.hasNext() == true) {
+				    	Message m = iterM.next();
+				    	// outText.addOutLine("hasSupportedRegionSpecificBuilding: check msg ID " + m.getMessageType().getID().intValue(), true);
+				    	if (m.getMessageType().getID().intValue()==2019496915) {
+				    		/*
+				    		 * 
+								MESSAGE 1389975728
+								2019496915;type
+								"Der Unterhalt von UN-Werkstatt (5n6) konnte nicht gezahlt werden, das Gebäude war diese Woche nicht funktionstüchtig.";rendered
+								7314;building
+								
+				    		 */
+				    		Map<String,String> map = m.getAttributes();
+				    		if (map.containsKey("building")) {
+				    			String anzahlStr = map.get("building");
+				    			// outText.addOutLine("hasSupportedRegionSpecificBuilding: found building in msg: " + anzahlStr, true);
+				    			int messageBuilding = Integer.valueOf(anzahlStr);
+				    			if (messageBuilding==actBuilding.getID().intValue()) {
+				    				// Bingo. wir haben einen Treffer: Unterhalt nicht gezahlt
+				    				erg=false;
+				    				break;
+				    			}
+				    		} else {
+				    			// outText.addOutLine("hasSupportedRegionSpecificBuilding: no building found in msg", true);
+				    		}
+				    	}
+				    }
+				} else {
+					// outText.addOutLine("hasSupportedRegionSpecificBuilding: no region messages", true);
+				}
+				return erg;
+			}
+		}
+		return false;
+	}
+	
+	
+	
 	
 	/**
 	 * Liefert ein LinkedHashMap mit Dirs und zu bauenden Steinen, in denen Strassen fehlen / unvollständig sind

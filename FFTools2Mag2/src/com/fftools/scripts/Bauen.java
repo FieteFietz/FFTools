@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import javax.mail.internet.PreencodedMimeBodyPart;
+
 import com.fftools.ScriptUnit;
 import com.fftools.pools.ausbildung.AusbildungsPool;
 import com.fftools.pools.ausbildung.Lernplan;
@@ -120,6 +122,9 @@ public class Bauen extends MatPoolScript implements Cloneable{
 	private int minStassenbauTalent=Bauen.minDefaultStrassenbauTalent;
 	private int spec = Bauen.BURG;
 	private boolean isLearning=false;
+	
+	private String neededBuildingName = "";
+	private Building preRequisteBuilding = null; 
 	
 	// folgende nur spannend bei Burgenbauer im Automode an einer Burg. 
 	private int turnsToGo=0;
@@ -464,7 +469,8 @@ public void runScript(int scriptDurchlauf){
 			// notwendiges Gebäude vorhanden ??
 			String regionTypeName = this.getUnit().getRegion().getRegionType().getName();
 			this.addComment("Prüfe auf notwendiges Gebäude im Region-Typ " + regionTypeName);
-			String neededBuildingName = "";
+			neededBuildingName = "";
+			preRequisteBuilding = null;
 			Integer neededSize = 0;
 			if (regionTypeName.equalsIgnoreCase("Gletscher")) {
 				neededBuildingName="Tunnel";
@@ -487,6 +493,7 @@ public void runScript(int scriptDurchlauf){
 					Building actBuilding = (Building)iter.next();
 					if (actBuilding.getBuildingType().getName().equalsIgnoreCase(neededBuildingName)){
 						if (actBuilding.getSize()>=neededSize) {
+							preRequisteBuilding = actBuilding;
 							if (actBuilding.getModifiedOwnerUnit()!=null) {
 								// Treffer
 								foundNeededBuilding=true;
@@ -1147,7 +1154,22 @@ public void runScript(int scriptDurchlauf){
 			ScriptUnit su = this.getOverlord().getScriptMain().getScriptUnit(this.preRequisiteBuildungOwner);
 			if (su!=null) {
 				if (su.unterhaltProblem) {
-					this.doNotConfirmOrders("!!! Unterhalt des notwendigen Gebäudes nicht erfüllt!");
+					this.doNotConfirmOrders("!!! Bauen: Unterhalt des notwendigen Gebäudes nicht erfüllt! (Versorgung des Besitzers!");
+				}
+			}
+		}
+		
+		if (neededBuildingName!="" && preRequisteBuilding!=null) {
+			// wir haben ein Gebäude
+			if (preRequisteBuilding.getOwnerUnit()==null) {
+				// gebäude steht leer
+				// wir (Jawolltroll, Julian) wollen betreten
+				this.addComment("Notwendiges Gebäude (" + neededBuildingName + ") steht leer, es wird betreten: " + preRequisteBuilding.toString());
+				this.addOrder("BETRETE BURG " + preRequisteBuilding.getID().toString() + " ;Bauen: Betrete notwendiges (leeres) Gebäude für den Straßenbau", true);
+			} else {
+				// gebäude ist nicht leer
+				if (!FFToolsRegions.hasSupportedRegionSpecificBuilding(this.region(), neededBuildingName)) {
+					this.doNotConfirmOrders("!!! Bauen: Unterhalt des notwendigen Gebäudes (" + neededBuildingName + ") nicht erfüllt! (Siehe Regionsmeldung");
 				}
 			}
 		}
