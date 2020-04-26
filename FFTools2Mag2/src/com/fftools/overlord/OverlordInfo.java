@@ -10,7 +10,7 @@ package com.fftools.overlord;
 public interface OverlordInfo {
 	
 	/**
-	 * liefert array of int, in welchem durchlauf die manager aufgerufen werden sollen
+	 * liefert array of int, in welchem durchlauf die manager und scripte aufgerufen werden sollen
 	 * @return
 	 */
 	public int[] runAt();

@@ -53,12 +53,13 @@ public class TradeAreaHandler implements OverlordRun,OverlordInfo{
 	
 	
 	private static final int Durchlauf1 = 13;
+	private static final int Durchlauf1_Recalc = 32; // parallel zum Trader => genau nach ihm
 	private static final int Durchlauf2 = 105; // Vor OnTAC
 	private static final int Durchlauf3 = 125; // Nach OnTAC
 	private static final int Durchlauf4 = 864; // irgendwann
 	
 	
-	private int[] runners = {Durchlauf1,Durchlauf2,Durchlauf3,Durchlauf4};
+	private int[] runners = {Durchlauf1,Durchlauf1_Recalc,Durchlauf2,Durchlauf3,Durchlauf4};
 	
 	private boolean debugOutput = false;
 	
@@ -101,6 +102,11 @@ public class TradeAreaHandler implements OverlordRun,OverlordInfo{
 	 * keep reference to *all*
 	 */
 	public ScriptMain scriptMain = null;
+	
+	/**
+	 * sammeln der setOrigins bis Run=32, dann recalc 1x anstoßen
+	 */
+	private boolean needRecalcTradeAreas = false;
 	
 	/**
 	 * constructs a new TAH
@@ -486,49 +492,23 @@ public class TradeAreaHandler implements OverlordRun,OverlordInfo{
 	}
 	
 	
+	private void check4recalcTAs() {
+		if (this.needRecalcTradeAreas) {
+			recalcTradeAreas_process();
+		}
+	}
+	
 	/**
-	 * löscht alle Regionen aus den TAs bis auf die Regionen, die 
-	 * manuell TAs gesetzt haben
-	 * fügt dann neu alle anderen Regionen wieder hinzu
+	 * speichert die Anforderung, die TAs neu zu berechnen
 	 */
-	public void recalcTradeAreas_old(){
-		if (this.tradeAreas==null){return;}
-		// aus allen TAs die automatisch zugeordneten löschen...
-		for (Iterator<TradeArea> iter = this.tradeAreas.iterator();iter.hasNext();){
-			TradeArea tA = (TradeArea)iter.next();
-			tA.removeNonManualOrigins();
-		}
-		// komplett leere TAs löschen?
-		ArrayList<TradeArea> newList = null;
-		for (Iterator<TradeArea> iter = this.tradeAreas.iterator();iter.hasNext();){
-			TradeArea tA = (TradeArea)iter.next();
-			if (tA.getTradeRegions()!=null){
-				if (newList == null) {
-					newList = new ArrayList<TradeArea>();
-				}
-				newList.add(tA);
-			}
-		}
-		this.tradeAreas = newList;
-		
-		// alle automatischen neu zuordnen
-		for (Iterator<TradeRegion> iter = this.tradeRegions.values().iterator();iter.hasNext();){
-			TradeRegion tR = (TradeRegion)iter.next();
-			if (!tR.isSetAsTradeAreaOrigin()){
-				// automatisch...
-				TradeArea tA = this.getTradeArea(tR, true);
-				if (tA==null){
-					outText.addOutLine("!!! TradeArea not created for TradeRegion (recalc): " + tR.getRegion().toString());
-					return;
-				}
-			}
-		}
+	public void recalcTradeAreas(){
+		this.needRecalcTradeAreas=true;
 	}
 	
 	/**
 	 * löscht alle TAs und baut aus tradeRegions wieder auf
 	 */
-	public void recalcTradeAreas(){
+	public void recalcTradeAreas_process(){
 		if (this.tradeRegions==null){return;}
 		if (this.tradeAreas!=null){
 			this.tradeAreas.clear();
@@ -683,6 +663,9 @@ public class TradeAreaHandler implements OverlordRun,OverlordInfo{
 	public void run(int durchlauf){
 		if (durchlauf==TradeAreaHandler.Durchlauf1){
 			this.run1();
+		}
+		if (durchlauf==TradeAreaHandler.Durchlauf1_Recalc){
+			this.check4recalcTAs();
 		}
 		if (durchlauf==TradeAreaHandler.Durchlauf2){
 			this.run2();

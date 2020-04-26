@@ -475,8 +475,8 @@ public class ScriptUnit {
 			return;
 		}
 		
-		for (Iterator<Script> iter = this.foundScriptList.iterator();iter.hasNext();){
-			Script sc = (Script)iter.next();
+		// for (Iterator<Script> iter = this.foundScriptList.iterator();iter.hasNext();){
+		for (Script sc : this.foundScriptList) {
 			timeX=System.currentTimeMillis();
 			tDiffX =0;
 			tDiffX = timeX - time1;

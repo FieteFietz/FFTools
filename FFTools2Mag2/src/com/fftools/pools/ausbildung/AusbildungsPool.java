@@ -48,7 +48,7 @@ private int maxTalentDiff = 6;
 
 
 // Wieweit sollen dabei Nachzügler einbezogen werden? und maxTalentDiff aufweichen?
- private int minNachzuegler = 2;
+ private int minNachzuegler = 8;
 
 
 
@@ -315,12 +315,12 @@ private MatPool matPool = null;
     	// Variablen
     	
     	int newMaxTalentDiff=reportSettings.getOptionInt("Ausbildung_maxTalentDiff", this.region);
-    	if (newMaxTalentDiff>1 && newMaxTalentDiff<30){
+    	if (newMaxTalentDiff>1 && newMaxTalentDiff<99){
     		maxTalentDiff = newMaxTalentDiff;
     	}
     	
     	int newMinNachzuegler=reportSettings.getOptionInt("Ausbildung_nachZugTalentDiff", this.region);
-    	if (newMinNachzuegler>-1 && newMaxTalentDiff<30){
+    	if (newMinNachzuegler>-1 && newMaxTalentDiff<99){
     		minNachzuegler = newMinNachzuegler;
     	}
     	

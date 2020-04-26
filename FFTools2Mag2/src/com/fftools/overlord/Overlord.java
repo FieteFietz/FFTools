@@ -140,33 +140,16 @@ public class Overlord {
 		}
 		
 		long time1 =0;
-		long timeX = 0;
 		long lastProzentAngabe = 0;
 		// long tDiffX = 0;
 		for (mainDurchlauf = 0;mainDurchlauf<Integer.MAX_VALUE;mainDurchlauf++){
 			sayTime=false;
 			time1 = System.currentTimeMillis();
-			timeX = 0;
-			// tDiffX = 0;
-			// outText.addNewLine();
-			// outText.addOutChars("*** start: " + mainDurchlauf + " *** ");
-			// Info doch vorab
 			String scriptNames = getScriptsForRunNumber(mainDurchlauf);
-			
-			timeX=System.currentTimeMillis();
-			// tDiffX = timeX - time1;
-			// outText.addNewLine();
-			// outText.addOutChars(tDiffX + ": after getScriptsForRunNumber ");
-			
 			if (scriptNames.length()>0){
-				// outText.addNewLine();
-				// outText.addOutChars(mainDurchlauf + "-s>" + scriptNames + ":");
 				sayTime=true;
-			} else {
-				// outText.addOutChars("," + mainDurchlauf);
-			}
-			
-			
+				outText.addOutChars("["+mainDurchlauf + "]: starting " + scriptNames + " -> ");
+			} 
 			this.Zeitsumme1=0;
 			this.Zeitsumme2=0;
 			this.Zeitsumme3=0;
@@ -180,8 +163,8 @@ public class Overlord {
 			
 			long scriptU_Counter=0;
 			// scriptunits anstossen
-			for (Iterator<ScriptUnit> iter = this.scriptMain.getScriptUnits().values().iterator();iter.hasNext();){
-				ScriptUnit scrU = (ScriptUnit)iter.next();
+			// for (Iterator<ScriptUnit> iter = this.scriptMain.getScriptUnits().values().iterator();iter.hasNext();){
+			for (ScriptUnit scrU : this.scriptMain.getScriptUnits().values()) {
 				if (!isDeleted(scrU)){
 					scrU.runScripts(mainDurchlauf);
 					outText.addPoint();
@@ -217,10 +200,6 @@ public class Overlord {
 			outText.addOutChars("Zeitsumme 10: " + this.Zeitsumme10);
 			*/
 			
-			timeX=System.currentTimeMillis();
-			// tDiffX = timeX - time1;
-			// outText.addNewLine();
-			// outText.addOutChars(tDiffX + ": after scrU.runScripts ");
 			
 			
 			// manager laufen lassen ?!
@@ -229,22 +208,14 @@ public class Overlord {
 					Object o = iter.next();
 					OverlordInfo oI = (OverlordInfo)o;
 					if (isInRun(oI, mainDurchlauf)){
-						// outText.addNewLine();
-						// outText.addOutChars(mainDurchlauf + "-m>" + this.getSimpleClassName(oI.getClass()) + ":");
 						OverlordRun oR = (OverlordRun)o;
 						oR.run(mainDurchlauf);
-						outText.addOutChars(" | done with " + this.getSimpleClassName(oI.getClass()));
+						outText.addOutChars(" | " + mainDurchlauf + ": done with " + this.getSimpleClassName(oI.getClass()));
 						outText.addNewLine();
 						sayTime=true;
 					}
 				}
 			}
-			
-			timeX=System.currentTimeMillis();
-			// tDiffX = timeX - time1;
-			// outText.addNewLine();
-			// outText.addOutChars(tDiffX + ": after run Overlords-Runs ");
-			
 			
 			if (sayTime){
 				long time2 = System.currentTimeMillis();
@@ -274,11 +245,7 @@ public class Overlord {
 				// Abbruch
 				break;
 			}
-			
 		}
-		
-		
-		
 	}
 	
 	

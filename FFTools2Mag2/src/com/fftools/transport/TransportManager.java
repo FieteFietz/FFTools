@@ -158,10 +158,6 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 	 * Overlord run
 	 */
 	public void run(int Durchlauf){
-		
-		
-		
-		
 		long startT1 = System.currentTimeMillis();
 		outText.addOutLine("TransportManager startet...generiere Anforderungen.");
 		if (this.transportRequests==null){
@@ -256,10 +252,11 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 				outText.addOutChars(" | Unterh-Vers:" + proz + "%", 25);
 				outText.setScreenOut(false);
 			} else {
-				
+				/*
 				outText.setScreenOut(true);
 				outText.addOutChars(" - keine Transporter.");
 				outText.setScreenOut(false);
+				*/
 			}
 		}
 	}

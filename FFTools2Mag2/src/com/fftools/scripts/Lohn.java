@@ -1,11 +1,11 @@
 package com.fftools.scripts;
 
-import java.util.Collection;
-import java.util.Iterator;
-
-import magellan.library.Item;
+import java.util.ArrayList;
 
 import com.fftools.pools.matpool.relations.MatPoolRequest;
+
+import magellan.library.Item;
+import magellan.library.rules.ItemType;
 
 public class Lohn extends MatPoolScript{
 	
@@ -23,6 +23,9 @@ public class Lohn extends MatPoolScript{
 	
 	private int silber_verlangt = 0;
 	private int AnzRunden = 3;
+	
+	private ArrayList<MatPoolRequest> MPRs = new ArrayList<MatPoolRequest>();
+	
 	
 	/**
 	 * Parameterloser Constructor
@@ -98,7 +101,9 @@ public class Lohn extends MatPoolScript{
 		int silber = personenAnzahl * 10;
 		this.silber_verlangt = silber;
 		for (int i = 1;i <= this.AnzRunden;i++){
-			this.addMatPoolRequest(new MatPoolRequest(this,silber,"Silber",this.getPrio(i-1),kommentar));
+			MatPoolRequest newMPR = new MatPoolRequest(this,silber,"Silber",this.getPrio(i-1),kommentar); 
+			this.addMatPoolRequest(newMPR);
+			MPRs.add(newMPR);
 		}
 		
 		
@@ -110,24 +115,20 @@ public class Lohn extends MatPoolScript{
 	
 	
 	private void check(){
-		Collection<MatPoolRequest> myRequests = this.getRequests();
-		if (myRequests==null){
+		if (MPRs.size()==0){
 			//be fail safe..something's gone wrong
 			outText.addOutLine("!!! Lohn does not find it´s own request!: " + this.unitDesc());
 			return;
 		}
 		// durch alle Requests dieser Unit durchgehen
-		for (Iterator<MatPoolRequest> iter = myRequests.iterator();iter.hasNext();){
-			// wir erhalten prinzipiell vom iterator ein object
-			MatPoolRequest o = (MatPoolRequest) iter.next();
-			if (o.getScript().equals(this)) {
-				// und wie früher checken
-				check_mpr(o);
-			}
+		ItemType silverType = reportSettings.getRules().getItemType("Silber");
+		Item it = super.scriptUnit.getModifiedItem(silverType);
+		for (MatPoolRequest o : this.MPRs) {
+			check_mpr(o,it);
 		}
 	}
 	
-	private void check_mpr(MatPoolRequest _mpr){
+	private void check_mpr(MatPoolRequest _mpr, Item it){
 		// die MatPoolRelation wurde von diesem script erstellt und ist nu abgeschlossen
 		// Durchlauf nur, falls es mehrere gibt...
 		
@@ -145,7 +146,6 @@ public class Lohn extends MatPoolScript{
 			// super.addComment(_mpr.anzahl_bearbeitet + "/" + _mpr.item.getAmount() + " Lohn. (Prio " + this.Prioritaet_Lohn + ")", true);
 			
 			// jetzt checken, ob modified Silber trotzdem ausreicht
-			Item it = super.scriptUnit.getModifiedItem(reportSettings.getRules().getItemType("Silber"));
 			int modified_Silber = 0;
 			if (it!=null) {
 				modified_Silber = it.getAmount();

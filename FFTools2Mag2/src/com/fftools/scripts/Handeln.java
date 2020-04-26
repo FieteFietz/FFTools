@@ -202,7 +202,8 @@ public class Handeln extends TradeAreaScript{
 				}
 			}
 		}
-		neededTalent = (int)Math.ceil((double)overallSellAmount/10);
+		
+		this.addComment("Händler: erwartete Gesamtverkaufsmenge: " + overallSellAmount);
 		// so....kaufen...
 		// wat haben wir denn so an Geld -> später, was wir so kriegen können
 		// jetzt fragen wir uns, ob er noch genügend Talente hat
@@ -211,9 +212,9 @@ public class Handeln extends TradeAreaScript{
 			SkillType handelsSkillType =  super.gd_Script.getRules().getSkillType("Handeln");
 			Skill handelsSkill =  this.scriptUnit.getUnit().getModifiedSkill(handelsSkillType);
 			int persons = this.scriptUnit.getUnit().getModifiedPersons();
-			int availableTalent = 0;
+			int availableTalentMenge = 0;
 			if (handelsSkill!=null){
-				availableTalent = handelsSkill.getLevel() * persons;
+				availableTalentMenge = handelsSkill.getLevel() * persons * 10;
 			}
 			
 			// wieviel soll gekauft werden?
@@ -253,20 +254,19 @@ public class Handeln extends TradeAreaScript{
 			
 			int sollKauf = this.getTrader().getBuy().getAmount();
 			// wieviel Talent dafür benötigt?
-			int sollTalent = (int)Math.ceil((double)sollKauf/10);
-		
+
 			// durch Verkäufe verbrauchtes Talent abziehen vom avail
-			availableTalent -= neededTalent;
+			availableTalentMenge -= overallSellAmount;
 			
-			if (sollTalent>availableTalent){
+			if (sollKauf>availableTalentMenge){
 				// wenigstens ne Info schreiben...
-				this.addComment("zu wenig Talent zum Kauf: " + availableTalent + "/" + sollTalent);
-				this.addOutLine("!Handeln: zu wenig Talent zum Kauf: (" + availableTalent + "/" + sollTalent + "): " + this.unitDesc());
-				
-				if (availableTalent>0){
+				int fehlendeTalente = (int)Math.ceil((double)(sollKauf- availableTalentMenge)/10);
+				this.addComment("zu wenig Talentpunkte zum Kauf: " + availableTalentMenge + "/" + sollKauf + " (Es fehlen " + fehlendeTalente + " Level)");
+				this.addOutLine("!Handeln: zu wenig Talentpunkte zum Kauf: (" + availableTalentMenge + "/" + sollKauf + ", Es fehlen " + fehlendeTalente + " Level): " + this.unitDesc());
+				if (availableTalentMenge>0){
 					// ok, wir können noch ein wenig einkaufen
 					// wieviel ist damit möglich?
-					int availKauf = availableTalent * 10;
+					int availKauf =availableTalentMenge;
 					// adjusted entsprechend setzen
 					this.adjustedBuyAmount = Math.min(sollKauf, availKauf);
 					this.addComment("neue Einkaufsmenge wegen Talent:" + this.adjustedBuyAmount);

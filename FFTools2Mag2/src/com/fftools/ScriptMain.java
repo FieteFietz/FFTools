@@ -434,17 +434,14 @@ public class ScriptMain {
 				scrU.refreshClient();
 			}
 			*/
-			outText.addOutLine("refreshing client regions");
 			// neuer Anlauf...regionen refreshen
 			/*
 			for (Region r:this.scriptRegions){
 				r.refreshUnitRelations(true);
 			}
 			*/
-			outText.addOutLine("refreshing client regions...done");
-			outText.addOutLine("refreshing GameData");
 			this.client.getMagellanContext().getEventDispatcher().fire(new GameDataEvent(this, this.client.getData()));
-			outText.addOutLine("refreshing GameData...done");
+			
 		}
 	}
 	

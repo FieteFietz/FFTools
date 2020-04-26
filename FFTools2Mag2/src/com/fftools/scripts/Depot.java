@@ -258,22 +258,60 @@ public class Depot extends TransportScript{
 		// 20180506: Einbau Warnung wenn zu viele Bauern vorhanden
 		Region r = this.getUnit().getRegion();
 		if (r!=null && !(r.getRegionType().isOcean()) && this.mitBauernCheck) {
-			int actPersonen = r.getModifiedPeasants();
-			int maxPersonen = Utils.getIntValue(this.gd_Script.getGameSpecificRules().getMaxWorkers(r), 0);
-			
-			int actRekrutierungen = r.maxRecruit() - r.modifiedRecruit();
-			int maxRekrutierungen = r.maxRecruit();
-			
-			if (actPersonen>maxPersonen) {
-				int diffPersonen = actPersonen - maxPersonen;
-				this.addComment("Bauerncheck!!! " + diffPersonen + " Bauern zu viel in der Region! !!!");
-				if (actRekrutierungen<maxRekrutierungen && actRekrutierungen<diffPersonen) {
-					this.doNotConfirmOrders("Bauerncheck!!! Nur " + actRekrutierungen + " von " + maxRekrutierungen + " rekrutiert in dieser Runde!");
-				} else {
-					this.addComment("Bauerncheck!!! Es wird gut rekrutiert...(" + actRekrutierungen + ")");
+			// 20200419: nicht bei Insekten im Winter, es sei denn, in einer Wüste
+			boolean insektenImWinter=false;
+			if (this.scriptUnit.isInsekt()) {
+				int Runde=this.getOverlord().getScriptMain().gd_ScriptMain.getDate().getDate();
+				int RundenFromStart = Runde - 1;
+				int iWeek = (RundenFromStart % 3) + 1;
+				int iMonth = (RundenFromStart / 3) % 9;
+				
+				// Herdfeuer oder Eiswind
+				if (iMonth==1 || iMonth==2) {
+					// Herdfeuer oder Eiswind
+					insektenImWinter = true;
 				}
+				if (iMonth==3) {
+					// Schneebann, nur Wochen 1+2
+					if (iWeek==1 || iWeek==2) {
+						insektenImWinter = true;
+					}
+				}
+				if (iMonth==0) {
+					// Sturmmond, nur Woche 3
+					if (iWeek==3) {
+						insektenImWinter = true;
+					}
+				}
+			}
+			if (insektenImWinter) {
+				// nicht, wenn in Wüste
+				if (this.region().getRegionType().getName().equalsIgnoreCase("Wüste")) {
+					insektenImWinter=false;
+				}
+			}
+
+			if (insektenImWinter) {
+				this.addComment("Bauerncheck: wird nicht durchgeführt (Insekten erkannt und nächste Woche ist Winter, und nicht in einer Wüste)");
 			} else {
-				this.addComment("Bauerncheck: " + actPersonen + " von " + maxPersonen + " Bauern in der Region. OK");
+				// Bauerncheck durchführen
+				int actPersonen = r.getModifiedPeasants();
+				int maxPersonen = Utils.getIntValue(this.gd_Script.getGameSpecificRules().getMaxWorkers(r), 0);
+				
+				int actRekrutierungen = r.maxRecruit() - r.modifiedRecruit();
+				int maxRekrutierungen = r.maxRecruit();
+				
+				if (actPersonen>maxPersonen) {
+					int diffPersonen = actPersonen - maxPersonen;
+					this.addComment("Bauerncheck!!! " + diffPersonen + " Bauern zu viel in der Region! !!!");
+					if (actRekrutierungen<maxRekrutierungen && actRekrutierungen<diffPersonen) {
+						this.doNotConfirmOrders("Bauerncheck!!! Nur " + actRekrutierungen + " von " + maxRekrutierungen + " rekrutiert in dieser Runde!");
+					} else {
+						this.addComment("Bauerncheck!!! Es wird gut rekrutiert...(" + actRekrutierungen + ")");
+					}
+				} else {
+					this.addComment("Bauerncheck: " + actPersonen + " von " + maxPersonen + " Bauern in der Region. OK");
+				}
 			}
 		}
 		
