@@ -3,10 +3,12 @@ package com.fftools.scripts;
 
 import magellan.library.CoordinateID;
 
+import com.fftools.pools.matpool.relations.MatPoolRequest;
+import com.fftools.utils.FFToolsOptionParser;
 import com.fftools.utils.FFToolsRegions;
 import com.fftools.utils.GotoInfo;
 
-public class Goto extends Script implements WithGotoInfo{
+public class Goto extends MatPoolScript implements WithGotoInfo{
 	
 	private int Durchlauf1 = 44;
 	private int Durchlauf2 = 214;
@@ -36,6 +38,15 @@ public void runScript(int scriptDurchlauf){
 	
 	
 	public void firstRun(){		
+		// 20200428: Parameter abfragen
+		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Goto");
+		OP.addOptionList(this.getArguments());
+		if (OP.getOptionBoolean("pferde", false)) {
+			// kleinen Request für Pferde ergänzen
+			this.addComment("Pferdewunsch erkannt, Pferde angefordert.");
+			this.addMatPoolRequest(new MatPoolRequest(this,this.getUnit().getModifiedPersons(),"Pferd",3,"GOTO mit Pferde=ja"));
+		}
+		
 		// hier code fuer GoTo
 		// addOutLine("....start GoTo mit " + super.getArgCount() + " Argumenten");
 		if (super.getArgCount()<1) {
@@ -58,34 +69,41 @@ public void runScript(int scriptDurchlauf){
 				if (actRegCoordID.equals(actDest)){
 					// yep, wir sind da
 					if (super.getArgCount()>1) {
-						// es gibt weitere Ziele
-						// aktuelles Ziel aus der Liste nehmen..
-						// neue script order erstellen und anfügen
-						// neuen Path berechnen
-						
-						// neue GOTO bilden
-						String newGOTO = "GOTO ";
-						for (int i = 1;i<super.getArgCount();i++){
-							newGOTO = newGOTO.concat(super.getArgAt(i) + " ");
-						}
-						// ersetzen
-						if (super.scriptUnit.replaceScriptOrder(newGOTO, "GOTO ".length())) {
-							// OK...soweit alles klar
-							// neues Ziel setzen
-							actDest = CoordinateID.parse(super.getArgAt(1),",");
-							if (actDest == null) {
-								zielParseFehler();
-							} else {
-								// fein 
-								makeOrderNACH(actRegCoordID,actDest);
+						// 20200428 es könnte auch eine Option sein...
+						if (super.getArgAt(1).indexOf('=') > 0) {
+							// Hossa, eine Option, und damit sind wir schon am Ziel 
+							// das wars...Ziel erreicht und gut
+							super.scriptUnit.doNotConfirmOrders("GOTO: Einheit hat Ziel erreicht, daher NICHT bestätigt.");
+						} else {
+							// es gibt weitere Ziele
+							// aktuelles Ziel aus der Liste nehmen..
+							// neue script order erstellen und anfügen
+							// neuen Path berechnen
+							
+							// neue GOTO bilden
+							String newGOTO = "GOTO ";
+							for (int i = 1;i<super.getArgCount();i++){
+								newGOTO = newGOTO.concat(super.getArgAt(i) + " ");
 							}
-			 			} else {
-			 				// irgendetwas beim ersetzen ist schief gegangen
-			 				super.scriptUnit.doNotConfirmOrders("Fehler beim setzen der nächsten // script GOTO Anweisung");
-			 				super.addComment("Unit wurde durch GOTO NICHT bestaetigt", true);
-			 				addOutLine("X....Fehler beim setzen der nächsten // script GOTO Anweisung bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
-			 			}
-						
+							// ersetzen
+							if (super.scriptUnit.replaceScriptOrder(newGOTO, "GOTO ".length())) {
+								// OK...soweit alles klar
+								// neues Ziel setzen
+								actDest = CoordinateID.parse(super.getArgAt(1),",");
+								if (actDest == null) {
+									this.addComment("GOTO, Problem bei " + super.getArgAt(1));
+									zielParseFehler();
+								} else {
+									// fein 
+									makeOrderNACH(actRegCoordID,actDest);
+								}
+				 			} else {
+				 				// irgendetwas beim ersetzen ist schief gegangen
+				 				super.scriptUnit.doNotConfirmOrders("Fehler beim setzen der nächsten // script GOTO Anweisung");
+				 				super.addComment("Unit wurde durch GOTO NICHT bestaetigt", true);
+				 				addOutLine("X....Fehler beim setzen der nächsten // script GOTO Anweisung bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
+				 			}
+						}
 					} else {
 						// das wars...Ziel erreicht und gut
 						super.scriptUnit.doNotConfirmOrders("GOTO: Einheit hat Ziel erreicht, daher NICHT bestätigt.");
@@ -96,6 +114,7 @@ public void runScript(int scriptDurchlauf){
 				}
 			} else {
 				// Fehler beim Parsen des Ziels
+				this.addComment("GOTO, Problem bei " + super.getArgAt(0));
 				zielParseFehler();
 			}
 		}

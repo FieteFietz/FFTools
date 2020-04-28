@@ -13,6 +13,8 @@ public class Route extends Script{
 	
 	private static final int Durchlauf = 40;
 	
+	private String params = "";
+	
 	// Parameterloser constructor
 	public Route() {
 		super.setRunAt(Durchlauf);
@@ -49,11 +51,18 @@ public class Route extends Script{
 					
 					// neue ROUTE bilden
 					String newROUTE = "ROUTE ";
+					params = " ";
 					for (int i = 1;i<super.getArgCount();i++){
-						newROUTE = newROUTE.concat(super.getArgAt(i) + " ");
+						if (super.getArgAt(i).indexOf('=') > 0) {
+							params = params.concat(super.getArgAt(i) + " ");
+						} else {
+							newROUTE = newROUTE.concat(super.getArgAt(i) + " ");
+						}
+						
 					}
+					params = params.trim();
 					// noch hinten den bisher ersten wieder dranne
-					newROUTE = newROUTE.concat(super.getArgAt(0) + " ");
+					newROUTE = newROUTE.concat(super.getArgAt(0) + " ") + params;
 					
 					// ersetzen
 					if (super.scriptUnit.replaceScriptOrder(newROUTE, "ROUTE ".length())) {
@@ -66,6 +75,7 @@ public class Route extends Script{
 							actDest = FFToolsRegions.getRegionCoordFromName(this.gd_Script, super.getArgAt(1));
 						}
 						if (actDest == null) {
+							this.addComment("Problem mit " + super.getArgAt(1));
 							zielParseFehler();
 						} else {
 							// fein 
@@ -81,10 +91,19 @@ public class Route extends Script{
 					 
 				} else {
 					// nope, da müssen wir noch hin
+					// params checken
+					params = " ";
+					for (int i = 1;i<super.getArgCount();i++){
+						if (super.getArgAt(i).indexOf('=') > 0) {
+							params = params.concat(super.getArgAt(i) + " ");
+						} 
+					}
+					params = params.trim();
 					setGOTO(actDest);
 				}
 			} else {
 				// fehler beim parsen des Ziels
+				this.addComment("Problem bei " + super.getArgAt(0));
 				zielParseFehler();
 			}
 		}
@@ -101,7 +120,12 @@ public class Route extends Script{
 		if (FFToolsUnits.checkShip(this)){
 			super.scriptUnit.findScriptClass("Sailto",dest.toString(","));
 		} else {
-			super.scriptUnit.findScriptClass("Goto",dest.toString(","));
+			// GOTO
+			if (params.length()>2) {
+				super.scriptUnit.findScriptClass("Goto",dest.toString(",") + " " + params);
+			} else {
+				super.scriptUnit.findScriptClass("Goto",dest.toString(","));
+			}
 		}
 	}
 
