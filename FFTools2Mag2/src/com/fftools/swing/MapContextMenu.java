@@ -16,6 +16,7 @@ import magellan.library.Unit;
 
 import com.fftools.demo.actions.MenuAction;
 import com.fftools.demo.actions.map.GoToAction;
+import com.fftools.demo.actions.map.RideAction;
 import com.fftools.demo.actions.map.SailToAction;
 import com.fftools.utils.FFToolsArrayList;
 
@@ -27,6 +28,7 @@ public class MapContextMenu extends JMenu implements SelectionListener {
 	
 	private GoToAction goToAction = null;
 	private SailToAction sailToAction = null;
+	private RideAction rideAction = null;
 
 	public void setRegion(Region region) {
 		
@@ -36,6 +38,9 @@ public class MapContextMenu extends JMenu implements SelectionListener {
 		}
 		if (sailToAction!=null){
 			sailToAction.setTargetRegion(region);
+		}
+		if (rideAction!=null) {
+			rideAction.setTargetRegion(region);
 		}
 		
 	}
@@ -56,9 +61,11 @@ public class MapContextMenu extends JMenu implements SelectionListener {
 		
 		// addMenuItem(this,new KlonenAction(this.selectionObserver));
 		goToAction = new GoToAction(this.selectionObserver);
+		rideAction = new RideAction(this.selectionObserver);
 		sailToAction = new SailToAction(this.selectionObserver);
 		
 		addMenuItem(this,goToAction);
+		addMenuItem(this,rideAction);
 		addMenuItem(this,sailToAction);
 
 		client.getDispatcher().addSelectionListener(this);

@@ -203,21 +203,22 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		}
 
 		outText.addOutLine("****** TransportManager: " + TAH.getTradeAreas().size() + " Areas bekannt.");
+		if (this.allTransporters==null){
+			outText.addOutLine("keine Transporter im CR ?!?");
+			return;
+		}
 		for (Iterator<TradeArea> iter = TAH.getTradeAreas().iterator();iter.hasNext();){
 			TradeArea TA = (TradeArea)iter.next();
 			ArrayList<TradeRegion> tradeRegions = new ArrayList<TradeRegion>();
-			outText.setScreenOut(true);
-			outText.addNewLine();
-			outText.addOutChars("***TM " + TA.getName() + ": ",30);
 			tradeRegions.addAll(TA.getTradeRegions());
 			this.sortTransportersOutByTradeArea(TAH,TA);
-			
-			if (this.allTransporters!=null){
-				outText.addOutChars("T: " + this.transporters.size() + "/" + this.allTransporters.size() + "", 15);
-			} else {
-				outText.addOutLine("keine Transporter im CR ?!?");
-			}
 			if (this.transporters.size()>0){
+				outText.setScreenOut(true);
+				outText.addNewLine();
+				outText.addOutChars("***TM " + TA.getName() + ": ",30);
+				outText.addOutChars("T: " + this.transporters.size() + "/" + this.allTransporters.size() + "", 15);
+			
+			
 				outText.setScreenOut(false);
 				long startT = System.currentTimeMillis();
 				this.runRegions(tradeRegions,TA.getName(), TA);

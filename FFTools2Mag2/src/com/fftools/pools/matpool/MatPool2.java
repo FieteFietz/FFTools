@@ -851,8 +851,9 @@ public class MatPool2 implements MatPool{
 				erg=true;
 			}
 		} else {
-			erg = false;
+			erg = true;
 			// RdU und AwS zulassen
+			/*
 			if (itemType.getName().equalsIgnoreCase("Ring der Unsichtbarkeit")) {
 				erg = true;
 			}
@@ -889,6 +890,7 @@ public class MatPool2 implements MatPool{
 			if (itemType.getName().equalsIgnoreCase("Tiegel mit Krötenschleim")) {
 				erg = true;
 			}
+			*/
 		}
 		return erg;
 	}

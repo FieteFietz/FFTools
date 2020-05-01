@@ -80,9 +80,9 @@ private boolean overrun=false;
 
 // Listen die durch rekursionen beschreiben werden und daher global sein müssen
 
-ArrayList <AusbildungsRelation> teacher_gobal = null;
-ArrayList<AusbildungsRelation> schueler_global = null;
-ArrayList<AusbildungsRelation> teureSchueler_global = null;
+ArrayList <AusbildungsRelation> teacher_gobal = new ArrayList<AusbildungsRelation>();
+ArrayList<AusbildungsRelation> schueler_global =   new ArrayList<AusbildungsRelation>();
+ArrayList<AusbildungsRelation> teureSchueler_global = new ArrayList<AusbildungsRelation>();
 
 
 
@@ -99,6 +99,7 @@ int bestSchuelerFitting=Integer.MAX_VALUE;
 int bestSchuelerFittingValue=Integer.MAX_VALUE;
 int bestTeureSchuelerFittng=Integer.MAX_VALUE;
 int highestTeureSchuelerValue=0;
+double bestTeacherAuslastung = 0;
 
 
 //Welches Talent baut gerade seine Kette?
@@ -386,7 +387,7 @@ private MatPool matPool = null;
     	}
     	
          this.verboseOutText("AusbildungsPool: Bearbeite Region " + this.region.getName());	
-         this.verboseOutText("Settings: maxTalentDiff:" + maxTalentDiff + ",NachZügler:" + this.minNachzuegler + ",minAuslastung:" + this.minAuslastung*100 + "%");
+         this.verboseOutText("Settings: maxTalentDiff:" + maxTalentDiff + ",NachZügler:" + this.minNachzuegler + ",minAuslastung:" + this.minAuslastung*100 + "%, maxAuslastung:" + this.maxAuslastung*100 + "%" );
            // Erst mal schauen für welche Talente und Stufen der Pool laufen muß!
          if (this.getSortedSkill()!=null){
             // Nun hübsch der Reihe nach abarbeiten!
@@ -417,6 +418,7 @@ private MatPool matPool = null;
 		                 if ((teacherKandidat!=null)&&(schuelerKandidat!=null)){
 			                 this.verboseOutText("AusbildungsPool: ++++ Ermittle Lehrer Kombinationen für " + this.getSchuelerAnzahl(schuelerKandidat) + " Schüler " + aktuellerSkill.getName()+ " T"+schuelerStufe + " in " +schuelerKandidat.size()+ " Einheiten +++");
 			                 // Debug
+			                 /*
 			                 if (aktuellerSkill.getName().equalsIgnoreCase("cerddor")){
 			                	 this.verboseOutText("Liste aller Schüler:");
 			                	 for (AusbildungsRelation ARx:schuelerKandidat){
@@ -427,29 +429,37 @@ private MatPool matPool = null;
 			                		 this.verboseOutText("....." + ARx.getScriptUnit().unitDesc());
 			                	 }
 			                 }
-		                	 schueler_global= new ArrayList<AusbildungsRelation>();
+			                 */
+		                	 schueler_global.clear();
 			                 this.schueler_global.addAll(schuelerKandidat);
-		                	 this.teacher_gobal=null;
+		                	 this.teacher_gobal.clear();
 		                	 // direkter versuch lehrer für alle schüler zu bekommen
 		                	 this.shelterbuildTeacherList(teacherKandidat, schuelerKandidat);
-		                	 if(this.teacher_gobal==null){
-			                	
+		                	 if(this.teacher_gobal.size()==0){
+		                		 this.verboseOutText("direct matching was NOT successfull, need to pool, " + teacher_gobal.size()+ " Lehrer, " + schueler_global.size() + " Schüler, " + this.highestTeacherValue + " HTV");
 		                		int maxrun = 0; 
-			                	// teacher==null, wenn es noch keine gültien lehrer gab.
-		                		for (;((teacher_gobal==null)&&(schueler_global.size()>1)&&(this.highestTeacherValue>0));){
+			                	// teacher==null, wenn es noch keine gültigen lehrer gab.
+		                		for (;((teacher_gobal.size()==0)&&(schueler_global.size()>1)&&(this.highestTeacherValue>0));){
 			                		// option: notfallabbruch falls nach 10 runden noch kein lehrer da ist kommt auch keiner mehr 
 		                			maxrun++;
 			                		 if (maxrun> 10){
 			                			 this.verboseOutText("AusbildungsPool: Maxrun für Schülerreduktion überschritten");
 			                			 break;
 			                		 }
+			                		 this.verboseOutText("shorten schuelerlist, run " + maxrun);
 			                		 // Schüler verkürzen auf highestTeacherValue vo letzten lauf.
+			                		 debugListPool(this.schueler_global, this.teacher_gobal, aktuellerSkill);
 			                		 this.shelterbuildSchuelerList(schuelerKandidat);
+			                		 this.verboseOutText("new list: ");
+			                		 debugListPool(this.schueler_global, this.teacher_gobal, aktuellerSkill);
 			                		 // Nutzt schueler_global, weil diese durch die rekursion verkürzt wurde.
 			                		 this.shelterbuildTeacherList(teacherKandidat, this.schueler_global);
-			                		 
-		                	  
-		                		}
+			                		 this.verboseOutText("after build teacher list: ");
+			                		 debugListPool(this.schueler_global, this.teacher_gobal, aktuellerSkill);
+		                		} 
+		                	 } else {
+		                		 this.verboseOutText("direct matching was successfull!");
+		                		 debugListPool(this.schueler_global, this.teacher_gobal, aktuellerSkill);
 		                	 }
 		                	 // verknüpfungen aufbauen
 		                	 this.performPooling(this.schueler_global, this.teacher_gobal, aktuellerSkill);		                 
@@ -606,36 +616,43 @@ private MatPool matPool = null;
     private void buildTeacherList(ArrayList<AusbildungsRelation> quellList, ArrayList<AusbildungsRelation> _vorgaengerList, int _position, int _aktuelleLaenge, int _minLaenge, int _maxLaenge, int _idealeLaenge){
 	    AusbildungsRelation[] quellArray = quellList.toArray(new AusbildungsRelation[0]);
 	    
+	    if ((this.teachRekursion++)<= this.maxRekursion){
 	    
-	    
-	    
-	    if (this.teachRekursion++<= this.maxRekursion){
 	    	for (int n = _position; n<quellArray.length;n++){
 	    		// liste erreicht die geforderte länge
 		    	// 
+	    		
+	    		double actAuslastung = actTeacherAuslastung(quellArray[n],_vorgaengerList,_idealeLaenge);
 	    		
 	    		// Debug:
 	    		String s = "Rekursion: " + this.teachRekursion + ", ";
 	    		s += "Position geg:" + _position + ", act:" + n + ",";
 	    		s += "quelle:" + quellArray[n].getTeachPlaetze() + ", minLaenge:" + _minLaenge;
 	    		s += ", aktuelle:" + _aktuelleLaenge + ", maxLaenge:" + _maxLaenge + ", idealLaenge:" + _idealeLaenge;
+	    		s += ", Auslastung: " + actAuslastung*100 + "%";
 	    		this.verboseOutText(s);
-	    		 
-		    	if (((quellArray[n].getTeachPlaetze() +_aktuelleLaenge) >= _minLaenge)&&(quellArray[n].getTeachPlaetze() +_aktuelleLaenge) <= _maxLaenge){
+		    	// if (((quellArray[n].getTeachPlaetze() +_aktuelleLaenge) >= _minLaenge)&&(quellArray[n].getTeachPlaetze() +_aktuelleLaenge) <= _maxLaenge){
+		    	if (actAuslastung>=this.minAkteulleAuslastung && actAuslastung<=this.maxAktuelleAuslastung) {
 		    	   		
+		    	   
 		    		// ist die neue liste näher an der geforderten länge?
 		    	   int actTeacherFitting = Math.abs((quellArray[n].getTeachPlaetze() +_aktuelleLaenge - _idealeLaenge));
-		    	   this.verboseOutText("actual Fitting: " + actTeacherFitting + ", best until now: " + this.bestTeacherFitting);
-		    	   if (actTeacherFitting < this.bestTeacherFitting){
+		    	   s = "actual Fitting: " + actTeacherFitting + ", best until now: " + this.bestTeacherFitting;
+		    	   s += ", last Auslastung: " + actTeacherAuslastung(null, _vorgaengerList, _idealeLaenge) *100 + "%, bestTeacherAuslastung: " + this.bestTeacherAuslastung;
+		    	   this.verboseOutText(s);
+		    	   // if (actTeacherFitting < this.bestTeacherFitting){
+		    	   if (Math.abs(actAuslastung - 1) < Math.abs(this.bestTeacherAuslastung - 1)) {	   
 		    		   if ((this.highestTeacherValue<quellArray[n].getTeachPlaetze() + _aktuelleLaenge)&&(quellArray[n].getTeachPlaetze() + _aktuelleLaenge<=_idealeLaenge)){
 			        	   this.highestTeacherValue=quellArray[n].getTeachPlaetze() + _aktuelleLaenge;
 			        	}
-		    		    this.teacher_gobal = new ArrayList<AusbildungsRelation>();
+		    		    this.teacher_gobal.clear();
 			    		this.teacher_gobal.addAll(_vorgaengerList);
 			    		this.teacher_gobal.add(quellArray[n]);
 			    		// neues bestfitting setzen
 			    		this.bestTeacherFitting=Math.abs(quellArray[n].getTeachPlaetze() +_aktuelleLaenge - _idealeLaenge);
-			    		this.verboseOutText("AusbildungsPool: Mögliche LehrerListe erfolgreich aufgebaut für " + (quellArray[n].getTeachPlaetze() + _aktuelleLaenge)+ " Lehrer mit "+ _idealeLaenge+ " Schüler (Rekursion: " + this.teachRekursion + " / "+ this.maxRekursion+")"); 
+			    		this.bestTeacherAuslastung = actAuslastung;
+			    		this.verboseOutText("AusbildungsPool: Mögliche LehrerListe erfolgreich aufgebaut für " + (quellArray[n].getTeachPlaetze() + _aktuelleLaenge)+ " Lehrer mit "+ _idealeLaenge+ " Schüler (Rekursion: " + this.teachRekursion + " / "+ this.maxRekursion+")");
+			    		this.verboseOutText("Lehrer: " + quellArray[n].getScriptUnit().toString());
 			    		
 			    		// maxRekursion setzen
 			    		if (this.teachRekursion>this.ausbildungsManager.getMaxUsedRecursion()){
@@ -643,30 +660,36 @@ private MatPool matPool = null;
 			    		}
 			    		
 			    		
-		    	   }
-		           // Ist sie gleich lang und muß nun auf Qualität geprüft werden?
-		    	   if (Math.abs((quellArray[n].getTeachPlaetze() +_aktuelleLaenge - _idealeLaenge)) == this.bestTeacherFitting){
-		    		    // neue liste um vorgaengerList für die rekursion nicht zu überschreiben
-		    		    ArrayList<AusbildungsRelation> aktuelleList = new ArrayList<AusbildungsRelation>();
-		    		    // füllen mit vorgängern
-		    		    aktuelleList.addAll(_vorgaengerList);
-		    		    // akuelles Relation drauf
-		    		    aktuelleList.add(quellArray[n]);
-		    		    if (this.isBetterTeacherListOfSameSize(aktuelleList, this.teacher_gobal)){
-			    		   	this.teacher_gobal = aktuelleList;
-				    		this.verboseOutText("AusbildungsPool: Mögliche LehrerListe erfolgreich verbessert für " + (quellArray[n].getTeachPlaetze() + _aktuelleLaenge)+ " Lehrer mit "+ _idealeLaenge+ " Schüler (Rekursion: " + this.teachRekursion + " / "+ this.maxRekursion+")");
-				    		//	maxRekursion setzen
-				    		if (this.teachRekursion>this.ausbildungsManager.getMaxUsedRecursion()){
-				    			this.ausbildungsManager.setMaxUsedRecursion(this.teachRekursion);
-				    		}			    	 
-		    		    }
+		    	   } else {
+			           // Ist sie gleich lang und muß nun auf Qualität geprüft werden?
+			    	   // if (Math.abs((quellArray[n].getTeachPlaetze() +_aktuelleLaenge - _idealeLaenge)) == this.bestTeacherFitting){
+			    	   if (Math.abs(actAuslastung - 1) == Math.abs(this.bestTeacherAuslastung - 1)) {	 	   
+			    		    // neue liste um vorgaengerList für die rekursion nicht zu überschreiben
+			    		    ArrayList<AusbildungsRelation> aktuelleList = new ArrayList<AusbildungsRelation>();
+			    		    // füllen mit vorgängern
+			    		    aktuelleList.addAll(_vorgaengerList);
+			    		    // akuelles Relation drauf
+			    		    aktuelleList.add(quellArray[n]);
+			    		    if (this.isBetterTeacherListOfSameSize(aktuelleList, this.teacher_gobal)){
+				    		   	this.teacher_gobal = aktuelleList;
+					    		this.verboseOutText("AusbildungsPool: Mögliche LehrerListe erfolgreich verbessert für " + (quellArray[n].getTeachPlaetze() + _aktuelleLaenge)+ " Lehrer mit "+ _idealeLaenge+ " Schüler (Rekursion: " + this.teachRekursion + " / "+ this.maxRekursion+")");
+					    		//	maxRekursion setzen
+					    		if (this.teachRekursion>this.ausbildungsManager.getMaxUsedRecursion()){
+					    			this.ausbildungsManager.setMaxUsedRecursion(this.teachRekursion);
+					    		}			    	 
+			    		    }
+			    	   }
 		    	   }
 		    	}
 		    	// kanditat macht liste nicht zu groß?
-		        if (quellArray[n].getTeachPlaetze()<= (_maxLaenge - _aktuelleLaenge)){
+		        // if (quellArray[n].getTeachPlaetze()<= (_maxLaenge - _aktuelleLaenge)){
+		        if (actAuslastung>this.maxAktuelleAuslastung) {
+		        	String ss = "Changing HTV from " + this.highestTeacherValue + " to ";
 		        	if ((this.highestTeacherValue<quellArray[n].getTeachPlaetze() + _aktuelleLaenge)&&(quellArray[n].getTeachPlaetze() + _aktuelleLaenge<=_idealeLaenge)){
 		        		this.highestTeacherValue=quellArray[n].getTeachPlaetze() + _aktuelleLaenge;
 		        	}
+		        	ss = ss.concat(this.highestTeacherValue + ", rekursive starting the list build ");
+		        	this.verboseOutText(ss);
 		        	ArrayList<AusbildungsRelation>  nachfolgerList = new ArrayList<AusbildungsRelation>();
 		    	   nachfolgerList.addAll(_vorgaengerList);
 		    	   nachfolgerList.add(quellArray[n]);
@@ -684,6 +707,24 @@ private MatPool matPool = null;
 	     }
     }
     
+    /*
+     * Ermittelt die aktuelle Auslastung der Lehrer 
+     */
+    private double actTeacherAuslastung(AusbildungsRelation actTeacher, ArrayList<AusbildungsRelation> vorgänger, int AnzahlSchüler) {
+    	double erg=0;
+    	// geamtanzahl der Lehrer Berechnen
+    	double teacherSlots;
+    	teacherSlots = getTeacherAnzahl(vorgänger);
+    	if (actTeacher!=null) {
+    		teacherSlots += actTeacher.getTeachPlaetze();
+    	}
+    	double schülerSlots = AnzahlSchüler;
+    	if (teacherSlots>0) {
+    		erg =  Math.round((schülerSlots/teacherSlots)*1000.0) / 1000.0;
+    	}
+    	return erg;
+    }
+    
     
     
     
@@ -695,14 +736,13 @@ private MatPool matPool = null;
     	this.overrun=false;
     	this.verboseOutText("AusbildungsPool: Lehrersuche läuft aus " + this.getTeacherAnzahl(teachList)+ " Lehrern für " +this.getSchuelerAnzahl(schuelerList)+ " Schüler" );
     	// Löscht alte Ergebnise aus dem LehrerFeld
-    	
-    	if (this.teacher_gobal!=null){
-   		 	 this.teacher_gobal.clear();
-   	     }
+   		this.teacher_gobal.clear();
+   	
    	     // Rücksetzen der Counter
     	 this.teachRekursion=0;
    	     this.bestTeacherFitting=Integer.MAX_VALUE;
    	     this.highestTeacherValue =0;
+   	     this.bestTeacherAuslastung=0;
    	     // Hier gehts los!
    	     this.buildTeacherList(teachList, new ArrayList<AusbildungsRelation>(), 0, 0, (int) Math.ceil(this.getSchuelerAnzahl(schuelerList)* this.minAkteulleAuslastung), (int) Math.floor(this.getSchuelerAnzahl(schuelerList)*1*this.maxAktuelleAuslastung), this.getSchuelerAnzahl(schuelerList) );
    	     this.verboseOutText("AusbildungsPool: Lehrersuche abgeschlossen...");
@@ -803,7 +843,7 @@ private MatPool matPool = null;
 		    		
 		    		// ist die neue liste besser als eine alte?
 		    	   if (Math.abs((quellArray[n].getSchuelerPlaetze() +_aktuelleLaenge - _idealeLaenge)) < this.bestSchuelerFitting){
-		    		    schueler_global = new ArrayList<AusbildungsRelation>();
+		    		    schueler_global.clear();
 			    		this.schueler_global.addAll(_vorgaengerList);
 			    		this.schueler_global.add(quellArray[n]);
 			    		// neues bestfitting setzen
@@ -836,9 +876,8 @@ private MatPool matPool = null;
     	this.overrun=false;
     	this.verboseOutText("AusbildungsPool: Kein Lehrer gefunden, versuche " + this.getSchuelerAnzahl(schuelerList)  +" Schüler in "+ schuelerList.size() +" Einheiten auf " +this.highestTeacherValue +" Schüler zu reduzieren...");
     	// Löscht alte Ergebnise aus dem schuelerFeld
-    	if (this.schueler_global!=null){
-   		 	 this.schueler_global.clear();
-   	     }
+    	this.schueler_global.clear();
+   	    
    	     // Rücksetzen der Counter
     	 this.schuelerRekursion=0;
    	     this.bestSchuelerFitting=Integer.MAX_VALUE;
@@ -871,7 +910,7 @@ private MatPool matPool = null;
 		    		
 		    		// ist die neue liste besser als eine alte?
 		    	   if (Math.abs((quellArray[n].getLernKosten(aktSkillType) +_aktuelleLaenge - _maxLaenge)) < this.bestTeureSchuelerFittng){
-		    		   this.teureSchueler_global = new ArrayList<AusbildungsRelation>();
+		    		   this.teureSchueler_global.clear();
 			    		this.teureSchueler_global.addAll(_vorgaengerList);
 			    		this.teureSchueler_global.add(quellArray[n]);
 			    		// neues bestfitting setzen
@@ -908,9 +947,9 @@ private MatPool matPool = null;
     	this.overrun=false;
     	this.verboseOutText("AusbildungsPool: Verkürze Liste der Schüler für " + aktSkillType.toString() + " wegen Silbermangels");
     	// Löscht alte Ergebnise aus dem LehrerFeld
-    	if (this.teureSchueler_global!=null){
-   		 	 this.teureSchueler_global.clear();
-   	     }
+    	
+   		this.teureSchueler_global.clear();
+   	     
    	     // Rücksetzen der Counter
     	 this.teureSchuelerRekursion=0;
    	     this.bestTeureSchuelerFittng=Integer.MAX_VALUE;
@@ -1322,9 +1361,9 @@ private MatPool matPool = null;
 	        	 this.shelterbuildTeureSchuelerList(schuelerKandidatTeuer, _lernTalent.getSkillType());
 	        	  // 
 	        	 schueler= new ArrayList<AusbildungsRelation>();
-	        	 if (this.teureSchueler_global!=null){
-	        		 schueler.addAll(this.teureSchueler_global);
-	        	 }
+	        	 
+	        	 schueler.addAll(this.teureSchueler_global);
+	        	 
 	        	 if (schuelerKandidatGratis!=null){
 	        		 schueler.addAll(schuelerKandidatGratis);
 	        	 }
@@ -1440,9 +1479,46 @@ private MatPool matPool = null;
    }// methode
    
    
-   
+   private void debugListPool(ArrayList<AusbildungsRelation> _schueler, ArrayList<AusbildungsRelation> _teacher, Skill teachTalent){
+	  	  String s="";
+	  	  /*
+		  if ((_schueler.size()>0)&&(_teacher.size()>0)){
+			   for (Iterator<AusbildungsRelation> iter = _teacher.iterator(); iter.hasNext();){
+				  AusbildungsRelation teacher = (AusbildungsRelation) iter.next();
+				  s="Lehrer: " + teacher.getScriptUnit().getUnitNumber() + " -> ";
+				  for (Iterator<AusbildungsRelation> iter2 = _schueler.iterator(); iter2.hasNext();){
+					  // Jeder Lehrer lehrt jeden Schüler
+					  AusbildungsRelation schueler = (AusbildungsRelation) iter2.next();
+					  s = s.concat(schueler.getScriptUnit().getUnitNumber() + " ");
+				  }
+				  this.verboseOutText(s);
+			  }
+		  }
+		  */
+		  if (_teacher.size()==0) {
+			  this.verboseOutText("Lehrer: keiner");
+		  } else {
+			 s = "Lehrer: ";
+			 for (Iterator<AusbildungsRelation> iter = _teacher.iterator(); iter.hasNext();){
+				  AusbildungsRelation teacher = (AusbildungsRelation) iter.next();
+				  s = s.concat(teacher.getScriptUnit().getUnitNumber() + " ");
+			 }
+			 this.verboseOutText(s);
+		  }
+		  if (_schueler.size()==0) {
+			  this.verboseOutText("Schüler: keiner");
+		  } else {
+			  s = "Schüler: ";
+			 for (Iterator<AusbildungsRelation> iter = _schueler.iterator(); iter.hasNext();){
+				  AusbildungsRelation schueler = (AusbildungsRelation) iter.next();
+				  s = s.concat(schueler.getScriptUnit().getUnitNumber() + " ");
+			 }
+			 this.verboseOutText(s);
+		  }
+	   }
    
    private void performPooling(ArrayList<AusbildungsRelation> _schueler, ArrayList<AusbildungsRelation> _teacher, Skill teachTalent){
+	   double actAuslastung = actTeacherAuslastung(null, _teacher, getSchuelerAnzahl(_schueler));
 	  if ((_schueler!=null)&&(_teacher!=null)){
 		   for (Iterator<AusbildungsRelation> iter = _teacher.iterator(); iter.hasNext();){
 			  AusbildungsRelation teacher = (AusbildungsRelation) iter.next();
@@ -1452,12 +1528,12 @@ private MatPool matPool = null;
 				  schueler.setIsSchueler();
 				  schueler.addSubject(teachTalent.getSkillType(), teachTalent);
 				  schueler.addPooledRelation(teacher);
+				  schueler.getScriptUnit().addComment("Ausbildungspool: Lehrerauslastung für " + teachTalent.getSkillType().toString() + ": " + actAuslastung*100 + "%");
 				  teacher.addSubject(teachTalent.getSkillType(), teachTalent);
 				  teacher.setIsTeacher();
 				  teacher.addPooledRelation(schueler);
-				  
-				  
 			  }
+			  teacher.getScriptUnit().addComment("Ausbildungspool: Auslastung als Lehrer für " + teachTalent.getSkillType().toString() + ": " + actAuslastung*100 + "%");
 		  }
 		   // Lernkosten beantragen
 		   
