@@ -102,7 +102,20 @@ public class Transport extends TransportScript{
 			// wenn max, dann max, sonst aktuellen stand halten
 			int menge = 0;
 			if (this.transporter.isGetMaxPferde()){
-				menge = this.scriptUnit.getSkillLevel("Reiten") * this.scriptUnit.getUnit().getModifiedPersons() * 2;
+				menge = this.scriptUnit.getSkillLevelNoRegionTypeBonus("Reiten") * this.scriptUnit.getUnit().getModifiedPersons() * 2;
+				// Spezialabfrage Talente Insekten in Gletscher oder Bergen
+				if (this.scriptUnit.getSkillLevelNoRegionTypeBonus("Reiten")==1 && this.scriptUnit.getSkillLevel("Reiten")==0) {
+					// Insekten können hier nicht reiten, hatten vorher T1 und nun T0, Pferde müssen
+					// geführt werden! Jede Person ein Pferd, Bewegung zu Fuß!
+					menge = this.scriptUnit.getUnit().getModifiedPersons();
+					this.addComment("Insekten können hier nicht reiten: Pferde (1xPerson) werden geführt, Bewegung zu Fuß (kapa-policy)");
+					actPferdePolicy = MatPoolRequest.KAPA_max_zuFuss;
+				}
+				if (this.scriptUnit.getSkillLevelNoRegionTypeBonus("Reiten")!=this.scriptUnit.getSkillLevel("Reiten") && this.scriptUnit.getSkillLevelNoRegionTypeBonus("Reiten")>1) {
+					// Insekten behalten alle Pferde, gehen aber zu Fuß
+					this.addComment("Insekten können hier nicht reiten: Alle Pferde werden geführt, Bewegung zu Fuß (kapa-policy)");
+					actPferdePolicy = MatPoolRequest.KAPA_max_zuFuss;
+				}
 			} else {
 				// aktuellen Stand halten
 				// der ist wie?

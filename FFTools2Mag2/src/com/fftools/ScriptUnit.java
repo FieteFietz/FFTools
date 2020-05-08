@@ -2003,6 +2003,20 @@ public class ScriptUnit {
 		return erg;
 	}
 	
+	public int getSkillLevelNoRegionTypeBonus(String TalentName){
+		int erg=0;
+		
+		erg = getSkillLevel(TalentName);
+		// Betrachtung nur, wenn es sich um Insekten in Gletscher oder Gebirge handelt
+		if (this.getUnit().getRace().getName().equalsIgnoreCase("Insekten")) {
+			if (this.getUnit().getRegion().getRegionType().getName().equalsIgnoreCase("Gletscher") || 
+					this.getUnit().getRegion().getRegionType().getName().equalsIgnoreCase("Berge")) {
+				erg = erg + 1;
+			}
+		}
+		return erg;
+	}
+	
 	/**
 	 * prüft, ob Tags für die Scripte definiert sind und setzt diese ggf, wenn
 	 * noch nicht vorhanden
