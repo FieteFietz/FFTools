@@ -111,7 +111,7 @@ public class Maxbestand extends MatPoolScript{
 				} 
 			} else {
 				addComment("maxBestand - keine Information zu " + ware + " vorhanden.");
-				OK=false;
+				OK=true;
 			}
 			if (!OK) {
 				addComment("maxBestand - " + menge + " (" + ware + ") überschritten! Unbestätigt!");
