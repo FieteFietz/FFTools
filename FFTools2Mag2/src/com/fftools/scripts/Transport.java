@@ -103,6 +103,11 @@ public class Transport extends TransportScript{
 			int menge = 0;
 			if (this.transporter.isGetMaxPferde()){
 				menge = this.scriptUnit.getSkillLevelNoRegionTypeBonus("Reiten") * this.scriptUnit.getUnit().getModifiedPersons() * 2;
+				if (actPferdePolicy == MatPoolRequest.KAPA_max_zuFuss) {
+					menge = this.scriptUnit.getSkillLevelNoRegionTypeBonus("Reiten") * this.scriptUnit.getUnit().getModifiedPersons() * 4;
+					menge += this.scriptUnit.getUnit().getModifiedPersons();
+					this.addComment("Transporter kapa=gehen, fordere " + menge + " Pferde an.");
+				}
 				// Spezialabfrage Talente Insekten in Gletscher oder Bergen
 				if (this.scriptUnit.getSkillLevelNoRegionTypeBonus("Reiten")==1 && this.scriptUnit.getSkillLevel("Reiten")==0) {
 					// Insekten können hier nicht reiten, hatten vorher T1 und nun T0, Pferde müssen
@@ -138,9 +143,24 @@ public class Transport extends TransportScript{
 				if (this.transporter.getSetPferdePrio()>=0) {
 					actPrio = this.transporter.getSetPferdePrio();
 				}
+				
 				int actMenge=0;
+				// gehend 1x vorneweg
+				if (actPferdePolicy == MatPoolRequest.KAPA_max_zuFuss) {
+					actMenge = this.scriptUnit.getUnit().getModifiedPersons();
+					mpr = new MatPoolRequest(this,actMenge,"Pferd",actPrio,"Transporter (" + actMenge + " | " + menge + ", ohne Reiten)",actPferdePolicy);
+					mpr.setOnlyRegion(true);
+					this.addMatPoolRequest(mpr);
+					this.transporter.addPferdeMPR(mpr);
+					menge-=actMenge;
+				}
+				
+				
 				while (runTalent<=this.scriptUnit.getSkillLevel("Reiten") && menge>0) {
 					actMenge = this.scriptUnit.getUnit().getModifiedPersons();
+					if (actPferdePolicy == MatPoolRequest.KAPA_max_zuFuss) {
+						actMenge = this.scriptUnit.getUnit().getModifiedPersons() * 2;
+					}
 					if (this.transporter.getSetAnzahlPferde()>=0) {
 						actMenge = this.transporter.getSetAnzahlPferde();
 					}
@@ -162,6 +182,9 @@ public class Transport extends TransportScript{
 					if (menge>0) {
 						// Zweiter Lauf für diese Talentstufe
 						actMenge = this.scriptUnit.getUnit().getModifiedPersons();
+						if (actPferdePolicy == MatPoolRequest.KAPA_max_zuFuss) {
+							actMenge = this.scriptUnit.getUnit().getModifiedPersons() * 2;
+						}
 						if (actMenge>menge) {
 							actMenge=menge;
 						}
@@ -179,6 +202,17 @@ public class Transport extends TransportScript{
 					}
 					runTalent++;
 			    }
+				
+				// sonderfall Insekten mit Talent=0 wegen Bponus
+				if (menge>0 && this.scriptUnit.getSkillLevel("Reiten")==0) {
+					mpr = new MatPoolRequest(this,menge,"Pferd",this.transporter.getPferdRequestPrio(),"Transporter zu Fuß",actPferdePolicy);
+					mpr.setOnlyRegion(true);
+					this.addMatPoolRequest(mpr);
+					this.transporter.addPferdeMPR(mpr);
+				}
+				
+			} else {
+				this.addComment("Transporter: keine Pferdeanforderung");
 			}
 			// und gleich Wagen...
 			// später einfach MAX bzw Zahl an MatPool übergeben

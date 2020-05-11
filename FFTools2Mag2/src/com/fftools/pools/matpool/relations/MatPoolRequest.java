@@ -356,11 +356,11 @@ public class MatPoolRequest extends MatPoolRelation  implements Comparable<MatPo
 		if (itemType.getID().equals(EresseaConstants.I_HORSE)){
 			if (this.getScriptUnit().getSetKapaPolicy()==MatPoolRequest.KAPA_max_zuPferd){
 				int free = this.getScriptUnit().getFreeKapaMatPool2(this.getScriptUnit().getSetKapaPolicy());
-				this.getScriptUnit().addComment("Veränderte Reitkapa: " + free + " GE",true);
+				// this.getScriptUnit().addComment("Veränderte Reitkapa: " + free + " GE",true);
 			}
 			if (this.getScriptUnit().getSetKapaPolicy()==MatPoolRequest.KAPA_max_zuFuss){
 				int free = this.getScriptUnit().getFreeKapaMatPool2(this.getScriptUnit().getSetKapaPolicy());
-				this.getScriptUnit().addComment("Veränderte GehenKapa: " + free + " GE",true);
+				// this.getScriptUnit().addComment("Veränderte GehenKapa: " + free + " GE",true);
 			}
 		}
 

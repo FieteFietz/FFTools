@@ -421,6 +421,19 @@ public void runScript(int scriptDurchlauf){
 					return;
 				}
 			}
+			
+			if (this.buildingType.getBuildSkillLevel()>this.scriptUnit.getSkillLevel("Burgenbau")) {
+				statusInfo+="Fehler: zu untalentiert für Gebäude: " + s + ", verlangt Burgenbau " + this.buildingType.getBuildSkillLevel();
+				this.doNotConfirmOrders("Fehler: zu untalentiert für Gebäude: " + s + ", verlangt Burgenbau " + this.buildingType.getBuildSkillLevel());
+				this.lernTalent="Burgenbau";
+				this.setFinalStatusInfo("Burgtalent Burgenbau. ");
+				this.setAutomode_hasPlan(true);
+				isLearning=true;
+				this.LernfixOrder="Talent=Burgenbau";
+				this.Lerne();
+				return;
+			}
+
 			// Anzahl vomBuildings
 			this.numberOfBuildings=OP.getOptionInt("anzahl", 1);
 		}
@@ -828,6 +841,20 @@ public void runScript(int scriptDurchlauf){
 				return;
 			}
 		}
+		
+		
+		if (FFToolsGameData.getCastleSizeBuildSkillLevel( this.actSize)>this.scriptUnit.getSkillLevel("Burgenbau")) {
+			this.doNotConfirmOrders("Bauen: es wird ein höheres Talent zum Weiterbau der Burg verlangt!");
+			this.lernTalent="Burgenbau";
+			this.setFinalStatusInfo("Burgtalent Burgenbau. ");
+			this.setAutomode_hasPlan(true);
+			isLearning=true;
+			this.LernfixOrder="Talent=Burgenbau";
+			this.Lerne();
+			return;
+		}
+		
+		
 		int anzahl = this.targetSize - this.actSize;
 		
 		this.steinRequest = new MatPoolRequest(this,anzahl,"Stein",this.prioSteine,"Burgenbau");

@@ -237,7 +237,7 @@ public class Transporter {
 		if (!OP.getOptionBoolean("maxPferd",true)){
 			this.getMaxPferde=false;
 		}
-		if (OP.isOptionString("kapa", "gehen")){
+		if (OP.isOptionString("kapa", "gehen") || this.getScriptUnit().getSetKapaPolicy()==MatPoolRequest.KAPA_max_zuFuss){
 			this.isRiding=false;
 			// this.kapa = (int)(this.scriptUnit.getUnit().getPayloadOnFoot()/100);
 			MovementEvaluator ME = this.scriptUnit.getScriptMain().gd_ScriptMain.getGameSpecificStuff().getMovementEvaluator();
@@ -682,6 +682,12 @@ public class Transporter {
 				gefordert = this.scriptUnit.getUnit().getModifiedPersons() * 2 * reitSkill.getLevel();
 			}
 			
+			// 20200511: aus den PferdeMPRs berechnen, warum neu berechnen
+			gefordert = 0;
+			for (MatPoolRequest actMPR : pferdeMPRs) {
+				gefordert += actMPR.getOriginalGefordert();
+			}
+
 			this.transporterErstPferdeForderung = gefordert - erhalten;
 			
 			if (gefordert<=0){
