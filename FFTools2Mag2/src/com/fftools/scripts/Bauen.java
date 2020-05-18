@@ -422,9 +422,9 @@ public void runScript(int scriptDurchlauf){
 				}
 			}
 			
-			if (this.buildingType.getBuildSkillLevel()>this.scriptUnit.getSkillLevel("Burgenbau")) {
-				statusInfo+="Fehler: zu untalentiert für Gebäude: " + s + ", verlangt Burgenbau " + this.buildingType.getBuildSkillLevel();
-				this.doNotConfirmOrders("Fehler: zu untalentiert für Gebäude: " + s + ", verlangt Burgenbau " + this.buildingType.getBuildSkillLevel());
+			if (this.buildingType.getBuildSkillLevel() > this.scriptUnit.getSkillLevel("Burgenbau") && !this.isInPlaningMode()) {
+				statusInfo+="Fehler: zu untalentiert für Gebäude: " + s + ", verlangt Burgenbau " + this.buildingType.getBuildSkillLevel() + ", Einheit hat:" + this.scriptUnit.getSkillLevel("Burgenbau");
+				this.doNotConfirmOrders("Fehler: zu untalentiert für Gebäude: " + s + ", verlangt Burgenbau " + this.buildingType.getBuildSkillLevel()  + ", Einheit hat:" + this.scriptUnit.getSkillLevel("Burgenbau"));
 				this.lernTalent="Burgenbau";
 				this.setFinalStatusInfo("Burgtalent Burgenbau. ");
 				this.setAutomode_hasPlan(true);
@@ -843,7 +843,7 @@ public void runScript(int scriptDurchlauf){
 		}
 		
 		
-		if (FFToolsGameData.getCastleSizeBuildSkillLevel( this.actSize)>this.scriptUnit.getSkillLevel("Burgenbau")) {
+		if (FFToolsGameData.getCastleSizeBuildSkillLevel( this.actSize)>this.scriptUnit.getSkillLevel("Burgenbau") && !this.isInPlaningMode()) {
 			this.doNotConfirmOrders("Bauen: es wird ein höheres Talent zum Weiterbau der Burg verlangt!");
 			this.lernTalent="Burgenbau";
 			this.setFinalStatusInfo("Burgtalent Burgenbau. ");

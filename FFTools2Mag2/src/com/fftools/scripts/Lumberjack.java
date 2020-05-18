@@ -2,18 +2,17 @@ package com.fftools.scripts;
 
 import java.util.ArrayList;
 
-import sun.dc.DuctusRenderingEngine;
+import com.fftools.utils.FFToolsGameData;
+import com.fftools.utils.FFToolsOptionParser;
 
 import magellan.library.Building;
 import magellan.library.Item;
 import magellan.library.Region;
 import magellan.library.RegionResource;
 import magellan.library.Skill;
+import magellan.library.Unit;
 import magellan.library.rules.ItemType;
 import magellan.library.rules.SkillType;
-
-import com.fftools.utils.FFToolsGameData;
-import com.fftools.utils.FFToolsOptionParser;
 
 public class Lumberjack extends MatPoolScript{
 	
@@ -29,14 +28,21 @@ public class Lumberjack extends MatPoolScript{
 	 * 
 	 */
 	
+	int Durchlauf_3 = 820;
+	/*
+	 * 18.05.2020: prüfen, ob nicht uz viele Personen im Sägwerk
+	 */
+	
 
 	
-	private int[] runners = {Durchlauf_1,Durchlauf_2};
+	private int[] runners = {Durchlauf_1,Durchlauf_2,Durchlauf_3};
 	
 	private boolean isLearning=false;
 	private int possibleHolzMengeRegion = 0;
 	private int skillLevel = 0;
 	private String Gut="Holz";
+	private String sawMill=""; // Holzfällen nur in Sägewerk, betreten wenn machbar
+	private Building sawMillBuilding = null;
 	
 	/**
 	 * ab welchem Talent gehts erst mal los?
@@ -75,6 +81,10 @@ public class Lumberjack extends MatPoolScript{
 		if (scriptDurchlauf==this.Durchlauf_2){
 			this.makeProd();
 		}
+		
+		if (scriptDurchlauf==this.Durchlauf_3){
+			this.checkSawMill();
+		}
 
 	}
 	
@@ -96,6 +106,26 @@ public class Lumberjack extends MatPoolScript{
 		if (unitMinTalent>this.minTalent){
 			this.minTalent = unitMinTalent;
 		}
+		String sawMill_String = OP.getOptionString("sawMill");
+		if (sawMill_String.length()>0) {
+			// Holz fällen nur im Sägewerk
+			// wenn nicht im Sägwerk aber arbeiten sollen, dann betreten
+			// gibt es das Gebäude ?
+			Region r = this.region();
+			boolean foundIt=false;
+			for (Building b : r.buildings()) {
+				if (b.getID().toString().equalsIgnoreCase(sawMill_String)) {
+					// Bingo
+					this.sawMillBuilding=b;
+					foundIt=true;
+					this.sawMill = sawMill_String;
+				}
+			}
+			if (!foundIt) {
+				this.doNotConfirmOrders("Sägwerk " + sawMill_String + " konnte nicht gefunden werden!");
+			}
+		}
+		
 		
 		// Eigene Talentstufe ermitteln
 		this.skillLevel = 0;
@@ -222,7 +252,9 @@ public class Lumberjack extends MatPoolScript{
 		// Sägewerk feststellen
 		
 		if (this.isLearning){
-			return ;
+			return;
+		} else {
+			this.addComment("Lumberjack muss nicht lernen, darf mit Bäumen spielen.");
 		}
 		
 		boolean imSägewerk = false;
@@ -230,11 +262,20 @@ public class Lumberjack extends MatPoolScript{
 		if (b != null){
 			if (b.getType().getName().equalsIgnoreCase("Sägewerk")){
 				imSägewerk=true;
+				this.addComment("Lumberjack: bereits in einem Sägewerk - sehr schön");
 			} else {
 				this.addComment("Lumberjack: ich bin nicht in einem Sägewerk ?!");
 			}
 		} else {
-			this.addComment("Lumberjack: ich bin nicht in einem Sägewerk ?! (noch nicht mal in irgendeinem Gebäude....");
+			this.addComment("Lumberjack: ich bin nicht in einem Sägewerk ?! (noch nicht mal in irgendeinem Gebäude....)");
+		}
+		
+		if (!imSägewerk) {
+			if (this.sawMillBuilding!=null) {
+				// betreten
+				this.addOrder("BETRETE BURG " + this.sawMill + " ;Lumberjack: Sägewerk (sawMill)", true);
+				imSägewerk=true;
+			}
 		}
 		
 		int relevantLevel = skillLevel;
@@ -339,4 +380,21 @@ public class Lumberjack extends MatPoolScript{
 		this.scriptUnit.addAScript(L);
 	}
 
+	
+	private void checkSawMill() {
+		if (this.sawMillBuilding!=null) {
+			long persons=0;
+			for (Unit u : this.region().units()) {
+				if (u.getModifiedBuilding()!=null && u.getModifiedBuilding().equals(this.sawMillBuilding)) {
+					persons += u.getModifiedPersons();
+				}
+			}
+			if (persons > this.sawMillBuilding.getSize()) {
+				this.doNotConfirmOrders("Zu viele Personen im Sägewerk! (" + persons + "/" + this.sawMillBuilding.getSize() + ")");
+			} else {
+				this.addComment("Lumberjack: prüfe Sägewerk " + this.sawMill + ": " + persons + "/" + this.sawMillBuilding.getSize() + " Personen.");
+			}
+		}
+	}
+	
 }
