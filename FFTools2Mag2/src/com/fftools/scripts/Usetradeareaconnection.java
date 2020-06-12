@@ -95,6 +95,11 @@ public class Usetradeareaconnection extends TradeAreaScript{
 			return;
 		}
 		
+		// replacen
+		if (Ware!=null && Ware.length()>0){
+			Ware = FFToolsGameData.translateItemShortform(Ware);
+		}
+		
 		// Summe
 		int Summe = OP.getOptionInt("Summe",-1);
 		if (Summe<1){

@@ -287,6 +287,10 @@ public class FFToolsGameData {
 			itemName = "Sphäre der Unsichtbarkeit";
 		}
 		
+		if (itemName.equalsIgnoreCase("WdL")){
+			itemName = "Wasser des Lebens";
+		}
+		
 		if (itemName.equalsIgnoreCase("RdM")){
 			itemName = "Ring der Macht";
 		}

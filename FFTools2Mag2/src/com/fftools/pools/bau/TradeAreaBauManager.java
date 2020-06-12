@@ -481,7 +481,18 @@ public class TradeAreaBauManager {
 				Auftrag.addComment("Bauen: " + Arbeiter.unitDesc() + " übernimmt: " + Auftrag.toString());
 				// Pferde requesten...
 				if (Arbeiter.scriptUnit.getSkillLevel("Reiten")>0){
-					MatPoolRequest MPR = new MatPoolRequest(Arbeiter,Arbeiter.scriptUnit.getUnit().getModifiedPersons(), "Pferd", 21, "Bauarbeiter unterwegs" );
+					int PferdeAnzahl =  Arbeiter.getUnit().getModifiedPersons();
+					
+					if (Arbeiter.getUnit().getRace().getName().equalsIgnoreCase("Trolle")) {
+						PferdeAnzahl = (int)Math.ceil(PferdeAnzahl * 1.1);
+						Arbeiter.addComment("Troll-Reiter: Anzahl der Pferde neu berechnet, " + PferdeAnzahl + " Pferde angefordert.");
+					} else {
+						// Arbeiter.addComment("Keine trolle erkannt, sondern: " + Arbeiter.getUnit().getRace().getName());
+					}
+					
+					
+					
+					MatPoolRequest MPR = new MatPoolRequest(Arbeiter,PferdeAnzahl, "Pferd", 21, "Bauarbeiter unterwegs" );
 					Arbeiter.addMatPoolRequest(MPR);
 				}
 				

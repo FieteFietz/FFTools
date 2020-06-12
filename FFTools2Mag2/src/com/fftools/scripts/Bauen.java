@@ -17,6 +17,7 @@ import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
 import com.fftools.utils.FFToolsRegions;
 import com.fftools.utils.GotoInfo;
+import com.sun.org.apache.xml.internal.utils.IntVector;
 
 import magellan.library.Border;
 import magellan.library.Building;
@@ -736,7 +737,7 @@ public void runScript(int scriptDurchlauf){
 				// MatPool
 				this.addMatPoolRequest(MPR);
 			} else {
-				this.addComment("Bauauftrag-Reuqest: " + MPR.toString());
+				this.addComment("Bauauftrag-Request: " + MPR.toString());
 				this.addPlanungsMPR(MPR);
 			}
 			
@@ -755,7 +756,7 @@ public void runScript(int scriptDurchlauf){
 						if (!this.isInPlaningMode()){
 							this.addMatPoolRequest(MPR2);
 						} else {
-							this.addComment("Bauauftrag-Reuqest: " + MPR2.toString());
+							this.addComment("Bauauftrag-Request: " + MPR2.toString());
 							this.addPlanungsMPR(MPR2);
 						}
 					}
@@ -793,7 +794,7 @@ public void runScript(int scriptDurchlauf){
 			if (!this.isInPlaningMode()){
 				this.addMatPoolRequest(this.steinRequest);
 			} else {
-				this.addComment("Bauauftrag-Reuqest: " + this.steinRequest.toString());
+				this.addComment("Bauauftrag-Request: " + this.steinRequest.toString());
 				this.addPlanungsMPR(this.steinRequest);
 			}
 		} else {
@@ -866,7 +867,7 @@ public void runScript(int scriptDurchlauf){
 		if (!this.isInPlaningMode()){
 			this.addMatPoolRequest(this.steinRequest);
 		} else {
-			this.addComment("Bauauftrag-Reuqest: " + this.steinRequest.toString());
+			this.addComment("Bauauftrag-Request: " + this.steinRequest.toString());
 			this.addPlanungsMPR(this.steinRequest);
 		}
 		
@@ -1440,7 +1441,15 @@ public void runScript(int scriptDurchlauf){
 					this.addComment("ETA: " + gotoInfo.getAnzRunden() + " Runden.");
 					// Pferde requesten...
 					if (this.scriptUnit.getSkillLevel("Reiten")>0){
-						MatPoolRequest MPR = new MatPoolRequest(this,this.scriptUnit.getUnit().getModifiedPersons(), "Pferd", 21, "Bauarbeiter unterwegs" );
+						int PferdeAnzahl =  this.scriptUnit.getUnit().getModifiedPersons();
+						
+						if (this.scriptUnit.getUnit().getRace().getName().equalsIgnoreCase("Trolle")) {
+							PferdeAnzahl = (int)Math.ceil(PferdeAnzahl * 1.1);
+							this.addComment("Troll-Reiter: Anzahl der Pferde neu berechnet, " + PferdeAnzahl + " Pferde angefordert.");
+						} else {
+							// this.addComment("Keine trolle erkannt, sondern: " + this.scriptUnit.getUnit().getRace().getName());
+						}
+						MatPoolRequest MPR = new MatPoolRequest(this,PferdeAnzahl, "Pferd", 21, "Bauarbeiter unterwegs" );
 						this.addMatPoolRequest(MPR);
 					}
 					this.finalStatusInfo="going HOME";
@@ -1677,7 +1686,18 @@ public void runScript(int scriptDurchlauf){
 				this.addComment("Bauen: " + b.unitDesc() + " unterstützt beim Bauen. ETA: " + gotoInfo.getAnzRunden() + " Runden bei noch " + this.turnsToGo + " weiteren Runden Bauzeit.");
 				// Pferde requesten...
 				if (b.scriptUnit.getSkillLevel("Reiten")>0){
-					MatPoolRequest MPR = new MatPoolRequest(b,b.scriptUnit.getUnit().getModifiedPersons(), "Pferd", 21, "Bauunterstützer unterwegs" );
+					int PferdeAnzahl =  b.scriptUnit.getUnit().getModifiedPersons();
+					
+					if (b.scriptUnit.getUnit().getRace().getName().equalsIgnoreCase("Trolle")) {
+						PferdeAnzahl = (int)Math.ceil(PferdeAnzahl * 1.1);
+						b.addComment("Troll-Reiter: Anzahl der Pferde neu berechnet, " + PferdeAnzahl + " Pferde angefordert.");
+					} else {
+						// b.addComment("Keine trolle erkannt, sondern: " + this.scriptUnit.getUnit().getRace().getName());
+					}
+					
+					
+					
+					MatPoolRequest MPR = new MatPoolRequest(b,PferdeAnzahl, "Pferd", 21, "Bauunterstützer unterwegs" );
 					b.addMatPoolRequest(MPR);
 				}
 				
