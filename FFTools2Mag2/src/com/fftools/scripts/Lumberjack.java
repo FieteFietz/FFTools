@@ -281,9 +281,14 @@ public class Lumberjack extends MatPoolScript{
 		int relevantLevel = skillLevel;
 		if (imSägewerk){
 			relevantLevel +=1;
+			this.addComment("Lumberjack: da ich im Sägewerk arbeite, arbeiter ich besser (mit Talent " + relevantLevel + ")");
 		}
 		
 		int Menge = this.possibleHolzMengeRegion;
+		if (imSägewerk && this.possibleHolzMengeRegion>0) {
+			Menge*=2;
+			this.addComment("Lumberjack: da ich im Sägewerk arbeite, verdoppelt sich die Ressourcenanzahl auf " + Menge);
+		}
 		
 		int machbareMenge = relevantLevel * this.scriptUnit.getUnit().getModifiedPersons();
 		

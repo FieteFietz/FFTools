@@ -254,6 +254,11 @@ public class Eisen extends MatPoolScript{
 				addComment("Zwerg ohne Bergwerk erkannt, versuche Produktionsmenge zu ermitteln, die durch " + Teiler + " teilbar ist.");
 			}
 			
+		} else {
+			if (isInBergwerk){
+				// Nicht zwerg im Bergwerk
+				Teiler=2;
+			}
 		}
 		int mengeResult = (machbareMenge / Teiler) * Teiler;
 		if (mengeResult==machbareMenge){
