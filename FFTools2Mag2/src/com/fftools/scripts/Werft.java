@@ -5,6 +5,8 @@ import magellan.library.Ship;
 import magellan.library.rules.ItemType;
 import magellan.library.rules.ShipType;
 
+import java.util.ArrayList;
+
 import com.fftools.pools.bau.WerftManager;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.utils.FFToolsOptionParser;
@@ -32,6 +34,10 @@ public class Werft extends MatPoolScript{
 	public boolean hasLernfixOrder = false;
 	
 	private int BauPunkte = 0;
+	
+	private int TalentLevel = 0;  // modified Talent Schiffbau
+	
+	private int minTalentLevel = 1; // mindestens zu habender Level Schiffbau 
 	
 	
 	/**
@@ -69,6 +75,11 @@ public class Werft extends MatPoolScript{
 	 * werft-scripte verlassen grundsätzlich und warnen, wenn das schiff nicht anders besetzt wird
 	 */
 	private void scriptSchluss(){
+		
+		if (this.hasLernfixOrder) {
+			return;
+		}
+		
 		// waren wir am anfang der runde auf einem Schiff?
 		Ship s = this.scriptUnit.getUnit().getShip();
 		if (s!=null){
@@ -81,15 +92,40 @@ public class Werft extends MatPoolScript{
 	}
 	
 	private void scriptStart(){
+		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit);
+		OP.addOptionList(this.getArguments());
+		this.TalentLevel = this.scriptUnit.getSkillLevel("Schiffbau");
+		
+		this.minTalentLevel = OP.getOptionInt("minTalent", this.minTalentLevel);
+		
+		if (this.TalentLevel<this.minTalentLevel) {
+			this.addComment("Talentlevel unter mindestTalent..Lerne " + this.LernTalent);
+			// w.scriptUnit.findScriptClass("Lernfix", "Talent=" + w.LernTalent);
+			Lernfix LF = new Lernfix();
+			LF.setScriptUnit(this.scriptUnit);
+			if (this.c!=null){
+				LF.setClient(this.c);
+			}
+			LF.setGameData(this.gd_Script);
+			ArrayList<String> ll = new ArrayList<String>();
+			ll.add("Talent=Schiffbau");
+			LF.setArguments(ll);
+			LF.scriptStart();
+			this.scriptUnit.addAScript(LF);
+			this.hasLernfixOrder=true;
+			return;
+		}
+		
+		
 		// Werftmanager besorgen und sich dort anmelden
 		WerftManager WM = this.getOverlord().getWerftManager();
 		WM.addWerftUnit(this);
 		
 		// Berechnen, wieviel Baupunkte wir an einer Trireme bauen *könnten*
 		// warum Trireme, der kann doch auch Langboot bauen wollen... 
-		int TalentLevel = this.scriptUnit.getSkillLevel("Schiffbau");
+		
 		int AnzahlPersonen = this.getUnit().getModifiedPersons();
-		this.BauPunkte = TalentLevel * AnzahlPersonen ;
+		this.BauPunkte = this.TalentLevel * AnzahlPersonen ;
 		
 		
 		ItemType rdfType=this.gd_Script.getRules().getItemType("Ring der flinken Finger",false);
@@ -122,8 +158,7 @@ public class Werft extends MatPoolScript{
 		
 		
 		int HolzBedarf = (int) (Math.ceil(BauPunkte));
-		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit);
-		OP.addOptionList(this.getArguments());
+		
 		
 		// Vorbereiteter BauLevel abfragen, sonst 1
 		int Baulevel = OP.getOptionInt("BauLevel", 1);
@@ -196,7 +231,7 @@ public class Werft extends MatPoolScript{
 		int erg = 0;
 		
 		int TalentStufe = sT.getBuildSkillLevel();
-		if (TalentStufe>0) {
+		if (TalentStufe>0 && this.TalentLevel>=TalentStufe) {
 			int TalentBP = (int) Math.floor(this.BauPunkte / TalentStufe);
 			return Math.min(TalentBP, this.getBauPunkteMitHolz());
 		}

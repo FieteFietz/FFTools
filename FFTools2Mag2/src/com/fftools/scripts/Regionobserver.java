@@ -325,22 +325,32 @@ public class Regionobserver extends MatPoolScript{
 			// this.scriptUnit.getModifiedItemsMatPool2()   // HashMap<ItemType, Item> 
 			for (ItemType iT: this.scriptUnit.getModifiedItemsMatPool2().keySet()) {
 				Item actItem = this.scriptUnit.getModifiedItemsMatPool2().get(iT);
-				this.addComment("Prüfe " + actItem.getAmount() + " " + iT.toString() + " (Kategorie: " + iT.getCategory().toString() + ")");
-				if ((iT.getCategory().getName().equalsIgnoreCase("Waffen") || iT.getCategory().getName().equalsIgnoreCase("Distanz-Waffen")) && actItem.getAmount()>0) {
-					this.addComment("Waffe erkannt, untersuche auf Talente...",true);
-					Skill useSkill = iT.getUseSkill();
-					if (useSkill!=null) {
-						Skill actSkill = this.getUnit().getModifiedSkill(useSkill.getSkillType());
-						if (actSkill!=null && actSkill.getLevel()>0) {
-							this.addComment("Nutzbare Waffe(n) gefunden: " + actItem.getAmount() + " " + iT.toString());
-							countWeapons += actItem.getAmount();
-						} else {
-							this.addComment("Waffe(n) nicht nutzbar: " + actItem.getAmount() + " " + iT.toString());
-						}
+				if (actItem==null) {
+					this.addComment("!!unerwartet: Item des Matpools2 ist Null!!");
+				} else {
+					String s = "Prüfe " + actItem.getAmount() + " " + iT.toString() + " " + iT.toString();
+					if (iT.getCategory()==null) {
+						this.addComment("!!unerwartet: ItemCategory des Matpools2-Items ist Null!!");
 					} else {
-						this.doNotConfirmOrders("!!! Probelm: für Waffe " + iT.toString() + " ist kein Talent zur Nutzung bekannt!!!");
+						s += " (Kategorie: " + iT.getCategory().toString() + ")";
+						this.addComment(s);
+						if ((iT.getCategory().getName().equalsIgnoreCase("Waffen") || iT.getCategory().getName().equalsIgnoreCase("Distanz-Waffen")) && actItem.getAmount()>0) {
+							this.addComment("Waffe erkannt, untersuche auf Talente...",true);
+							Skill useSkill = iT.getUseSkill();
+							if (useSkill!=null) {
+								Skill actSkill = this.getUnit().getModifiedSkill(useSkill.getSkillType());
+								if (actSkill!=null && actSkill.getLevel()>0) {
+									this.addComment("Nutzbare Waffe(n) gefunden: " + actItem.getAmount() + " " + iT.toString());
+									countWeapons += actItem.getAmount();
+								} else {
+									this.addComment("Waffe(n) nicht nutzbar: " + actItem.getAmount() + " " + iT.toString());
+								}
+							} else {
+								this.doNotConfirmOrders("!!! Probelm: für Waffe " + iT.toString() + " ist kein Talent zur Nutzung bekannt!!!");
+							}
+						}
 					}
-				} 
+				}
 			}
 		}
 		

@@ -184,8 +184,9 @@ public void runScript(int scriptDurchlauf){
 									if (sk!=null){
 										// this.addComment("Debug-Treiben...checking the requested skill: " + sk.toString(),false);
 										SkillType sT = sk.getSkillType();
-										sk=this.getUnit().getSkill(sT);
-										if (sk.getLevel()>0){
+										// sk=this.getUnit().getSkill(sT);
+										sk=this.getUnit().getModifiedSkill(sT);
+										if (sk!=null && sk.getLevel()>0){
 											myWeapons=true;											
 										} else {
 											// this.addComment("Debug-Treiben...no skill, level: " + sk.getLevel(),false);
