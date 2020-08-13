@@ -627,7 +627,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		if (!this.reportOFF) {
 			outText.setScreenOut(false);
 			outText.setFile(this.actLogName + "_2");
-			outText.addOutLine("Request: " + request.getForderung() + " " + request.getOriginalGegenstand() + " (Prio:" + request.getPrio() + ") nach " + request.getRegion().toString());
+			outText.addOutLine("Request: " + request.getForderung() + " " + request.getOriginalGegenstand() + " (Prio:" + request.getPrio() + ") nach " + request.getRegion().toString() + " Spec: " + request.SpecInfo());
 		}
 		long startT = System.currentTimeMillis();
 		long start1=0;
@@ -814,6 +814,10 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 			this.transporterComparatorForOffer.setWeight(weightInt);
 		}
 		
+		if (!this.reportOFF) {
+			outText.addOutLine("searching Free Transports...");
+		}
+		
 		// Liste sortieren
 		long start1 = System.currentTimeMillis();
 		ArrayList<Transporter> actTransporters = new ArrayList<Transporter>(1);
@@ -826,6 +830,9 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 				if (T.getDestRegion()==null && T.getMode()==Transporter.transporterMode_fullautomatic
 						&& T.isOK4TransportRequest(request)){
 					actTransporters.add(T);
+					if (!this.reportOFF) {
+						outText.addOutLine("added possible Transport: " + T.getScriptUnit().toString());
+					}
 				}
 			}
 		}
@@ -985,13 +992,13 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		}
 		
 		// Liste sortieren
-		ArrayList<Transporter> actTransporters = new ArrayList<Transporter>(1);
+		ArrayList<Transporter> actTransporters = new ArrayList<Transporter>(0);
 		if (this.transporters!=null &&  !this.transporters.isEmpty()){
 			for (Iterator<Transporter> iter = this.transporters.values().iterator();iter.hasNext();){
 				Transporter T = (Transporter)iter.next();
 				// nur Ts aufführen, die vergeben sind und in der aktuellen Region sind
 				// und die auf Automatik stehen
-				if (T.getActRegion().equals(offer.getRegion()) && T.getDestRegion()!=null && T.getMode()==Transporter.transporterMode_fullautomatic){
+				if (T.getActRegion().equals(offer.getRegion()) && T.getDestRegion()!=null && T.getMode()==Transporter.transporterMode_fullautomatic && T.isOK4TransportRequest(request)){
 					actTransporters.add(T);
 					if (!this.reportOFF) {
 						outText.addOutLine("Debug: evtl passender benutzter T: " + T.getScriptUnit().unitDesc());
@@ -1023,10 +1030,10 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 					r = gotoInfo.getNextHold();
 				}
 			}
-			int dist = FFToolsRegions.getPathDistLand(this.scriptMain.gd_ScriptMain, r.getCoordinate(),offer.getRegion().getCoordinate(), true, actTransporter.getScriptUnit().isInsekt());
+			int dist = FFToolsRegions.getPathDistLand(this.scriptMain.gd_ScriptMain, r.getCoordinate(),request.getRegion().getCoordinate(), true, actTransporter.getScriptUnit().isInsekt());
 			actTransporter.setActDist(dist);
 			if (!this.reportOFF) {
-				outText.addOutLine("Debug setDist für " + actTransporter.getScriptUnit().unitDesc() + " -> " + dist);
+				outText.addOutLine("Debug setDist für " + actTransporter.getScriptUnit().unitDesc() + " -> " + dist + " (nach " + request.getRegion().toString() + ")");
 			}
 		}
 		
@@ -1038,9 +1045,11 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		}
 
 		// Transporter durchgehen
+		// vorab: Eventuell 0-GE Gut?
+		float offer_weight = offer.getItem().getItemType().getWeight();
 		for (Iterator<Transporter> iter = actTransporters.iterator();iter.hasNext();){
 			Transporter actTransporter = (Transporter)iter.next();
-			if (actTransporter.getKapa_frei()>0 && actTransporter.getActDist()>=0){
+			if ((actTransporter.getKapa_frei()>0 || offer_weight==0)&& actTransporter.getActDist()>=0){
 				// diese Transporter bearbeiten
 				if (!this.reportOFF) {
 					outText.addOutLine("Debug, bearbeite benutzten T: " + actTransporter.getScriptUnit().unitDesc());
@@ -1086,7 +1095,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 				Transporter T = (Transporter)iter.next();
 				// nur Ts aufführen, die vergeben sind und als Ziel die offer haben und als Planungsziel die request
 				// und die auf Automatik stehen
-				if (T.samePlanungOK(offer, request)){
+				if (T.samePlanungOK(offer, request) && T.isOK4TransportRequest(request)){
 					actTransporters.add(T);
 				}
 			}
@@ -1168,6 +1177,10 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 				outText.addOutLine("Debug, getNextHold==null T: " + transporter.getScriptUnit().unitDesc());
 			}
 			return;
+		} else {
+			if (!this.reportOFF) {
+				outText.addOutLine("Debug, Entfernung zum Request aktuell (distOffer)) T: " + transporter.getScriptUnit().unitDesc() + " =" + distOffer);
+			}
 		}
 		
 		
@@ -1181,7 +1194,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		if (distOffer<=distNextHold){
 			// hat keinen sinn
 			if (!this.reportOFF) {
-				outText.addOutLine("Debug, hat keinen Sinn T: " + transporter.getScriptUnit().unitDesc());
+				outText.addOutLine("Debug, hat keinen Sinn T: " + transporter.getScriptUnit().unitDesc() + ", t kommt Ziel nicht näher");
 			}
 			return;
 		}

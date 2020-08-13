@@ -269,6 +269,7 @@ public class Transporter {
 			for (int i=0;i<specsArray.length;i++){
 				String s2 = specsArray[i];
 				this.specs.add(s2);
+				this.scriptUnit.addComment("debug: als spec ergänzt: " + s2);
 			}
 		}
 		
@@ -983,11 +984,20 @@ public class Transporter {
 			}
 		}
 		
+		// this.scriptUnit.addComment("debug isOK4Trans " + TR.toString());
+		
 		
 		if (TR.getTransporterSpecs()==null || TR.getTransporterSpecs().size()==0){
 			// keine Specs..dann jeder Transport geeignet
+			// this.scriptUnit.addComment("debug: no specs, returning true (" + TR.toString()+ ")");
 			return true;
 		}
+		
+		if (this.specs==null || this.specs.size()==0) {
+			// wenn der Transporter keine hat, macht der auch alles mit.
+			return true;
+		}
+		
 		
 		return this.isInSpec(TR.getTransporterSpecs());
 	}

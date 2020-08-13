@@ -937,6 +937,9 @@ public class MatPool2 implements MatPool{
 						TR.addSpec(MPR.getTransporterSpecs());
 					}
 					
+					// Test 20200810: den gegenstand setzen
+					TR.addSpec(MPR.getOriginalGegenstand());
+					
 					// sortMode
 					TR.setTM_sortMode(MPR.getTMsortMode());
 					
@@ -963,6 +966,9 @@ public class MatPool2 implements MatPool{
 					if (MPR.getTransporterSpecs()!=null){
 						TR.addSpec(MPR.getTransporterSpecs());
 					}
+					
+					// Test 20200810: den gegenstand setzen
+					TR.addSpec(MPR.getOriginalGegenstand());
 					
 					// sortMode
 					TR.setTM_sortMode(MPR.getTMsortMode());

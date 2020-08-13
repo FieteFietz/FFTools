@@ -544,6 +544,7 @@ public class Trader {
 			int actRundenPrio = this.handeln.getPrio(i-1);
 			// Request generieren
 			TransportRequest TR = new TransportRequest(this.scriptUnit,mengeProRunde,itemType.getName(), actRundenPrio ,"Prognose in " + i + " Runden");
+			TR.addSpec(itemType.getName());
 			erg.add(TR);
 		}
 		return erg;

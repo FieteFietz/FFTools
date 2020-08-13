@@ -143,6 +143,9 @@ public class ScriptMain {
 			if (b.getType().getName().equalsIgnoreCase("Akademie")){
 				toAdd=true;
 			}
+			if (b.getType().getName().equalsIgnoreCase("Pferdezucht")){
+				toAdd=true;
+			}
 			if (toAdd){
 				if (scriptProductionBuildings==null){
 					scriptProductionBuildings = new ArrayList<Building>();

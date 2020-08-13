@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 import com.fftools.pools.bau.WerftManager;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
+import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
 
 
@@ -127,6 +128,11 @@ public class Werft extends MatPoolScript{
 		int AnzahlPersonen = this.getUnit().getModifiedPersons();
 		this.BauPunkte = this.TalentLevel * AnzahlPersonen ;
 		
+		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,true)){
+			this.BauPunkte *= 2;
+			this.addComment("Werft: Einheit nutzt Schaffenstrunk. Produktion verdoppelt auf: " + this.BauPunkte);
+		} 
+		
 		
 		ItemType rdfType=this.gd_Script.getRules().getItemType("Ring der flinken Finger",false);
 		if (rdfType!=null){
@@ -198,8 +204,14 @@ public class Werft extends MatPoolScript{
 				if (sT.getName().equalsIgnoreCase(NeuBauTypName)){
 					this.shipType=sT;
 					this.addComment("werft: Schiffstyp erkannt: " + sT.getName());
+					// Level check
+					if (this.shipType.getBuildSkillLevel()>this.TalentLevel) {
+						this.addComment("werft: Schiffstyp kann nicht gebaut werden, ich bin nicht gut genug dafür.");
+						this.shipType=null;
+					}
 				}
 			}
+			
 		}
 		
 		if (OP.getOptionBoolean("allShips", false)){

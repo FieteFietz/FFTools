@@ -737,7 +737,7 @@ public void runScript(int scriptDurchlauf){
 				// MatPool
 				this.addMatPoolRequest(MPR);
 			} else {
-				this.addComment("Bauauftrag-Request: " + MPR.toString());
+				this.addComment("Bauauftrag-Request: " + MPR.toString() + " (wird aktiv, wenn sich Bauarbeiter auf den Weg macht)");
 				this.addPlanungsMPR(MPR);
 			}
 			
@@ -756,7 +756,7 @@ public void runScript(int scriptDurchlauf){
 						if (!this.isInPlaningMode()){
 							this.addMatPoolRequest(MPR2);
 						} else {
-							this.addComment("Bauauftrag-Request: " + MPR2.toString());
+							this.addComment("Bauauftrag-Request: " + MPR2.toString() + " (wird aktiv, wenn sich Bauarbeiter auf den Weg macht)");
 							this.addPlanungsMPR(MPR2);
 						}
 					}
@@ -794,7 +794,7 @@ public void runScript(int scriptDurchlauf){
 			if (!this.isInPlaningMode()){
 				this.addMatPoolRequest(this.steinRequest);
 			} else {
-				this.addComment("Bauauftrag-Request: " + this.steinRequest.toString());
+				this.addComment("Bauauftrag-Request: " + this.steinRequest.toString() + " (wird aktiv, wenn sich Bauarbeiter auf den Weg macht)");
 				this.addPlanungsMPR(this.steinRequest);
 			}
 		} else {
@@ -867,7 +867,7 @@ public void runScript(int scriptDurchlauf){
 		if (!this.isInPlaningMode()){
 			this.addMatPoolRequest(this.steinRequest);
 		} else {
-			this.addComment("Bauauftrag-Request: " + this.steinRequest.toString());
+			this.addComment("Bauauftrag-Request: " + this.steinRequest.toString() + " (wird aktiv, wenn sich Bauarbeiter auf den Weg macht)");
 			this.addPlanungsMPR(this.steinRequest);
 		}
 		

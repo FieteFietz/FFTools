@@ -1,6 +1,7 @@
 package com.fftools.transport;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import magellan.library.Region;
@@ -257,6 +258,24 @@ public class TransportRequest extends PriorityUser implements Comparable<Transpo
 	public String toString(){
 		String info = "";
 		info = this.gefordert + " " + this.originalGegenstand + " Prio " + this.getPrio() + " nach " + this.region.toString() +  " (" + this.getKommentar() + ")";
+		if (this.transporterSpecs!=null && this.transporterSpecs.size()>0) {
+			info = " Spec: ";
+			for (String s : this.transporterSpecs) {
+				info += s + ",";
+			}
+		}
+		return info;
+	}
+	
+	public String SpecInfo(){
+		String info = "";
+		info = "no spec";
+		if (this.transporterSpecs!=null && this.transporterSpecs.size()>0) {
+			info = " Spec: ";
+			for (String s : this.transporterSpecs) {
+				info += s + ",";
+			}
+		}
 		return info;
 	}
 	
