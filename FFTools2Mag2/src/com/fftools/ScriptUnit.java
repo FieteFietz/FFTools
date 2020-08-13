@@ -110,6 +110,11 @@ public class ScriptUnit {
 	private int setKapaPolicy = MatPoolRequest.KAPA_unbenutzt;
 	
 	/**
+	 * damit die blöde nachricht nur 1x kommt, nicht bei jedem scriptlauf
+	 */
+	private boolean noScriptsMessageSaid=false;
+	
+	/**
 	 * Ausschliesslich für Kapitäne mit gewicht=schiff
 	 * Dann wird auch dass Gewicht von Einheiten mit // onboard bzw // Crew
 	 * berücksichtigt
@@ -471,7 +476,10 @@ public class ScriptUnit {
 		
 		
 		if (foundScriptList==null){
-			outText.addOutLine("keine Scripte gefunden: " + unit.toString(true));
+			if (!noScriptsMessageSaid) {
+				outText.addOutLine("keine Scripte gefunden: " + unit.toString(true));
+				noScriptsMessageSaid=true;
+			}
 			return;
 		}
 		
