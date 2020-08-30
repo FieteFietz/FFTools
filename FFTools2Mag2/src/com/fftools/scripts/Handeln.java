@@ -55,6 +55,8 @@ public class Handeln extends TradeAreaScript{
 	private boolean doSomething = false; 
 	
 	
+	
+	
 	/**
 	 * Parameterloser Constructor
 	 * Drinne Lassen fuer die Instanzierung des Objectes
@@ -165,6 +167,13 @@ public class Handeln extends TradeAreaScript{
 		// erstmal verkaufen, was wir so haben
 		// mitzählen, ob Talente reichen....
 		// feststellen, ob er überhaupt etwas machen kann...
+		if (this.getTradeArea()!=null && this.getTrader()!=null ){
+			if (this.getTrader().getProfit()>0) {
+				this.getTradeArea().setProfit(this.getTrader().getProfit());
+			}
+		} else {
+			this.addComment("Profit konnte nicht gesetzt werden - TA nicht gefunden");
+		}
 		
 		// user info hier?
 		this.showTradeAreaInfo();
@@ -459,4 +468,6 @@ public class Handeln extends TradeAreaScript{
 	public boolean allowMultipleScripts(){
 		return true;
 	}
+
+
 }

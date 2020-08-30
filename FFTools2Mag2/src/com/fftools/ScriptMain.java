@@ -275,6 +275,7 @@ public class ScriptMain {
 		String orderStartWith = "MACHE";
 		String orderStartWith2 = "LERNE";
 		String orderStartWith3 = "LEHRE";
+		String orderStartWith4 = "ZÜCHTE";
 		String suZahleNICHT = "";
 		ufc_start = System.currentTimeMillis();
 		outText.addOutLine("start: Gebäudecheck für BEZAHLE NICHT");
@@ -334,6 +335,11 @@ public class ScriptMain {
 											} else {
 												// MACHE
 												if ((s.length()>=orderStartWith.length()) &&  s.substring(0, orderStartWith.length()).equalsIgnoreCase(orderStartWith)){
+													unitWorking=true;
+													break;
+												} 
+												// ZÜCHTE
+												if ((s.length()>=orderStartWith4.length()) &&  s.substring(0, orderStartWith4.length()).equalsIgnoreCase(orderStartWith4)){
 													unitWorking=true;
 													break;
 												} 

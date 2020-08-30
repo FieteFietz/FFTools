@@ -107,6 +107,12 @@ public class TradeArea {
 	
 	private boolean hasInsektenTransporter = false;
 	
+	/**
+	 * für Dnalor....Profit setzen können, bestimmt max Einkaufpreis.
+	 * 
+	 */
+	private double Profit=2;
+	
 	
 	public boolean isHasInsektenTransporter() {
 		return hasInsektenTransporter;
@@ -680,7 +686,7 @@ public class TradeArea {
 		
 		
 		int kaufTheo = this.suggestedBuyAmount(tR,true);
-		erg.addFirst("Vorgeschlagen: " + kaufTheo + "(max:" + this.calcMaxAvailableAmount(tR, buyItemType) + ") " + buyItemType.getName());
+		erg.addFirst("Vorgeschlagen: " + kaufTheo + "(max:" + this.calcMaxAvailableAmount(tR, buyItemType) + ") " + buyItemType.getName() + " bei Profit=" + this.getProfit() + " ( Run " + this.overlord.getMainDurchlauf() + ")");
 		if (this.isLagerVoll(tR, this.suggestedBuyAmount(tR))){
 			erg.addFirst("Lager voll! (Faktor:" + maxRundeEinkaufAufLager + ", theoMenge:" + this.suggestedBuyAmount(tR) + ")");
 		}
@@ -812,7 +818,7 @@ public class TradeArea {
 		// oder durchschnittlichen Verkaufspreis? (später...)
 		// Aufschlag muss parameterisierbar gemacht werden
 		// wir gehen mal von mind. doppeltem Verkaufspreis aus
-		double profit = 2;
+		double profit = this.getProfit();
 		// double maxEinkaufspreisD = (double)this.getAreaMinSellPrice(itemType) / profit;
 		double maxEinkaufspreisD = (double)this.getAreaWeightedMeanSellPrice(itemType) / profit;
 		if (maxEinkaufspreisD==0){
@@ -1620,6 +1626,14 @@ public class TradeArea {
 			}
 		}
 		return null;
+	}
+
+	public double getProfit() {
+		return this.Profit;
+	}
+
+	public void setProfit(double profit) {
+		this.Profit = profit;
 	}
 	
 	

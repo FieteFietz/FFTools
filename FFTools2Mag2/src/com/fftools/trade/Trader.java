@@ -77,6 +77,9 @@ public class Trader {
 	
 	private MatPoolScript handeln = null; 
 	
+	private Double Profit=0.0;
+	
+	
 	public Trader(ScriptUnit u){
 		this.scriptUnit = u;
 		
@@ -261,6 +264,12 @@ public class Trader {
 		
 		if (this.LernfixOrder==""){
 			this.LernfixOrder="Talent=Handeln";
+		}
+		
+		// Profit
+		if (OP.getOptionDbl("Profit", 0)>0) {
+			this.Profit = OP.getOptionDbl("Profit", 0);
+			this.scriptUnit.addComment("Profit im TA soll gesetzt werden auf: " + this.Profit);
 		}
 		
 		
@@ -596,6 +605,14 @@ public class Trader {
 	 */
 	public boolean isLernen() {
 		return lernen;
+	}
+
+	public Double getProfit() {
+		return Profit;
+	}
+
+	public void setProfit(Double profit) {
+		Profit = profit;
 	}
 	
 	

@@ -207,6 +207,25 @@ public class FFToolsOptionParser {
 		return erg;
 	}
 	
+	
+	/**
+	 * liefert ein double value zum zugehörigen key oder ifNotFound
+	 * @param key
+	 * @return
+	 */
+	public double getOptionDbl(String key,double ifNotFound){
+		if (this.options==null){return ifNotFound;}
+		String value = this.options.get(key.toLowerCase());
+		if (value==null){return ifNotFound;}
+		double erg = ifNotFound;
+		try {
+			erg = Double.parseDouble(value);
+		} catch (NumberFormatException e){
+			// war also keine Zahl
+		}
+		return erg;
+	}
+	
 	/**
 	 * liefert ein boolean value zum zugehörigen key oder ifNotFound
 	 * @param key

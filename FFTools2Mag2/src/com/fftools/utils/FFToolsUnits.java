@@ -3,17 +3,18 @@ package com.fftools.utils;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import com.fftools.ReportSettings;
+import com.fftools.ScriptUnit;
+import com.fftools.scripts.Script;
+
 import magellan.library.GameData;
 import magellan.library.Item;
 import magellan.library.Ship;
 import magellan.library.Skill;
 import magellan.library.Unit;
 import magellan.library.rules.ItemType;
+import magellan.library.rules.ShipType;
 import magellan.library.rules.SkillType;
-
-import com.fftools.ReportSettings;
-import com.fftools.ScriptUnit;
-import com.fftools.scripts.Script;
 
 /**
  * Unit-Handling
@@ -140,6 +141,90 @@ public class FFToolsUnits {
 			return true;
 		}
 		return false;
+	}
+	
+	/**
+	 * Überprüft die Talente, die bekannt sind, auf dem Schiff
+	 * @param aScript
+	 * @return
+	 */
+	public static boolean checkShipTalents(Script aScript) {
+		Ship myS = aScript.scriptUnit.getUnit().getModifiedShip();
+		if (myS==null){
+			aScript.addComment("Problem: Talentcheck unmöglich, nicht auf einem Schiff");
+			return false;
+		}
+		Ship ship = myS;
+		
+		// Kaptän checken
+		Unit captn = ship.getModifiedOwnerUnit();
+		// ist es unsere unit?
+		if (captn==null) {
+			aScript.addComment("Problem: Talentcheck unmöglich, Schiff hat keinen Kapitän");
+			return false;
+		}
+			
+		if (!captn.equals(aScript.scriptUnit.getUnit())){
+			aScript.addComment("Problem: Talentcheck unmöglich, Einheit ist nicht der Kapitän");
+			return false;
+		}
+		
+		// Schiffstyp herausfinden
+		ShipType ST = ship.getShipType();
+		if (ST==null) {
+			aScript.addComment("Problem: Talentcheck unmöglich, Schiffstyp ist unbekannt");
+			return false;
+		}
+		
+		// Kapitänslevel
+		SkillType SegelType = aScript.gd_Script.getRules().getSkillType("Segeln");
+		Skill SegelSkill = aScript.getUnit().getModifiedSkill(SegelType);
+		if (SegelSkill==null) {
+			aScript.addComment("Problem: Talentcheck gescheitert, Kapitän kann gar nicht Segeln!");
+			return false;
+		}
+		
+		if (getModifiedSkillLevel(SegelSkill, aScript.getUnit(), false)<ST.getCaptainSkillLevel()) {
+			aScript.addComment("Problem: Talentcheck gescheitert, Kapitänstalent nicht hoch genug.");
+			return false;
+		}
+		
+		// Gesamttalent 
+		int talentsNeeded = ST.getSailorSkillLevel() * ship.getModifiedAmount();
+		if (talentsNeeded<=0) {
+			aScript.addComment("Problem: Talentcheck gescheitert, benötigtes Mannschaftstalent war nicht feststellbar.");
+			return false;
+		}
+		
+		if (ship.modifiedUnits()==null) {
+			aScript.addComment("Problem: Talentcheck gescheitert, Schiff wird unbesetzt sein.");
+			return false;
+		}
+		
+		// Mannschaftstalent berechnen
+		int vorhandeneTalente = 0;
+		for (Unit u:ship.modifiedUnits()) {
+			if (u.getModifiedSkill(SegelType)!=null) {
+				Skill sK = u.getModifiedSkill(SegelType);
+				if (sK.getLevel()>=ST.getMinSailorLevel()) {
+					vorhandeneTalente+=sK.getLevel() * u.getModifiedPersons();
+				}
+			}
+		}
+		
+		if (vorhandeneTalente<talentsNeeded) {
+			aScript.addComment("Problem: Talentcheck gescheitert, Gesamtsegeltalent reicht nicht aus. (" + vorhandeneTalente + " < " + talentsNeeded + ")");
+			return false;
+		}
+		
+		// Anzahl der Kapitäne
+		if (aScript.getUnit().getModifiedPersons()<ship.getModifiedAmount()) {
+			aScript.addComment("Problem: Talentcheck gescheitert, Anzahl der Kapitäne reicht nicht für die Flottengröße (" + aScript.getUnit().getModifiedPersons() + " < " + ship.getModifiedAmount() + ")");
+			return false;
+		}
+		
+		
+		return true;
 	}
 	
 	

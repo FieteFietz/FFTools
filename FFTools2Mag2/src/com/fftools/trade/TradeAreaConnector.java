@@ -164,6 +164,13 @@ public class TradeAreaConnector {
 			return prioTM;
 		}
 		
+		public void MengeRequested(int _abgang) {
+			this.Menge -= _abgang;
+			if (this.Menge<0) {
+				this.Menge=0;
+			}
+		}
+		
 	}
 	
 	/**
@@ -363,11 +370,11 @@ public class TradeAreaConnector {
 		String target = "";
 		if (inDir==1){
 			transfers = this.usagesIn1;
-			target = this.getTA1().getName();
+			target = this.getTA2().getName();
 		}
 		if (inDir==2){
 			transfers = this.usagesIn2;
-			target = this.getTA2().getName();
+			target = this.getTA1().getName();
 		}
 		
 		if (transfers==null){
@@ -378,13 +385,18 @@ public class TradeAreaConnector {
 		
 		for (TAC_usage actTransfer : transfers){
 			// Kommentar
-			String comment = "TAC nach " + target + " auf " + onTAC.getMyTAC().getName();
-			// Request basteln
-			MatPoolRequest MPR = new MatPoolRequest(onTAC, actTransfer.getMenge(), actTransfer.getName(), actTransfer.getPrio(), comment);
-			MPR.setPrioChange(false);
-			MPR.setPrioTM(actTransfer.getPrioTM());
-			onTAC.addMatPoolRequest(MPR);
-			onTAC.addComment("TAC-Usage: " + actTransfer.getMenge() + " " + actTransfer.getName() + " nach " + target + " mit Prio " + actTransfer.getPrio() + " angefordert (PrioTM=" + actTransfer.getPrioTM() +  ")");
+			if (actTransfer.getMenge()>0) {
+				String comment = "TAC nach " + target + " auf " + onTAC.getMyTAC().getName();
+				// Request basteln
+				MatPoolRequest MPR = new MatPoolRequest(onTAC, actTransfer.getMenge(), actTransfer.getName(), actTransfer.getPrio(), comment);
+				MPR.setPrioChange(false);
+				MPR.setPrioTM(actTransfer.getPrioTM());
+				onTAC.addMatPoolRequest(MPR);
+				onTAC.addComment("TAC-Usage: " + actTransfer.getMenge() + " " + actTransfer.getName() + " nach " + target + " mit Prio " + actTransfer.getPrio() + " angefordert (PrioTM=" + actTransfer.getPrioTM() +  ")");
+				// actTransfer.MengeRequested(actTransfer.getMenge());
+			} else {
+				onTAC.addComment("TAC-Usage: bereits maximal angefordert " + actTransfer.getName() + " nach " + target + " mit Prio " + actTransfer.getPrio() + " angefordert (PrioTM=" + actTransfer.getPrioTM() +  ")");
+			}
 		}
 		
 	}

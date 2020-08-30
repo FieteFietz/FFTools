@@ -545,6 +545,9 @@ public class TradeAreaHandler implements OverlordRun,OverlordInfo{
 				if (TA!=null){
 						Trader T = this.traders.get(u);
 						TA.addTrader(T);
+						if (T.getProfit()>0) {
+							TA.setProfit(T.getProfit());
+						}
 				} else {
 					outText.addOutLine("!!!Fehler bei recalcTradeAreas: für " + u.unitDesc() + " kein TA gefunden.");
 				}		

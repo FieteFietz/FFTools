@@ -2030,7 +2030,7 @@ public class ScriptUnit {
 	 * noch nicht vorhanden
 	 */
 	public void autoTags(){
-		if (reportSettings.getOptionBoolean("useReportTags",this.unit.getRegion())){
+		if (reportSettings.getOptionBoolean("useReportTags",this.unit.getRegion()) && this.foundScriptList!=null){
 			for (Script s:this.foundScriptList){
 				String searchOption="tag1_" + s.getClass().getSimpleName().toLowerCase();
 				String reportOptionString = reportSettings.getOptionString(searchOption,this.unit.getRegion());

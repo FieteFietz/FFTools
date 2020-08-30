@@ -206,8 +206,14 @@ public class Transporter {
 				GotoInfo otherGotoInfo = otherScript.getGotoInfo();
 				if (otherGotoInfo!=null){
 					this.destRegion = otherGotoInfo.getDestRegion();
-					this.scriptUnit.addComment("TM_T, Route=fest: Ziel übernommen: " + this.destRegion.toString());
-					this.gotoInfo = otherGotoInfo;
+					if (this.destRegion!=null) {
+						this.scriptUnit.addComment("TM_T, Route=fest: Ziel übernommen: " + this.destRegion.toString());
+						this.gotoInfo = otherGotoInfo;
+					} else {
+						// keine DestRegion
+						this.scriptUnit.addComment("!!! Route=fest aber keine Route/Zielregion festgelegt durch Script: " + o.getClass().getName());
+						this.useUserRoute=false;
+					}
 				} else {
      				// GotoInfo = null
 					this.scriptUnit.addComment("!!! Route=fest aber keine Route festgelegt durch Script: " + o.getClass().getName());
