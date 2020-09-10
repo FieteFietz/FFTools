@@ -118,7 +118,12 @@ public class Sailto extends Script{
 			addOutLine("!!! Sailto Ziel nicht im CR: " + this.unitDesc());
 			return;
 		} 
-
+		
+		if (reportSettings.getOptionBoolean("debug_SailTo_Unit")) {
+			log.info("Sailto - makeOrderNach durch unit " + this.scriptUnit.toString());
+		}
+		
+		
 		int speed = super.gd_Script.getGameSpecificStuff().getGameSpecificRules().getShipRange(this.scriptUnit.getUnit().getModifiedShip());
 		List<Region> pathL = Regions.planShipRoute(this.scriptUnit.getUnit().getModifiedShip(),super.gd_Script, dest);
 		

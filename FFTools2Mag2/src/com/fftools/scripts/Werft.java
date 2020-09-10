@@ -128,7 +128,7 @@ public class Werft extends MatPoolScript{
 		int AnzahlPersonen = this.getUnit().getModifiedPersons();
 		this.BauPunkte = this.TalentLevel * AnzahlPersonen ;
 		
-		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,true)){
+		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,false)){
 			this.BauPunkte *= 2;
 			this.addComment("Werft: Einheit nutzt Schaffenstrunk. Produktion verdoppelt auf: " + this.BauPunkte);
 		} 

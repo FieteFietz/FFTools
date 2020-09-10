@@ -127,6 +127,13 @@ public class FFToolsUnits {
 		}
 		Ship ship = myS;
 		
+		// Speed checken
+		// data.getGameSpecificRules().getShipRange(ship)
+		if (aScript.scriptUnit.getScriptMain().gd_ScriptMain.getGameSpecificRules().getShipRange(ship) == 0) {
+			aScript.doNotConfirmOrders("!!! Problem: Geschwindigkeit dieses Schiffes wird mit 0 berechnet!!!");
+			return false;
+		}
+		
 		// Kaptän checken
 		Unit captn = ship.getOwnerUnit();
 		// ist es unsere unit?
