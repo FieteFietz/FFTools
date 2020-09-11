@@ -326,7 +326,7 @@ public class FFToolsRegions {
 		// schon vorhanden ?
 		for (Iterator<PathDistLandInfo> iter = pathDistCache.keySet().iterator();iter.hasNext();){
 			PathDistLandInfo info = (PathDistLandInfo)iter.next();
-			if (info.is(data, von, nach, Insekten) || info.is(data, nach, von,Insekten)){
+			if (info.is(data, von, nach, Insekten,reitend) || info.is(data, nach, von,Insekten,reitend)){
 				// Treffer
 				Integer actI = pathDistCache.get(info);
 				cntCacheHits++;
@@ -336,7 +336,7 @@ public class FFToolsRegions {
 		
 		int retVal =  getPathDistLand(data, von, nach, reitend,null, Insekten);
 		// in den Cache
-		PathDistLandInfo neueInfo = new PathDistLandInfo(data,von,nach,Insekten);
+		PathDistLandInfo neueInfo = new PathDistLandInfo(data,von,nach,Insekten,reitend);
 		Integer cacheValue = Integer.valueOf(retVal);
 		pathDistCache.put(neueInfo,cacheValue);
 		return retVal;
@@ -1100,5 +1100,9 @@ public class FFToolsRegions {
 		boolean erg=false;
 		
 		return erg;
+	}
+
+	public static HashMap<PathDistLandInfo, Integer> getPathDistCache() {
+		return pathDistCache;
 	}
 }

@@ -68,10 +68,17 @@ public class TransporterRequest {
 		// ETA berechnung
 		// immer: Entfernung Offer->request
     	if (this.ETA_cache<0){
-			int ETAAnzahlRunden = FFToolsRegions.getPathDistLand(this.transporter.getScriptUnit().getScriptMain().gd_ScriptMain, transportOffer.getRegion().getCoordinate(),transportRequest.getRegion().getCoordinate(), true, this.transporter.getScriptUnit().isInsekt());
+    		boolean reitend=true;
+    		if (!this.transporter.isRiding()) {
+    			reitend=false;
+    		}
+    		if (this.transporter.getScriptUnit().getSetKapaPolicy()==MatPoolRequest.KAPA_max_zuFuss) {
+    			reitend=false;
+    		}
+			int ETAAnzahlRunden = FFToolsRegions.getPathDistLand(this.transporter.getScriptUnit().getScriptMain().gd_ScriptMain, transportOffer.getRegion().getCoordinate(),transportRequest.getRegion().getCoordinate(), reitend, this.transporter.getScriptUnit().isInsekt());
 			// wenn Transporter nicht in OfferRegion kommt enfernung dorthin noch dazu
 			if (!this.transporter.getScriptUnit().getUnit().getRegion().equals(transportOffer.getRegion())){
-				ETAAnzahlRunden+=FFToolsRegions.getPathDistLand(this.transporter.getScriptUnit().getScriptMain().gd_ScriptMain, this.transporter.getScriptUnit().getUnit().getRegion().getCoordinate(), transportOffer.getRegion().getCoordinate(), true, this.transporter.getScriptUnit().isInsekt());
+				ETAAnzahlRunden+=FFToolsRegions.getPathDistLand(this.transporter.getScriptUnit().getScriptMain().gd_ScriptMain, this.transporter.getScriptUnit().getUnit().getRegion().getCoordinate(), transportOffer.getRegion().getCoordinate(), reitend, this.transporter.getScriptUnit().isInsekt());
 			}
 			this.ETA_cache = ETAAnzahlRunden;
     	} 

@@ -466,6 +466,9 @@ public class Transporter {
 	 * @return the isRiding
 	 */
 	public boolean isRiding() {
+		if (this.getScriptUnit().getSetKapaPolicy()==MatPoolRequest.KAPA_max_zuFuss) {
+			return false;
+		}
 		return isRiding;
 	}
 	

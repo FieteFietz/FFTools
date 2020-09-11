@@ -27,7 +27,7 @@ public class WerftSchiffComparator implements Comparator<Ship> {
 		int erg=0;
 		
 		
-		// erst Triremen, dann Karavelle, dann Drachenschiffe, dann Boote
+		// erst Triremen, dann Karavelle, dann Galeonen, dann Drachenschiffe, dann Langboote, dann Boote
 		String Typ1 = s1.getShipType().getName();
 		String Typ2 = s2.getShipType().getName();
 		
@@ -35,6 +35,11 @@ public class WerftSchiffComparator implements Comparator<Ship> {
 			if (Typ2=="Karavelle"){
 				return -1;
 			}
+			
+			if (Typ2=="Galeone"){
+				return -1;
+			}
+			
 			if (Typ2=="Drachenschiff"){
 				return -1;
 			}
@@ -50,6 +55,31 @@ public class WerftSchiffComparator implements Comparator<Ship> {
 			if (Typ2=="Trireme"){
 				return 1;
 			}
+			
+			if (Typ2=="Galeone"){
+				return -1;
+			}
+			
+			if (Typ2=="Drachenschiff"){
+				return -1;
+			}
+			if (Typ2=="Langboot"){
+				return -1;
+			}
+			if (Typ2=="Boot"){
+				return -1;
+			}
+		}
+		
+		if (Typ1=="Galeone"){
+			if (Typ2=="Trireme"){
+				return 1;
+			}
+			
+			if (Typ2=="Karavelle"){
+				return 1;
+			}
+			
 			if (Typ2=="Drachenschiff"){
 				return -1;
 			}
@@ -68,6 +98,9 @@ public class WerftSchiffComparator implements Comparator<Ship> {
 			if (Typ2=="Karavelle"){
 				return 1;
 			}
+			if (Typ2=="Galeone"){
+				return 1;
+			}			
 			if (Typ2=="Langboot"){
 				return -1;
 			}
@@ -83,6 +116,9 @@ public class WerftSchiffComparator implements Comparator<Ship> {
 			if (Typ2=="Karavelle"){
 				return 1;
 			}
+			if (Typ2=="Galeone"){
+				return 1;
+			}
 			if (Typ2=="Drachenschiff"){
 				return 1;
 			}
@@ -96,6 +132,9 @@ public class WerftSchiffComparator implements Comparator<Ship> {
 				return 1;
 			}
 			if (Typ2=="Karavelle"){
+				return 1;
+			}
+			if (Typ2=="Galeone"){
 				return 1;
 			}
 			if (Typ2=="Drachenschiff"){

@@ -1840,7 +1840,8 @@ public class ScriptUnit {
 			this.originalFreeKapaUserWeight = userKapa;
 		}
 		
-		
+		// this.addComment("Debug: kapaweight=" + this.originalFreeKapaUserWeight);
+
 		switch (kapaPolicy){
 		case MatPoolRequest.KAPA_unbenutzt:
 			// eigentlich ein Fehler..wenn ich kapa nicht benutze

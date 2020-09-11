@@ -36,6 +36,8 @@ public class Trankeffekt extends MatPoolScript{
 
 	private boolean notSuccessACK = false;
 	
+	private boolean useThisRound = false;
+	
 	/**
 	 * Parameterloser Constructor
 	 * Drinne Lassen fuer die Instanzierung des Objectes
@@ -136,10 +138,11 @@ public class Trankeffekt extends MatPoolScript{
 		// Effekt feststellen.
 		int effects = this.scriptUnit.getEffekte(this.trank);
 		if (effects<persZahl){
-//			 Trank benutzen
+			//  Trank benutzen
 			// nur wenn in Region vorhanden
 			if (countPotionInRegion4Faction()>0){
 				this.addOrder("BENUTZEN " +  NF.format(Math.ceil((double)persZahl/this.personenWirkung)) + " " + this.trank,false);
+				this.useThisRound=true;
 			} else {
 				this.addComment("Trank " + this.trank + " nicht ausreichend, aber auch nicht für diese Partei in dieser Region verfügbar.");
 			}
@@ -190,6 +193,16 @@ public class Trankeffekt extends MatPoolScript{
 			}
 		}
 		return erg;
+	}
+
+
+	public String getTrank() {
+		return trank;
+	}
+
+
+	public boolean isUseThisRound() {
+		return useThisRound;
 	}
 	
 	

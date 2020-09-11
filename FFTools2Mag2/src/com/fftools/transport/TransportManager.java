@@ -25,6 +25,7 @@ import com.fftools.trade.TradeAreaHandler;
 import com.fftools.trade.TradeRegion;
 import com.fftools.utils.FFToolsRegions;
 import com.fftools.utils.GotoInfo;
+import com.fftools.utils.PathDistLandInfo;
 
 /**
  * Registriert Transporter
@@ -629,6 +630,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 			outText.setFile(this.actLogName + "_2");
 			outText.addOutLine("Request: " + request.getForderung() + " " + request.getOriginalGegenstand() + " (Prio:" + request.getPrio() + ") nach " + request.getRegion().toString() + " Spec: " + request.SpecInfo());
 		}
+		// reportPathDistCache();
 		long startT = System.currentTimeMillis();
 		long start1=0;
 		long endT= 0;
@@ -850,7 +852,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		// neu: dist vorher setzen
 		for (Iterator<Transporter> iter = actTransporters.iterator();iter.hasNext();){
 			Transporter actTransporter = (Transporter)iter.next();
-			int dist = FFToolsRegions.getPathDistLand(this.scriptMain.gd_ScriptMain, actTransporter.getActRegion().getCoordinate(),offer.getRegion().getCoordinate(), true, actTransporter.getScriptUnit().isInsekt());
+			int dist = FFToolsRegions.getPathDistLand(this.scriptMain.gd_ScriptMain, actTransporter.getActRegion().getCoordinate(),offer.getRegion().getCoordinate(), actTransporter.isRiding(), actTransporter.getScriptUnit().isInsekt());
 			actTransporter.setActDist(dist);
 		}
 		
@@ -969,6 +971,25 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 	}
 	
 	
+	private void reportPathDistCache() {	
+		outText.addOutLine("Debug: reportPathDistCache starting");
+		if (this.reportOFF) {
+			return;
+		}
+		HashMap<PathDistLandInfo,Integer> pathDistCache = FFToolsRegions.getPathDistCache();
+		if (pathDistCache==null) {
+			outText.addOutLine("Debug: pathDistCache is NULL");
+			return;
+		}
+		for (Iterator<PathDistLandInfo> iter = pathDistCache.keySet().iterator();iter.hasNext();){
+			PathDistLandInfo info = (PathDistLandInfo)iter.next();
+			Integer actI = pathDistCache.get(info);
+			outText.addOutLine("Debug: " + info.myString() + ", DIST: " + actI.intValue());
+		}
+	}
+	
+	
+	
 	/**
 	 * durchforstet bereits gesetzte Transporter, müssen in der Region sein, wo beladen wird
 	 * @param request
@@ -1030,11 +1051,24 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 					r = gotoInfo.getNextHold();
 				}
 			}
+			// reportPathDistCache();
 			int dist = FFToolsRegions.getPathDistLand(this.scriptMain.gd_ScriptMain, r.getCoordinate(),request.getRegion().getCoordinate(), true, actTransporter.getScriptUnit().isInsekt());
+			if (actTransporter.getScriptUnit().getSetKapaPolicy()==MatPoolRequest.KAPA_max_zuFuss) {
+				// nicht reitend
+				dist = FFToolsRegions.getPathDistLand(this.scriptMain.gd_ScriptMain, r.getCoordinate(),request.getRegion().getCoordinate(), false, actTransporter.getScriptUnit().isInsekt());
+				if (!this.reportOFF) {
+					outText.addOutLine("(!kapa = gehen! -> dist=" + dist + ")");
+				}
+			} else {
+				if (!this.reportOFF) {
+					outText.addOutLine("(nehme reiten an, dist=" + dist + ")");
+				}
+			}
 			actTransporter.setActDist(dist);
 			if (!this.reportOFF) {
 				outText.addOutLine("Debug setDist für " + actTransporter.getScriptUnit().unitDesc() + " -> " + dist + " (nach " + request.getRegion().toString() + ")");
 			}
+			// reportPathDistCache();
 		}
 		
 		long start1 = System.currentTimeMillis();
@@ -1167,6 +1201,10 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 			reitend = true;
 		}
 		
+		if (transporter.getScriptUnit().getSetKapaPolicy()==MatPoolRequest.KAPA_max_zuFuss) {
+			reitend=false;
+		}
+		
 		int distOffer = FFToolsRegions.getPathDistLand(offer.getScriptUnit().getScriptMain().gd_ScriptMain, 
 					offer.getRegion().getCoordinate(), request.getRegion().getCoordinate(), 
 						reitend, transporter.getScriptUnit().isInsekt());
@@ -1189,9 +1227,20 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 					reitend,transporter.getScriptUnit().isInsekt());
 		if (!this.reportOFF) {
 			outText.addOutLine("Debug, distNextHold=" + distNextHold + ", T: " + transporter.getScriptUnit().unitDesc());
+			outText.addOutLine("Debug: nextStop=" + gotoInfo.getNextHold().toString());
+			outText.addOutLine("Debug: RequestTarget=" + request.getRegion().toString());
 		}
 		
-		if (distOffer<=distNextHold){
+		// erreicht der T vielleicht das Ziel????
+		boolean isTOnTarget=false;
+		if (gotoInfo.getDestRegion().equals(request.getRegion())) {
+			isTOnTarget=true;
+			if (!this.reportOFF) {
+				outText.addOutLine("Debug: T ist auf dem Weg zum Ziel!!! ");
+			}
+		}
+		
+		if (distOffer<=distNextHold && !isTOnTarget){
 			// hat keinen sinn
 			if (!this.reportOFF) {
 				outText.addOutLine("Debug, hat keinen Sinn T: " + transporter.getScriptUnit().unitDesc() + ", t kommt Ziel nicht näher");

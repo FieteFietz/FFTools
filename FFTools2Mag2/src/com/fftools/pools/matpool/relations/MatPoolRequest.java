@@ -9,6 +9,7 @@ import magellan.library.StringID;
 import magellan.library.Unit;
 import magellan.library.gamebinding.EresseaConstants;
 import magellan.library.rules.ItemType;
+import magellan.library.rules.Race;
 import magellan.library.rules.SkillType;
 
 import com.fftools.ReportSettings;
@@ -416,6 +417,17 @@ public class MatPoolRequest extends MatPoolRelation  implements Comparable<MatPo
 		return (Math.max(0,(mengeNachKapa - this.getBearbeitet())));
 	}
 	
+	
+	private Race getRace(Unit unit) {
+		Race race = unit.getRace();
+
+		if(unit.getDisguiseRace() != null) {
+			race = unit.getDisguiseRace();
+		}
+
+		return race;
+	}
+	
 	/**
 	 * liefert die aktuel zu fordernde Menge an Wagen
 	 * Anzahl der vorhandenen Pferde bereits in "Modified"
@@ -429,6 +441,21 @@ public class MatPoolRequest extends MatPoolRelation  implements Comparable<MatPo
 		if (pferd!=null){
 			anzPferd = pferd.getAmount();
 		}
+		
+		if (anzPferd<=0) {
+			Race race = getRace(this.getScriptUnit().getUnit());
+			if (race.getID().equals(EresseaConstants.R_TROLLE)) {
+				// Trolle ohne Pferde...4 Stück können einen Wagen ziehen
+				// wenn sie gehen
+				if (this.kapaPolicy==MatPoolRequest.KAPA_max_zuFuss) {
+					// sie sollen / dürfen gehen
+					int anzMaxWagenTrolle = (int) this.getScriptUnit().getUnit().getModifiedPersons() / 2;
+					anzMaxWagenTrolle = Math.min(anzMaxWagenTrolle, this.gefordert);
+					return Math.max(0, (anzMaxWagenTrolle - this.getBearbeitet()));
+				}
+			}
+		}
+		
 		if (anzPferd<=0){
 			// keine Pferde da...hm.
 			return 0;

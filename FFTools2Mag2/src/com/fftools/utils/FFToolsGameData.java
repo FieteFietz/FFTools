@@ -3,6 +3,11 @@ package com.fftools.utils;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import com.fftools.OutTextClass;
+import com.fftools.ScriptUnit;
+import com.fftools.scripts.Script;
+import com.fftools.scripts.Trankeffekt;
+
 import magellan.library.Building;
 import magellan.library.GameData;
 import magellan.library.ID;
@@ -14,9 +19,6 @@ import magellan.library.StringID;
 import magellan.library.Unit;
 import magellan.library.rules.ItemType;
 import magellan.library.rules.SkillType;
-
-import com.fftools.OutTextClass;
-import com.fftools.ScriptUnit;
 
 /**
  * Nützliches um GameData herum
@@ -76,22 +78,33 @@ public class FFToolsGameData {
 				if (pairs.length>0 &&  pairs[1].equalsIgnoreCase("Schaffenstrunk")){
 					// Untersuchen, ob anzahl der effekte>=Personenanzahl
 					Integer I = Integer.parseInt(pairs[0]);
-					if (I!=null){
-						actEffekte=I.intValue();
-					}
-					if (I!=null && actEffekte>=u.getModifiedPersons()){
+					actEffekte=I.intValue();
+					if (actEffekte>=u.getModifiedPersons()){
 						return true;
 					} else {
-						if (I==null){
-							scriptUnit.addComment("!!! Fehler beim Parsen der Effektanzahl!");
-						} else {
-							scriptUnit.addComment("Anzahl der Effekte bei Schaffenstrunk reicht nicht aus.");
-						}
+						scriptUnit.addComment("Anzahl der Effekte bei Schaffenstrunk reicht nicht aus.");
 					}
-					
 				}
 			}
 		}
+		
+		// FF 20200911: auf Trankeffekt prüfen
+		for (Script s:scriptUnit.getFoundScriptList()) {
+			// scriptUnit.addComment("Debug-ST-Eff: Teste script " + s.toString());
+			if (Trankeffekt.class.isInstance(s)) {
+				// scriptUnit.addComment("Debug-ST-Eff: class OK");
+				Trankeffekt T = (Trankeffekt)s;
+				if (T.getTrank().equalsIgnoreCase("Schaffenstrunk")) {
+					if (T.isUseThisRound()) {
+						return true;
+					} else {
+						scriptUnit.addComment("Test auf Schaffenstrunk: script TrankEffekt gefunden, aber keine Benutzung erkannt.");
+					}
+				}
+			}
+		}
+		
+		
 		// ok, nix active oder zu wenig
 		if (allowUse){
 			// checken, ob die unit was am Mann hat...

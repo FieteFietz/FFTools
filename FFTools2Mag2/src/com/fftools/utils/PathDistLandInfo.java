@@ -13,6 +13,7 @@ public class PathDistLandInfo {
 	private CoordinateID von = null;
 	private CoordinateID nach = null;
 	private boolean Insekten=false;
+	private boolean reitend=false;
 	
 	public boolean isInsekten() {
 		return Insekten;
@@ -24,12 +25,13 @@ public class PathDistLandInfo {
 	 * @param von
 	 * @param nach
 	 */
-	public PathDistLandInfo(GameData data, CoordinateID von, CoordinateID nach, boolean _Insekten) {
+	public PathDistLandInfo(GameData data, CoordinateID von, CoordinateID nach, boolean _Insekten, boolean _reitend) {
 		super();
 		this.data = data;
 		this.von = von;
 		this.nach = nach;
 		this.Insekten = _Insekten;
+		this.reitend = _reitend;
 	}
 	
 	public boolean equals(Object o){
@@ -50,11 +52,13 @@ public class PathDistLandInfo {
 		if (this.Insekten!=other.isInsekten()) {
 			return false;
 		}
-		
+		if (this.reitend!=other.reitend) {
+			return false;
+		}
 		return retVal;
 	}
 	
-	public boolean is(GameData _data, CoordinateID _von,CoordinateID _nach, boolean _Insekten){
+	public boolean is(GameData _data, CoordinateID _von,CoordinateID _nach, boolean _Insekten, boolean _reitend){
 		boolean retVal=true;
 
 		if (!_data.equals(this.data)){
@@ -68,6 +72,10 @@ public class PathDistLandInfo {
 		}
 		
 		if (!_Insekten==this.Insekten){
+			return false;
+		}
+		
+		if (!_reitend==this.reitend) {
 			return false;
 		}
 		
@@ -93,6 +101,12 @@ public class PathDistLandInfo {
 	 */
 	public CoordinateID getVon() {
 		return von;
+	}
+	
+	public String myString() {
+		String erg="";
+		erg = "PDL-info von " + this.von.toString() + " nach " + this.nach.toString() + ", reitend: " + this.reitend + ", Insekt:" + this.Insekten;
+		return erg;
 	}
 	
 }
