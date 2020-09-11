@@ -177,7 +177,7 @@ public class Steine extends MatPoolScript{
 		int machbareMenge = skillLevel * this.scriptUnit.getUnit().getModifiedPersons();
 		
 		// Schaffenstrunk oder RdF verdoppeln prodPoints 
-		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,true)){
+		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,false)){
 			machbareMenge *= 2;
 			this.addComment("Eisen: Einheit nutzt Schaffenstrunk. Produktion verdoppelt auf: " + machbareMenge);
 		} 
@@ -192,7 +192,7 @@ public class Steine extends MatPoolScript{
 				int PersonenMitRing = Math.min(rdfItem.getAmount(),this.scriptUnit.getUnit().getModifiedPersons());
 				int PersonenOhneRing = this.scriptUnit.getUnit().getModifiedPersons() - PersonenMitRing;
 				int RingLevel = skillLevel;
-				if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,true)){
+				if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,false)){
 					RingLevel *= 2;
 				}
 				int RingMenge = PersonenOhneRing * RingLevel;

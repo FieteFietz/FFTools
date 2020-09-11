@@ -192,7 +192,7 @@ public void runScript(int scriptDurchlauf){
 		}
 		
 		// Schaffenstrunk oder RdF verdoppeln prodPoints 
-		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,true)){
+		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,false)){
 			prodPoints *= 2;
 			this.addComment("Schmieden: Einheit nutzt Schaffenstrunk. Produktion verdoppelt.");
 		} 

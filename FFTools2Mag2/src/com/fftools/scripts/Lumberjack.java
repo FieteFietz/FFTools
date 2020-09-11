@@ -299,7 +299,7 @@ public class Lumberjack extends MatPoolScript{
 		}
 		
 		// Schaffenstrunk verdoppelt prodPoints 
-		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,true)){
+		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,false)){
 			machbareMenge *= 2;
 			this.addComment("Lumberjack: Einheit nutzt Schaffenstrunk. Produktion verdoppelt auf: " + machbareMenge);
 		} 
@@ -314,7 +314,7 @@ public class Lumberjack extends MatPoolScript{
 				int PersonenMitRing = Math.min(rdfItem.getAmount(),this.scriptUnit.getUnit().getModifiedPersons());
 				int PersonenOhneRing = this.scriptUnit.getUnit().getModifiedPersons() - PersonenMitRing;
 				int RingLevel = relevantLevel;
-				if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,true)){
+				if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,false)){
 					RingLevel *= 2;
 				}
 				int RingMenge = PersonenOhneRing * RingLevel;

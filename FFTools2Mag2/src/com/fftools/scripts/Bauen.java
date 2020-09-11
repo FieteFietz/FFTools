@@ -924,7 +924,7 @@ public void runScript(int scriptDurchlauf){
 		}
 		
 		// Schaffenstrunk?
-		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,true)){
+		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,false)){
 			anzTalPoints *= 2;
 			scriptUnit.addComment("Trankeffekt berücksichtigt");
 		}
@@ -1111,7 +1111,7 @@ public void runScript(int scriptDurchlauf){
 		int anzTal=anzTalPoints;
 		
 		// Schaffenstrunk?
-		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,true)){
+		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,false)){
 			anzTalPoints *= 2;
 			scriptUnit.addComment("Trankeffekt berücksichtigt");
 		}
@@ -1759,7 +1759,7 @@ public void runScript(int scriptDurchlauf){
 		
 		
 		// Schaffenstrunk?
-		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,true)){
+		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,false)){
 			anzTalPoints *= 2;
 			this.scriptUnit.addComment("Trankeffekt berücksichtigt");
 		}
