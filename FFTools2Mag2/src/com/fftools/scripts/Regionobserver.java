@@ -2,9 +2,12 @@ package com.fftools.scripts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+
+import com.fftools.pools.ausbildung.Lernplan;
+import com.fftools.pools.matpool.relations.MatPoolRequest;
+import com.fftools.utils.FFToolsOptionParser;
 
 import magellan.library.Item;
 import magellan.library.Skill;
@@ -12,10 +15,6 @@ import magellan.library.Unit;
 import magellan.library.gamebinding.EresseaConstants;
 import magellan.library.rules.ItemType;
 import magellan.library.rules.SkillType;
-
-import com.fftools.pools.ausbildung.Lernplan;
-import com.fftools.pools.matpool.relations.MatPoolRequest;
-import com.fftools.utils.FFToolsOptionParser;
 
 /**
  * 
@@ -128,7 +127,7 @@ public class Regionobserver extends MatPoolScript{
 			if (WaffenName.length()<=2){
 				for (int i = 0;i<this.talentNamen.length;i++){
 					String actName = this.talentNamen[i];
-					SkillType actSkillType = this.gd_Script.rules.getSkillType(actName);
+					SkillType actSkillType = this.gd_Script.getRules().getSkillType(actName);
 					if (actSkillType!=null){
 						Skill actSkill = this.scriptUnit.getUnit().getModifiedSkill(actSkillType);
 						if (actSkill!=null && actSkill.getLevel()>0){
@@ -266,7 +265,7 @@ public class Regionobserver extends MatPoolScript{
 				// es wurde ein LernplanName übergeben
 				String talent = OP.getOptionString("Talent");
 				talent = talent.substring(0, 1).toUpperCase() + talent.substring(1).toLowerCase();
-				SkillType skillType = super.gd_Script.rules.getSkillType(talent);
+				SkillType skillType = super.gd_Script.getRules().getSkillType(talent);
 				if (skillType==null){
 					this.doNotConfirmOrders("!!!Lerntalent nicht bekannt: " + talent);
 				} else {
@@ -304,8 +303,8 @@ public class Regionobserver extends MatPoolScript{
 		
 		// sollen wir weiter bewachen ?
 		this.GuardIfEnemey = OP.getOptionBoolean("GuardIfEnemy", false);
-		
-		
+		this.addComment("Debug: RegionObserver - GuardIfEnemy = " + this.GuardIfEnemey);
+			
 	}
 	
 	
@@ -360,8 +359,9 @@ public class Regionobserver extends MatPoolScript{
 		if (countWeapons==0) {
 			this.addComment("Hinweis: der RegionObserver hat keine Waffe zum Bewachen...");
 		}
-		
+		this.addComment("debug: RegionObserver: alertStatus=" + alertStatus + " (Anzahl Feinde in Region), GuardIfEnemy=" + this.GuardIfEnemey);
 		if (alertStatus==0) {
+			
 			// Falls die Einheit noch nicht bewacht, setze Befehle
 			if (this.scriptUnit.getUnit().getGuard()==0) {
 				

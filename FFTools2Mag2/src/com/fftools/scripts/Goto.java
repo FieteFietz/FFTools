@@ -132,7 +132,7 @@ public void runScript(int scriptDurchlauf){
 		// Falls wir im Gebäude sind, und da nicht schon raus gehen, verlassen setzen
 		// Hat den Effekt, was wir keinen Gebäudeunterhalt mehr bekommen, welcher
 		// uns eventuell überlädt
-		if (this.scriptUnit.getUnit().getBuilding()!=null && this.scriptUnit.getUnit().getModifiedBuilding()==null){
+		if (this.scriptUnit.getUnit().getBuilding()!=null && this.scriptUnit.getUnit().getModifiedBuilding()!=null){
 			this.addComment("Goto: VERLASSEN wird explizit gesetzt");
 			this.addOrder("VERLASSEN ;von GOTO", true);
 		}

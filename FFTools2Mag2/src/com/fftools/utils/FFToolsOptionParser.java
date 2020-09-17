@@ -239,13 +239,15 @@ public class FFToolsOptionParser {
 		if (value.equalsIgnoreCase("an") || 
 				value.equalsIgnoreCase("ja") ||
 				value.equalsIgnoreCase("true") ||
-				value.equalsIgnoreCase("on")
+				value.equalsIgnoreCase("on") || 
+				value.equalsIgnoreCase("yes")
 				){
 			erg = true;
 		}
 		if (value.equalsIgnoreCase("aus") || 
 				value.equalsIgnoreCase("nein") ||
 				value.equalsIgnoreCase("off") ||
+				value.equalsIgnoreCase("no") ||
 				value.equalsIgnoreCase("false")){
 			erg = false;
 		}
