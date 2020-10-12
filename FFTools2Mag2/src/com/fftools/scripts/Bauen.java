@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import javax.mail.internet.PreencodedMimeBodyPart;
-
 import com.fftools.ScriptUnit;
 import com.fftools.pools.ausbildung.AusbildungsPool;
 import com.fftools.pools.ausbildung.Lernplan;
@@ -17,7 +15,6 @@ import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
 import com.fftools.utils.FFToolsRegions;
 import com.fftools.utils.GotoInfo;
-import com.sun.org.apache.xml.internal.utils.IntVector;
 
 import magellan.library.Border;
 import magellan.library.Building;
@@ -466,7 +463,7 @@ public void runScript(int scriptDurchlauf){
 				this.dir = FFToolsRegions.getDirectionFromString(s);
 				// Richtung in Deutsch...
 				OrderChanger changer = super.gd_Script.getGameSpecificStuff().getOrderChanger();
-				this.dirLocal = changer.getOrder(Locales.getOrderLocale(), this.dir.getId());
+				this.dirLocal = changer.getOrderO(Locales.getOrderLocale(), this.dir.getId()).getText();
 			} catch (IllegalArgumentException e){
 				this.dir=null;
 				statusInfo+="Fehler: Strassenrichtung nicht erkannt: " + s;
