@@ -112,7 +112,7 @@ public class Gebaeudeunterhalt extends MatPoolScript{
 		aktuelleRunde=super.scriptUnit.getScriptMain().gd_ScriptMain.getDate().getDate();                 		
 		
 		//Ist die Einheit in einem Gebäude und hat/bekommt zufällig das Komando? 
-		if ((gebaeude!=null)&&(gebaeude.getOwnerUnit()==super.scriptUnit.getUnit()) && !this.sindMauernEwig(gebaeude)){
+		if ( (gebaeude!=null) && (gebaeude.getOwnerUnit()==super.scriptUnit.getUnit()) && !this.sindMauernEwig(gebaeude)  && !this.scriptUnit.isLeavingBuilding){
 		    
 			// Unterhalskosten ermitteln!
 			Iterator<Item> iter = gebaeude.getBuildingType().getMaintenanceItems().iterator();

@@ -127,6 +127,13 @@ public class ScriptUnit {
 	 */
 	public boolean unterhaltProblem=false;
 	
+	/**
+	 * spezial bei GOTO wird VERLASSE befohlen, aber nicht umgesetzt
+	 * daher hier explizit gesetzt
+	 * wenn wahr -> kein Gebäudeunterhalt anfordern!
+	 */
+	public boolean isLeavingBuilding = false;
+	
 	
 	// MatPool2
 	/**

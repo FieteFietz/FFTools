@@ -135,6 +135,7 @@ public void runScript(int scriptDurchlauf){
 		if (this.scriptUnit.getUnit().getBuilding()!=null && this.scriptUnit.getUnit().getModifiedBuilding()!=null){
 			this.addComment("Goto: VERLASSEN wird explizit gesetzt");
 			this.addOrder("VERLASSEN ;von GOTO", true);
+			this.scriptUnit.isLeavingBuilding=true;
 		}
 	}
 	
