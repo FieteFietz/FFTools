@@ -5,6 +5,7 @@ import magellan.library.Skill;
 import magellan.library.rules.ItemType;
 import magellan.library.rules.SkillType;
 
+import com.fftools.ReportSettings;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.transport.Transporter;
 
@@ -12,6 +13,7 @@ import com.fftools.transport.Transporter;
 
 
 public class Transport extends TransportScript{
+	private static final ReportSettings reportSettings = ReportSettings.getInstance();
 	
 	// vor erstem Matpool, nach Goto und Route...
 	private static final int Durchlauf_anfang = 50;
@@ -309,6 +311,9 @@ public class Transport extends TransportScript{
 			// if (this.transporter.getTransporterErstPferdePrio()<=0){
 				this.addOrder("LERNEN Reiten", true);
 				this.addComment("TM: keine Aufträge, freie Kapa:" + this.transporter.getKapa_frei());
+				if (reportSettings.getOptionBoolean("NoConfirmIdleTransport", this.region())){
+					this.doNotConfirmOrders("iddle transport -> no confirm (scripter option)");
+				}
 			// } 
 		}
 	}
