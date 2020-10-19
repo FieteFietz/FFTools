@@ -112,7 +112,7 @@ public class Gebaeudeunterhalt extends MatPoolScript{
 		aktuelleRunde=super.scriptUnit.getScriptMain().gd_ScriptMain.getDate().getDate();                 		
 		
 		//Ist die Einheit in einem Gebäude und hat/bekommt zufällig das Komando? 
-		if ( (gebaeude!=null) && (gebaeude.getOwnerUnit()==super.scriptUnit.getUnit()) && !this.sindMauernEwig(gebaeude)  && !this.scriptUnit.isLeavingBuilding){
+		if ( (gebaeude!=null) && (gebaeude.getModifiedOwnerUnit()==super.scriptUnit.getUnit()) && !this.sindMauernEwig(gebaeude)  && !this.scriptUnit.isLeavingBuilding){
 		    
 			// Unterhalskosten ermitteln!
 			Iterator<Item> iter = gebaeude.getBuildingType().getMaintenanceItems().iterator();
@@ -211,5 +211,21 @@ public class Gebaeudeunterhalt extends MatPoolScript{
 		}
 		return false;
 	}
+	
+	
+	public void set_zero_unterhalt(String reason) {
+		if (fordertan==true){	
+		   if (this.matPoolRequests==null){
+				return;
+			}
+			// durch alle Requests dieser Unit durchgehen
+			for (Iterator<MatPoolRequest> iter = this.matPoolRequests.iterator();iter.hasNext();){
+				MatPoolRequest MPR = (MatPoolRequest) iter.next();
+				MPR.setOriginalGefordert(0);
+				this.addComment("Unterhaltsanforderung für " + MPR.getOriginalGegenstand() + " gestrichen: " + reason);
+			}
+		}
+	}
+	
 	
 }

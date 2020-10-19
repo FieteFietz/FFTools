@@ -1450,6 +1450,11 @@ public void runScript(int scriptDurchlauf){
 						this.addMatPoolRequest(MPR);
 					}
 					this.finalStatusInfo="going HOME";
+					if (this.scriptUnit.getUnit().getModifiedBuilding()!=null) {
+						this.addOrder("VERLASSE ; -> HomeRegion", true);
+						this.scriptUnit.isLeavingBuilding=true;
+						this.remove_unterhalt();
+					}
 				} else {
 					this.doNotConfirmOrders("!!! ungültiger GOTO-Befehl?! ggf HOME-Region nicht im TradeArea?");
 				}
@@ -1491,6 +1496,12 @@ public void runScript(int scriptDurchlauf){
 			this.lerneTalent(this.lernTalent, true);
 			this.finalStatusInfo="ABM: LERNEN";
 			this.addComment("debug: autoLearn bestimmt Lerntalent");
+		}
+		if (this.scriptUnit.getUnit().getModifiedBuilding()!=null) {
+			this.addOrder("VERLASSE ; -> fertig mit der Arbeit", true);
+			this.scriptUnit.isLeavingBuilding=true;
+			this.remove_unterhalt();
+			
 		}
 		
 	}
@@ -1698,6 +1709,13 @@ public void runScript(int scriptDurchlauf){
 					b.addMatPoolRequest(MPR);
 				}
 				
+				if (b.scriptUnit.getUnit().getModifiedBuilding()!=null) {
+					b.addOrder("VERLASSE ; -> moving to work", true);
+					b.remove_unterhalt();
+					b.scriptUnit.isLeavingBuilding=true;
+				}
+				
+				
 				// turns to go irgendwie anpassen...
 				int otherAnzTal = b.calcAnzTalBurg(this.actSize);
 				if (this.actTyp==Bauen.BUILDING && this.buildingType!=null) {
@@ -1732,6 +1750,11 @@ public void runScript(int scriptDurchlauf){
 			b.setFinalStatusInfo("Mindestreitlevel");
 			b.setAutomode_hasPlan(true);
 			b.setHasGotoOrder(false);
+			if (b.scriptUnit.getUnit().getModifiedBuilding()!=null) {
+				b.addOrder("VERLASSE ; -> lernen", true);
+				b.remove_unterhalt();
+				b.scriptUnit.isLeavingBuilding=true;
+			}
 		}
 	}
 	
@@ -1876,4 +1899,13 @@ public void runScript(int scriptDurchlauf){
 		}
 		this.scriptUnit.addAScript(L);
 	}
+	
+	private void remove_unterhalt() {
+		Object o = this.scriptUnit.getScript(Gebaeudeunterhalt.class);
+		if (o!=null) {
+			Gebaeudeunterhalt g = (Gebaeudeunterhalt)o;
+			g.set_zero_unterhalt(" verlässt Gebäude (Bauen)");
+		}
+	}
+	
 }

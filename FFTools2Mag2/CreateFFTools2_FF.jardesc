@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="WINDOWS-1252" standalone="no"?>
 <jardesc>
-    <jar path="D:/Fiete/Eressea/Magellan_2.1/plugins/FFTools2.jar"/>
+    <jar path="D:/Fiete/Eressea/Magellan/plugins/FFTools2.jar"/>
     <options buildIfNeeded="true" compress="true" descriptionLocation="/FFTools2Mag2/CreateFFTools2_FF.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
     <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
     <selectedProjects/>

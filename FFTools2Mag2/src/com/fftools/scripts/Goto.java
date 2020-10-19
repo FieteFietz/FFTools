@@ -132,10 +132,20 @@ public void runScript(int scriptDurchlauf){
 		// Falls wir im Gebäude sind, und da nicht schon raus gehen, verlassen setzen
 		// Hat den Effekt, was wir keinen Gebäudeunterhalt mehr bekommen, welcher
 		// uns eventuell überlädt
-		if (this.scriptUnit.getUnit().getBuilding()!=null && this.scriptUnit.getUnit().getModifiedBuilding()!=null){
+		// if (this.scriptUnit.getUnit().getBuilding()!=null || this.scriptUnit.getUnit().getModifiedBuilding()!=null){
+	    if (this.scriptUnit.getUnit().getModifiedBuilding()!=null){
 			this.addComment("Goto: VERLASSEN wird explizit gesetzt");
 			this.addOrder("VERLASSEN ;von GOTO", true);
 			this.scriptUnit.isLeavingBuilding=true;
+			this.remove_unterhalt();
+		}
+	}
+	
+	private void remove_unterhalt() {
+		Object o = this.scriptUnit.getScript(Gebaeudeunterhalt.class);
+		if (o!=null) {
+			Gebaeudeunterhalt g = (Gebaeudeunterhalt)o;
+			g.set_zero_unterhalt(" verlässt Gebäude (GoTo)");
 		}
 	}
 	
