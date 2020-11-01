@@ -129,6 +129,47 @@ public class FFToolsGameData {
 		return false;
 	}
 	
+	
+	public static boolean hasNestwaermeEffekt(ScriptUnit scriptUnit){
+		Unit u = scriptUnit.getUnit();
+		int actEffekte = 0;
+		if (u.getEffects()!=null && u.getEffects().size()>0){
+			for (Iterator<String> iter = u.getEffects().iterator();iter.hasNext();){
+				String effect = (String)iter.next();
+				String[] pairs = effect.split(" ");
+				if (pairs.length>0 &&  pairs[1].equalsIgnoreCase("Nestwärme")){
+					// Untersuchen, ob anzahl der effekte>=Personenanzahl
+					Integer I = Integer.parseInt(pairs[0]);
+					actEffekte=I.intValue();
+					if (actEffekte>=u.getModifiedPersons()){
+						return true;
+					} else {
+						scriptUnit.addComment("Anzahl der Effekte bei Nestwärme reicht nicht aus.");
+					}
+				}
+			}
+		}
+		
+		// FF 20200911: auf Trankeffekt prüfen
+		for (Script s:scriptUnit.getFoundScriptList()) {
+			// scriptUnit.addComment("Debug-ST-Eff: Teste script " + s.toString());
+			if (Trankeffekt.class.isInstance(s)) {
+				// scriptUnit.addComment("Debug-ST-Eff: class OK");
+				Trankeffekt T = (Trankeffekt)s;
+				if (T.getTrank().equalsIgnoreCase("Nestwärme")) {
+					if (T.isUseThisRound()) {
+						return true;
+					} else {
+						scriptUnit.addComment("Test auf Nestwärme: script TrankEffekt gefunden, aber keine Benutzung erkannt.");
+					}
+				}
+			}
+		}
+		
+		
+		return false;
+	}
+	
 	/**
 	 * liefert eine bestimmte Unit(!) nach nummer bzw namen
 	 * @param r Region

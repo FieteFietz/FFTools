@@ -8,7 +8,9 @@ import magellan.library.UnitID;
 import magellan.library.rules.Race;
 
 import com.fftools.pools.matpool.relations.MatPoolRequest;
+import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
+import com.fftools.utils.FFToolsRegions;
 
 
 /**
@@ -80,6 +82,39 @@ public class Rekrutieren extends MatPoolScript{
 			addOutLine(super.scriptUnit.getUnit().toString(true) + ": Rekrutiere...unpassende Anzahl Parameter");
 			super.scriptUnit.doNotConfirmOrders("Rekrutiere...unpassende Anzahl Parameter -> Unit unbestaetigt");
 			return;
+		}
+		
+		int Runde=this.getOverlord().getScriptMain().gd_ScriptMain.getDate().getDate();
+		int RundenFromStart = Runde - 1;
+		int iWeek = (RundenFromStart % 3) + 1;
+		int iMonth = (RundenFromStart / 3) % 9;
+		boolean nextTurnWinter = false;
+		// Herdfeuer oder Eiswind
+		if (iMonth==1 || iMonth==2) {
+			// Herdfeuer oder Eiswind
+			nextTurnWinter = true;
+		}
+		if (iMonth==3) {
+			// Schneebann, nur Wochen 1+2
+			if (iWeek==1 || iWeek==2) {
+				nextTurnWinter = true;
+			}
+		}
+		if (iMonth==0) {
+			// Sturmmond, nur Woche 3
+			if (iWeek==3) {
+				nextTurnWinter = true;
+			}
+		}
+		
+		if (this.scriptUnit.isInsekt() && nextTurnWinter) {
+			this.addComment("Nächste Runde ist Winter...ich kann (vermutlich) nicht rekrutieren! (Insekt)");
+			if (FFToolsGameData.hasNestwaermeEffekt(this.scriptUnit)) {
+				this.addComment("Nestwärme erkannt!...ich kann doch rekrutieren!");
+			} else {
+				this.addComment("Keine Nestwärme erkannt - ich bin ein frierendes armes Insekt und habe auf nix Lust");
+				return;
+			}
 		}
 		
 		
