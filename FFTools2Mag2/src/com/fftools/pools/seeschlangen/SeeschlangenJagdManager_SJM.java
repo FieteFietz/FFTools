@@ -104,8 +104,11 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 							
 							// Umgebung als vermutete Hinzufügen
 							for (CoordinateID c : Regions.getAllNeighbours(actC, 1)) {
-								if (!bekannteSchlangen.contains(c) && !vermuteteSchlangen.contains(c)) {
-									vermuteteSchlangen.add(c);
+								Region reg = this.overLord.getScriptMain().gd_ScriptMain.getRegion(c);
+								if (reg!=null && reg.getRegionType()!=null && reg.getRegionType().isOcean()) {
+									if (!bekannteSchlangen.contains(c) && !vermuteteSchlangen.contains(c)) {
+										vermuteteSchlangen.add(c);
+									}
 								}
 							}
 						}
@@ -274,18 +277,20 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 		// Vermutete
 		for (CoordinateID c:vermuteteSchlangen) {
 			if (!this.moveToRegions.contains(c)) {
-				Seeschlangenjagd su = findSJ(c);
-				if (su!=null) {
-					// gefunden
-					if (su.targetRegionCoord==null) {
-						su.targetRegionCoord = c;
-						su.addComment("SJM: Ziel zugewiesen (vermutete SS):" + c.toString(",", false));
-						su.makeOrderNach();
-						addMoveToRegionC(c);
-					} else {
-						su.addComment("SJM: Ziel ERNEUT zugewiesen (vermutete SS):" + c.toString(",", false));
+				if (!this.attackRegions.contains(c)) {
+					Seeschlangenjagd su = findSJ(c);
+					if (su!=null) {
+						// gefunden
+						if (su.targetRegionCoord==null) {
+							su.targetRegionCoord = c;
+							su.addComment("SJM: Ziel zugewiesen (vermutete SS):" + c.toString(",", false));
+							su.makeOrderNach();
+							addMoveToRegionC(c);
+						} else {
+							su.addComment("SJM: Ziel ERNEUT zugewiesen (vermutete SS):" + c.toString(",", false));
+						}
 					}
-				} 
+				}
 			}
 		}
 		
@@ -347,13 +352,15 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 					for (CoordinateID c : shipDist) {
 						if (HOMEDist.contains(c)) {
 							if (!moveToRegions.contains(c)) {
-								Region r = SJ.getOverlord().getScriptMain().gd_ScriptMain.getRegion(c);
-								if (r!=null && r.getRegionType().isOcean()) {
-									
-									// letzter Check....komme ich da auch in 1 Woche hin?
-									int Reisewochen = FFToolsRegions.getShipPathSizeTurns_Virtuell_Ports(SJ.actRegionCoord,d, c, SJ.gd_Script, SJ.speed, null);
-									if (Reisewochen==1) {
-										possibleRegions.add(r);
+								if (!this.attackRegions.contains(c)) {
+									Region r = SJ.getOverlord().getScriptMain().gd_ScriptMain.getRegion(c);
+									if (r!=null && r.getRegionType().isOcean()) {
+										
+										// letzter Check....komme ich da auch in 1 Woche hin?
+										int Reisewochen = FFToolsRegions.getShipPathSizeTurns_Virtuell_Ports(SJ.actRegionCoord,d, c, SJ.gd_Script, SJ.speed, null);
+										if (Reisewochen==1) {
+											possibleRegions.add(r);
+										}
 									}
 								}
 							}
