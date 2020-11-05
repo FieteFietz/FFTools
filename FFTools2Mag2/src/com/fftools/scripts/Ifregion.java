@@ -5,7 +5,7 @@ import magellan.library.CoordinateID;
 
 public class Ifregion extends Script{
 	
-	private static final int Durchlauf = 15;
+	private static final int Durchlauf = 16;
 	
 	/**
 	 * Parameterloser Constructor

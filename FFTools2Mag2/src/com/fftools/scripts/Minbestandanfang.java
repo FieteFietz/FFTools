@@ -8,7 +8,7 @@ import magellan.library.rules.ItemType;
 
 public class Minbestandanfang extends Script{
 	
-	private static final int Durchlauf = 15;
+	private static final int Durchlauf = 14;
 	
 	/**
 	 * Parameterloser Constructor
