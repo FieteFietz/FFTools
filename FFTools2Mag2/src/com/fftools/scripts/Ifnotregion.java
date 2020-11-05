@@ -5,7 +5,8 @@ import magellan.library.CoordinateID;
 
 public class Ifnotregion extends Script{
 	
-	private static final int Durchlauf = 16;
+	private int[] runners = {14,15,16};
+	private boolean scriptCalled = false;
 	
 	/**
 	 * Parameterloser Constructor
@@ -13,7 +14,7 @@ public class Ifnotregion extends Script{
 	 */
 	
 	public Ifnotregion() {
-		super.setRunAt(Durchlauf);
+		super.setRunAt(this.runners);
 	}
 	
 	
@@ -30,7 +31,11 @@ public class Ifnotregion extends Script{
 	
 	public void runScript(int scriptDurchlauf){
 		
-		if (scriptDurchlauf!=Durchlauf){return;}
+		if (this.scriptCalled) {
+			return;
+		}
+		
+		this.scriptCalled=true;
 		
 		// hier code fuer Script
 		boolean parseOK = true;

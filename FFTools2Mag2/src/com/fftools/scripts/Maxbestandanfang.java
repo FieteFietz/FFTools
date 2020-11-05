@@ -8,7 +8,8 @@ import magellan.library.rules.ItemType;
 
 public class Maxbestandanfang extends Script{
 	
-	private static final int Durchlauf = 14;
+	private int[] runners = {14,15,16};
+	private boolean scriptCalled = false;
 	
 	/**
 	 * Parameterloser Constructor
@@ -16,7 +17,7 @@ public class Maxbestandanfang extends Script{
 	 */
 	
 	public Maxbestandanfang() {
-		super.setRunAt(Durchlauf);
+		super.setRunAt(this.runners);
 	}
 	
 	
@@ -33,7 +34,11 @@ public class Maxbestandanfang extends Script{
 	
 	public void runScript(int scriptDurchlauf){
 		
-		if (scriptDurchlauf!=Durchlauf){return;}
+		if (this.scriptCalled) {
+			return;
+		}
+		
+		this.scriptCalled=true;
 		
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit);
 		OP.addOptionList(this.getArguments());

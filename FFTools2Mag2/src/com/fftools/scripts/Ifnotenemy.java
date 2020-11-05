@@ -5,7 +5,8 @@ import com.fftools.utils.FFToolsRegions;
 
 public class Ifnotenemy extends Script{
 	
-	private static final int Durchlauf = 15;
+	private int[] runners = {14,15,16};
+	private boolean scriptCalled = false;
 	
 	/**
 	 * Parameterloser Constructor
@@ -13,7 +14,7 @@ public class Ifnotenemy extends Script{
 	 */
 	
 	public Ifnotenemy() {
-		super.setRunAt(Durchlauf);
+		super.setRunAt(this.runners);
 	}
 	
 	
@@ -30,7 +31,11 @@ public class Ifnotenemy extends Script{
 	
 	public void runScript(int scriptDurchlauf){
 		
-		if (scriptDurchlauf!=Durchlauf){return;}
+		if (this.scriptCalled) {
+			return;
+		}
+		
+		this.scriptCalled=true;
 		
 
 		
