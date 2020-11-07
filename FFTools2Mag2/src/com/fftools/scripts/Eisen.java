@@ -41,6 +41,16 @@ public class Eisen extends MatPoolScript{
 	
 	private String LernfixOrder = "Talent=Bergbau";
 	
+	/**
+	 * soll der Bergbauer Laen fördern, wenn er kann und kein Eisen (mehr) verfügbar ist?
+	 */
+	private boolean Laen = false; 
+	
+	/**
+	 * Für Laen ist Bergwerk Pflicht, bei Eisen optional..
+	 */
+	private boolean Bergwerk = true;
+	
 	
 	
 	/**
@@ -95,6 +105,9 @@ public class Eisen extends MatPoolScript{
 			this.minTalent = unitMinTalent;
 		}
 		
+		this.Laen = OP.getOptionBoolean("Laen", this.Laen);
+		this.Bergwerk = OP.getOptionBoolean("Bergwerk", this.Bergwerk);
+		
 		// Eigene Talentstufe ermitteln
 		int skillLevel = 0;
 		SkillType skillType = this.gd_Script.getRules().getSkillType("Bergbau", false);
@@ -108,6 +121,10 @@ public class Eisen extends MatPoolScript{
 		} else {
 			this.addComment("!!! can not get SkillType Bergbau!");
 		}
+		
+		
+		String nextJob = "Lerne";
+		
 		if (skillLevel>=this.minTalent){
 			// Regionslevel beziehen
 			Region R = this.scriptUnit.getUnit().getRegion();
@@ -117,24 +134,13 @@ public class Eisen extends MatPoolScript{
 			this.addComment("searching for automode setting, found: " + modeSetting);
 			if (RR == null) {
 				this.addComment("Region hat kein Eisenvorkommen!!!");
-				this.addComment("Ergänze Lernfix Eintrag mit Talent=Bergbau");
-				// this.addOrder("Lernen Bergbau", true);
-				Script L = new Lernfix();
-				ArrayList<String> order = new ArrayList<String>();
-				order.add("Talent=Bergbau");
-				L.setArguments(order);
-				L.setScriptUnit(this.scriptUnit);
-				L.setGameData(this.gd_Script);
-				if (this.scriptUnit.getScriptMain().client!=null){
-					L.setClient(this.scriptUnit.getScriptMain().client);
-				}
-				this.scriptUnit.addAScript(L);
-				
-				
+				// this.addComment("Ergänze Lernfix Eintrag mit Talent=Bergbau");
+
 				if (modeSetting.equalsIgnoreCase("auto") || modeSetting.equalsIgnoreCase("search")){
 					this.addComment("AUTOmode detected....confirmed learning");
 				} else {
-					this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");
+					// this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");
+					nextJob = "LerneNoConfirm";
 				}
 			} else {
 				if (RR.getSkillLevel()<=skillLevel) {
@@ -143,6 +149,7 @@ public class Eisen extends MatPoolScript{
 						this.addComment("Eisen in der Region bei T" + RR.getSkillLevel() + ", wir brechen die Suche ab.");
 						this.doNotConfirmOrders("Eisenlevel erforscht, Suche abgebrochen");
 						this.makeEisen=false;
+						nextJob="noConfirm" ;
 					} else {
 						// weiter machen
 						this.addComment("Eisen in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
@@ -153,17 +160,18 @@ public class Eisen extends MatPoolScript{
 					this.addComment("Eisen in der Region bei T" + RR.getSkillLevel() + ", wir bauen NICHT weiter ab, ich kann ja nur T" + skillLevel);
 					this.addComment("Ergänze Lernfix Eintrag mit Talent=Bergbau");
 					// this.addOrder("Lernen Bergbau", true);
-					this.Lerne();
+					// this.Lerne();
 					if (modeSetting.equalsIgnoreCase("auto") || modeSetting.equalsIgnoreCase("search")){
 						this.addComment("AUTOmode detected....confirmed learning");
 					} else {
-						this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");
+						// this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");
+						nextJob = "LerneNoConfirm";
 					}
 				}
 			}
 			
 			// Sondereinschub - wir sind auf search und treffen auf Laen statt Eisen
-			if (modeSetting.equalsIgnoreCase("search")) {
+			if (modeSetting.equalsIgnoreCase("search") && !this.Laen) {
 				// kurzer Check, ob wir Laen sehen
 				IT = this.gd_Script.getRules().getItemType("Laen");
 				RR = R.getResource(IT);
@@ -172,6 +180,7 @@ public class Eisen extends MatPoolScript{
 						this.addComment("!!!Laen!!! in der Region bei T" + RR.getSkillLevel() + ", wir brechen die Suche ab.");
 						this.doNotConfirmOrders("Laen gefunden, Suche abgebrochen");
 						this.makeEisen=false;
+						nextJob = "noConfim";
 					} else {
 						this.addComment("search: Laen hier auf höherem Niveau.");
 					}
@@ -179,6 +188,46 @@ public class Eisen extends MatPoolScript{
 					this.addComment("search: kein Laen hier bekannt.");
 				}
 			}
+			
+			if (this.Laen && nextJob=="Lerne") {
+				this.makeEisen=false;
+				IT = this.gd_Script.getRules().getItemType("Laen");
+				RR = R.getResource(IT);
+				this.addComment("Eisen: Laenmode erkannt. Suche nach Laen.");
+				if (RR == null) {
+					this.addComment("Region hat kein Laen, es bleibt beim Lernen...");
+				} else {
+					if (RR.getSkillLevel()<=skillLevel) {
+						if (checkBergwerk()) {
+							// weiter machen
+							this.addComment("Laen in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
+							this.addOrder("machen Laen ;(script Eisen, mode Laen)", true);
+							nextJob = "Laen";
+							
+						} 
+					} else {
+						this.addComment("Laen in der Region bei T" + RR.getSkillLevel() + ", wir bauen NICHT weiter ab, ich kann ja nur T" + skillLevel + ", ich lerne");
+						if (modeSetting.equalsIgnoreCase("auto")){
+							this.addComment("Laen: Eisen-AUTOmode detected....confirmed learning");
+						} else {
+							// this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");
+							nextJob = "LerneNoConfirm";
+						}
+					}
+				}
+				
+			}
+			
+			if (nextJob=="Lerne") {
+				this.Lerne();
+				this.makeEisen=false;
+			}
+			if (nextJob=="LerneNoConfirm") {
+				this.Lerne();
+				this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");
+				this.makeEisen=false;
+			}
+			
 			
 		} else {
 			this.Lerne();
@@ -288,6 +337,19 @@ public class Eisen extends MatPoolScript{
 			L.setClient(this.scriptUnit.getScriptMain().client);
 		}
 		this.scriptUnit.addAScript(L);
+	}
+	
+	private boolean checkBergwerk() {
+		// pre Check....werde ich im Bergwerk sein
+		Building b = this.scriptUnit.getUnit().getModifiedBuilding();
+		if (b==null || !b.getType().toString().equalsIgnoreCase("Bergwerk")){
+			this.doNotConfirmOrders("!!!Eisen (modus Laen): ich bin nicht im Bergwerk!!!!");
+			if (!(b==null)){
+				this.addComment("Debug: ich bin nämlich in:" + b.getType().toString());
+			}
+			return false;
+		}
+		return true;
 	}
 
 }

@@ -28,6 +28,16 @@ public class Laen extends MatPoolScript{
 	
 	private String LernfixOrder = "Talent=Bergbau";
 	
+	/**
+	 * soll der Bergbauer Eisen fördern, wenn er kann und kein Laen (mehr) verfügbar ist?
+	 */
+	private boolean Eisen = false; 
+	
+	/**
+	 * Für Laen ist Bergwerk Pflicht, bei Eisen optional..
+	 */
+	private boolean Bergwerk = true;
+	
 	
 	/**
 	 * Parameterloser Constructor
@@ -77,16 +87,11 @@ public class Laen extends MatPoolScript{
 			this.minTalent = unitMinTalent;
 		}
 		
-		// pre Check....werde ich im Bergwerk sein
-		Building b = this.scriptUnit.getUnit().getModifiedBuilding();
-		if (b==null || !b.getType().toString().equalsIgnoreCase("Bergwerk")){
-			this.doNotConfirmOrders("!!!Laen: ich bin nicht im Bergwerk!!!!");
-			if (!(b==null)){
-				this.addComment("Debug: ich bin nämlich in:" + b.getType().toString());
-			}
-			this.addOrder("Lernen Bergbau", true);
-			return;
-		}
+		this.Eisen = OP.getOptionBoolean("Eisen", this.Eisen);
+		this.Bergwerk = OP.getOptionBoolean("Bergwerk", this.Bergwerk);
+		
+		
+		
 		// Eigene Talentstufe ermitteln
 		int skillLevel = 0;
 		SkillType skillType = this.gd_Script.getRules().getSkillType("Bergbau", false);
@@ -100,6 +105,12 @@ public class Laen extends MatPoolScript{
 		} else {
 			this.addComment("!!! can not get SkillType Bergbau!");
 		}
+		
+		
+		String nextJob = "Lerne";
+		
+		
+		
 		if (skillLevel>=this.minTalent){
 			// Regionslevel beziehen
 			Region R = this.scriptUnit.getUnit().getRegion();
@@ -111,37 +122,91 @@ public class Laen extends MatPoolScript{
 				this.addComment("Region hat kein Laenvorkommen!!!, Lerne...");
 				
 				// this.addOrder("Lernen Bergbau", true);
-				this.Lerne();
 				
 				if (modeSetting.equalsIgnoreCase("auto") || modeSetting.equalsIgnoreCase("search")){
 					this.addComment("AUTOmode detected....confirmed learning");
 				} else {
-					this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");
+					// this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");
+					nextJob = "LerneNoConfirm";
 				}
 			} else {
 				if (RR.getSkillLevel()<=skillLevel) {
 					if (modeSetting.equalsIgnoreCase("search")) {
 						this.addComment("Laen in der Region bei T" + RR.getSkillLevel() + ", wir brechen die Suche ab.");
 						this.doNotConfirmOrders("Laenlevel erforscht, Suche abgebrochen");
+						nextJob = "noConfirm";
 					} else {
-						// weiter machen
-						this.addComment("Laen in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
-						this.addOrder("machen Laen ;(script Laen)", true);
+						if (checkBergwerk()) {
+							// weiter machen
+							this.addComment("Laen in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
+							this.addOrder("machen Laen ; (script Laen)", true);
+							nextJob = "Laen";
+						} 
 					}
 				} else {
 					this.addComment("Laen in der Region bei T" + RR.getSkillLevel() + ", wir bauen NICHT weiter ab, ich kann ja nur T" + skillLevel + ", ich lerne");
-					this.Lerne();
 					if (modeSetting.equalsIgnoreCase("auto") || modeSetting.equalsIgnoreCase("search")){
 						this.addComment("AUTOmode detected....confirmed learning");
 					} else {
-						this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");
+						// this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");
+						nextJob = "LerneNoConfirm";
 					}
 				}
 			}
+			
+			if (this.Eisen && (nextJob=="Lerne")) {
+				this.addComment("Laen: Eisenmode erkannt. Suche nach Eisen.");
+				IT = this.gd_Script.getRules().getItemType("Eisen");
+				RR = R.getResource(IT);
+				if (RR == null) {
+					this.addComment("Region hat kein Eisen, es bleibt beim Lernen...");
+				} else {
+					if (RR.getSkillLevel()<=skillLevel) {
+						if (this.Bergwerk) { 
+							if (checkBergwerk()) {
+								// weiter machen
+								this.addComment("Eisen in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
+								this.addOrder("machen Eisen ;(script Laen, mode Eisen)", true);
+								nextJob = "Eisen";
+							} 
+						} else {
+							this.addComment("Laen: Prüfung auf Bergwerk für Eisenförderung ist deaktiviert");
+							// weiter machen
+							this.addComment("Eisen in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
+							this.addOrder("machen Eisen ; (script Laen, mode Eisen)", true);
+							nextJob = "Eisen";
+						}
+					} else {
+						this.addComment("Eisen in der Region bei T" + RR.getSkillLevel() + ", wir bauen NICHT weiter ab, ich kann ja nur T" + skillLevel + ", ich lerne");
+						if (modeSetting.equalsIgnoreCase("auto")){
+							this.addComment("Laen: Eisen-AUTOmode detected....confirmed learning");
+						} else {
+							// this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");
+							nextJob = "LerneNoConfirm";
+						}
+					}
+				}
+				
+			}
+			
+			if (nextJob=="Lerne") {
+				this.Lerne();
+			}
+			if (nextJob=="LerneNoConfirm") {
+				this.Lerne();
+				this.doNotConfirmOrders("no AUTOmode detected....pls confirm learning / adjust orders");
+			}
+			
+			
+			
+			
+			
+			
+			
 		} else {
 			// this.doNotConfirmOrders();
 			this.addComment("Lerne, weil mindestTalent nicht erreicht (" + this.minTalent + ")");
-			this.Lerne();
+			nextJob = "Lerne";
 		}
 		
 	}
@@ -158,6 +223,19 @@ public class Laen extends MatPoolScript{
 			L.setClient(this.scriptUnit.getScriptMain().client);
 		}
 		this.scriptUnit.addAScript(L);
+	}
+	
+	private boolean checkBergwerk() {
+		// pre Check....werde ich im Bergwerk sein
+		Building b = this.scriptUnit.getUnit().getModifiedBuilding();
+		if (b==null || !b.getType().toString().equalsIgnoreCase("Bergwerk")){
+			this.doNotConfirmOrders("!!!Laen: ich bin nicht im Bergwerk!!!!");
+			if (!(b==null)){
+				this.addComment("Debug: ich bin nämlich in:" + b.getType().toString());
+			}
+			return false;
+		}
+		return true;
 	}
 
 }
