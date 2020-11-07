@@ -152,9 +152,21 @@ public class Eisen extends MatPoolScript{
 						nextJob="noConfirm" ;
 					} else {
 						// weiter machen
-						this.addComment("Eisen in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
-						this.makeEisen=true;
-						this.myStandardSkillLevel = skillLevel;
+						if (this.Bergwerk) {
+							if (checkBergwerk()) {
+								this.addComment("Eisen in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
+								this.makeEisen=true;
+								this.myStandardSkillLevel = skillLevel;
+								nextJob="Eisen" ;
+							}
+						} else {
+							this.addComment("Eisen: Prüfung auf Bergwerk ist deaktiviert.");
+							this.addComment("Eisen in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
+							this.makeEisen=true;
+							this.myStandardSkillLevel = skillLevel;
+							nextJob="Eisen" ;
+						}
+						
 					}
 				} else {
 					this.addComment("Eisen in der Region bei T" + RR.getSkillLevel() + ", wir bauen NICHT weiter ab, ich kann ja nur T" + skillLevel);

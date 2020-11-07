@@ -2,9 +2,11 @@ package com.fftools.scripts;
 
 import java.util.ArrayList;
 
+import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
 
 import magellan.library.Building;
+import magellan.library.Item;
 import magellan.library.Region;
 import magellan.library.RegionResource;
 import magellan.library.Skill;
@@ -17,9 +19,14 @@ public class Laen extends MatPoolScript{
 	
 	int Durchlauf_1 = 51;
 	
+	int Durchlauf_2 = 205;
+	/*
+	 * 14.10.2017 neu, um RdfF nach Matpool zu berücksichtgen
+	 */
+	
 
 	
-	private int[] runners = {Durchlauf_1};
+	private int[] runners = {Durchlauf_1,Durchlauf_2};
 	
 	/**
 	 * ab welchem Talent gehts erst mal los?
@@ -37,6 +44,9 @@ public class Laen extends MatPoolScript{
 	 * Für Laen ist Bergwerk Pflicht, bei Eisen optional..
 	 */
 	private boolean Bergwerk = true;
+	
+	private int myStandardSkillLevel = 0;
+	private boolean makeEisen=false;
 	
 	
 	/**
@@ -63,6 +73,9 @@ public class Laen extends MatPoolScript{
 	public void runScript(int scriptDurchlauf){
 		if (scriptDurchlauf==this.Durchlauf_1){
 			this.start();
+		}
+		if (scriptDurchlauf==this.Durchlauf_2){
+			this.produceEisen();
 		}
 
 	}
@@ -99,6 +112,7 @@ public class Laen extends MatPoolScript{
 			Skill skill = this.scriptUnit.getUnit().getModifiedSkill(skillType);
 			if (skill!=null){
 				skillLevel = skill.getLevel();
+				this.myStandardSkillLevel = skillLevel;
 			} else {
 				this.addComment("!!! unit has no skill Bergbau!");
 			}
@@ -141,7 +155,9 @@ public class Laen extends MatPoolScript{
 							this.addComment("Laen in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
 							this.addOrder("machen Laen ; (script Laen)", true);
 							nextJob = "Laen";
-						} 
+						} else {
+							nextJob = "noConfirm";
+						}
 					}
 				} else {
 					this.addComment("Laen in der Region bei T" + RR.getSkillLevel() + ", wir bauen NICHT weiter ab, ich kann ja nur T" + skillLevel + ", ich lerne");
@@ -154,7 +170,7 @@ public class Laen extends MatPoolScript{
 				}
 			}
 			
-			if (this.Eisen && (nextJob=="Lerne")) {
+			if (this.Eisen && nextJob=="Lerne") {
 				this.addComment("Laen: Eisenmode erkannt. Suche nach Eisen.");
 				IT = this.gd_Script.getRules().getItemType("Eisen");
 				RR = R.getResource(IT);
@@ -166,15 +182,19 @@ public class Laen extends MatPoolScript{
 							if (checkBergwerk()) {
 								// weiter machen
 								this.addComment("Eisen in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
-								this.addOrder("machen Eisen ;(script Laen, mode Eisen)", true);
+								// this.addOrder("machen Eisen ;(script Laen, mode Eisen)", true);
 								nextJob = "Eisen";
-							} 
+								this.makeEisen=true;
+							} else {
+								nextJob = "noConfirm";
+							}
 						} else {
 							this.addComment("Laen: Prüfung auf Bergwerk für Eisenförderung ist deaktiviert");
 							// weiter machen
 							this.addComment("Eisen in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
-							this.addOrder("machen Eisen ; (script Laen, mode Eisen)", true);
+							// this.addOrder("machen Eisen ; (script Laen, mode Eisen)", true);
 							nextJob = "Eisen";
+							this.makeEisen=true;
 						}
 					} else {
 						this.addComment("Eisen in der Region bei T" + RR.getSkillLevel() + ", wir bauen NICHT weiter ab, ich kann ja nur T" + skillLevel + ", ich lerne");
@@ -236,6 +256,95 @@ public class Laen extends MatPoolScript{
 			return false;
 		}
 		return true;
+	}
+	
+	private void produceEisen(){
+		
+		if (!this.makeEisen) {
+			return;
+		}
+		
+		
+		int skillLevel = this.myStandardSkillLevel;
+		
+		boolean isInBergwerk = false;
+		
+		// Einschub, Boni optimal nutzen
+		// welche Menge können wir denn maximal abbauen...
+		// skillevel +1, wenn im bergwerk
+		Building b = this.scriptUnit.getUnit().getModifiedBuilding();
+		if (b!=null){
+			if (b.getType().getName().equalsIgnoreCase("Bergwerk")){
+				skillLevel+=1;
+				this.addComment("Laen(Eisen), Bergwerk erkannt, Talentlevel um 1 erhöht.");
+				isInBergwerk=true;
+			}
+		}
+		
+		int machbareMenge = skillLevel * this.scriptUnit.getUnit().getModifiedPersons();
+		
+		// Schaffenstrunk oder RdF verdoppeln prodPoints 
+		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,false)){
+			machbareMenge *= 2;
+			this.addComment("Laen(Eisen): Einheit nutzt Schaffenstrunk. Produktion verdoppelt auf: " + machbareMenge);
+		} 
+		
+		
+		// 20170708: berücksichtigung von RdfF
+		ItemType rdfType=this.gd_Script.getRules().getItemType("Ring der flinken Finger",false);
+		if (rdfType!=null){
+			Item rdfItem = this.scriptUnit.getModifiedItem(rdfType);
+			if (rdfItem!=null && rdfItem.getAmount()>0){
+				// Aufteilung der Personen in mit und ohne Ring
+				int PersonenMitRing = Math.min(rdfItem.getAmount(),this.scriptUnit.getUnit().getModifiedPersons());
+				int PersonenOhneRing = this.scriptUnit.getUnit().getModifiedPersons() - PersonenMitRing;
+				int RingLevel = skillLevel;
+				if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,false)){
+					RingLevel *= 2;
+				}
+				int RingMenge = PersonenOhneRing * RingLevel;
+				RingMenge += PersonenMitRing * RingLevel * 10;
+				addComment("RdfF berücksichtigt, max Produktion geändert von " + machbareMenge + " auf " + RingMenge + " (" + PersonenMitRing + " Personen mit Ring erkannt.)");
+				machbareMenge = RingMenge;
+			} else {
+				this.addComment("(debug-Laen: keine RdfF erkannt)");
+				
+			}
+		} else {
+			this.addComment("Laen (Eisen): RdfF ist noch völlig unbekannt.");
+		}
+		
+		int Teiler=1;
+		// wenn Rasse = Zwerge, dann auf 10 / 5 gehen
+		if (this.scriptUnit.getUnit().getRace().getName().equalsIgnoreCase("Zwerge")){
+			if (isInBergwerk){
+				Teiler = 10;  // 0.3 mal Produktionsmenge wird vom Vorrat abgezogen, nur bei X x 10 ohne Verlust
+				addComment("Zwerg im Bergwerk erkannt, versuche Produktionsmenge zu ermitteln, die durch " + Teiler + " teilbar ist.");
+			} else {
+				Teiler = 5;
+				addComment("Zwerg ohne Bergwerk erkannt, versuche Produktionsmenge zu ermitteln, die durch " + Teiler + " teilbar ist.");
+			}
+			
+		} else {
+			if (isInBergwerk){
+				// Nicht zwerg im Bergwerk
+				Teiler=2;
+			}
+		}
+		int mengeResult = (machbareMenge / Teiler) * Teiler;
+		if (mengeResult==machbareMenge){
+			addComment("Keine Anpassung auf gut teilbare Produktionsmenge nötig, es bleibt bei " + mengeResult);
+		} else {
+			addComment("Anpassung auf gut teilbare Produktionsmenge erfolgt, Änderung von " + machbareMenge + " auf " + mengeResult);
+		}
+		machbareMenge=mengeResult;
+		if (machbareMenge>0) {
+			this.addOrder("machen " + machbareMenge + " Eisen ;(script Eisen)", true);
+		} else {
+			this.addComment("daraus folgt -> ich Lerne, leider ohne Lernpool, dafür ist es jetzt zu spät..");
+			
+			this.addOrder("Lerne Bergbau ;(script Laen(Eisen))", true);
+		}
 	}
 
 }
