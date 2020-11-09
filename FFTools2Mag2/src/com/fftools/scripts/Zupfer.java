@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import com.fftools.pools.ausbildung.relations.AusbildungsRelation;
+import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
 
 import magellan.library.Faction;
@@ -342,24 +343,8 @@ public class Zupfer extends MatPoolScript{
 		int iMonth = (RundenFromStart / 3) % 9;
 		// this.addComment("Datumsberechnung (aktuell): Runde " + Runde + ", Woche " + iWeek + ", Monat " + iMonth); 
 		
-		boolean nextTurnWinter = false;
-		// Herdfeuer oder Eiswind
-		if (iMonth==1 || iMonth==2) {
-			// Herdfeuer oder Eiswind
-			nextTurnWinter = true;
-		}
-		if (iMonth==3) {
-			// Schneebann, nur Wochen 1+2
-			if (iWeek==1 || iWeek==2) {
-				nextTurnWinter = true;
-			}
-		}
-		if (iMonth==0) {
-			// Sturmmond, nur Woche 3
-			if (iWeek==3) {
-				nextTurnWinter = true;
-			}
-		}
+		boolean nextTurnWinter = FFToolsGameData.isNextTurnWinter(this.getOverlord().getScriptMain().gd_ScriptMain);
+		
 		if (nextTurnWinter) {
 			this.addComment("Nächste Woche ist Winter!!! Kräuter wachsen im Winter nicht, somit ernten wir nicht.");
 		} else {

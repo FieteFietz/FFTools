@@ -352,4 +352,32 @@ public class FFToolsGameData {
 		return itemName;
 	}
 	
+	
+	public static boolean isNextTurnWinter(GameData data) {
+		int Runde=data.getDate().getDate();
+		int RundenFromStart = Runde - 1;
+		int iWeek = (RundenFromStart % 3) + 1;
+		int iMonth = (RundenFromStart / 3) % 9;
+		
+		// Herdfeuer oder Eiswind
+		if (iMonth==1 || iMonth==2) {
+			// Herdfeuer oder Eiswind
+			return true;
+		}
+		if (iMonth==3) {
+			// Schneebann, nur Wochen 1+2
+			if (iWeek==1 || iWeek==2) {
+				return true;
+			}
+		}
+		if (iMonth==0) {
+			// Sturmmond, nur Woche 3
+			if (iWeek==3) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+	
 }

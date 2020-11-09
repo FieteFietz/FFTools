@@ -36,8 +36,6 @@ public class Rekrutieren extends MatPoolScript{
 	
 	private boolean ConfirmLessRecruitment=false;
 	
-	private boolean weAreOrk=false;
-	
 	private int recruitCosts = 10;
 	
 	private int anzahlGeplant=0;
@@ -84,36 +82,17 @@ public class Rekrutieren extends MatPoolScript{
 			return;
 		}
 		
-		int Runde=this.getOverlord().getScriptMain().gd_ScriptMain.getDate().getDate();
-		int RundenFromStart = Runde - 1;
-		int iWeek = (RundenFromStart % 3) + 1;
-		int iMonth = (RundenFromStart / 3) % 9;
-		boolean nextTurnWinter = false;
-		// Herdfeuer oder Eiswind
-		if (iMonth==1 || iMonth==2) {
-			// Herdfeuer oder Eiswind
-			nextTurnWinter = true;
-		}
-		if (iMonth==3) {
-			// Schneebann, nur Wochen 1+2
-			if (iWeek==1 || iWeek==2) {
-				nextTurnWinter = true;
-			}
-		}
-		if (iMonth==0) {
-			// Sturmmond, nur Woche 3
-			if (iWeek==3) {
-				nextTurnWinter = true;
-			}
-		}
-		
-		if (this.scriptUnit.isInsekt() && nextTurnWinter) {
-			this.addComment("Nächste Runde ist Winter...ich kann (vermutlich) nicht rekrutieren! (Insekt)");
-			if (FFToolsGameData.hasNestwaermeEffekt(this.scriptUnit)) {
-				this.addComment("Nestwärme erkannt!...ich kann doch rekrutieren!");
+		if (this.scriptUnit.isInsekt() && FFToolsGameData.isNextTurnWinter(this.getOverlord().getScriptMain().gd_ScriptMain)) {
+			if (this.region().getRegionType().getName().equalsIgnoreCase("Wüste")) {
+				this.addComment("Rekrutieren: wie gut, dass hier so viel warmer Sand ist! (Insekten im Winter in der Wüste");
 			} else {
-				this.addComment("Keine Nestwärme erkannt - ich bin ein frierendes armes Insekt und habe auf nix Lust");
-				return;
+				this.addComment("Nächste Runde ist Winter...ich kann (vermutlich) nicht rekrutieren! (Insekt)");
+				if (FFToolsGameData.hasNestwaermeEffekt(this.scriptUnit)) {
+					this.addComment("Nestwärme erkannt!...ich kann doch rekrutieren!");
+				} else {
+					this.addComment("Keine Nestwärme erkannt - ich bin ein frierendes armes Insekt und habe auf nix Lust");
+					return;
+				}
 			}
 		}
 		
@@ -139,7 +118,7 @@ public class Rekrutieren extends MatPoolScript{
 				if (ra.equals(orkRace)){
 					anzahl = anzahl*2;
 					this.addComment("Rekrutieren: Orks erkannt. Maximal mögliche Rekruten verdoppelt auf:" + anzahl);
-					this.weAreOrk=true;
+					
 				}
 			}
 			

@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.trade.TradeArea;
 import com.fftools.trade.TradeRegion;
+import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
 import com.fftools.utils.FFToolsRegions;
 
@@ -260,29 +261,8 @@ public class Depot extends TransportScript{
 		if (r!=null && !(r.getRegionType().isOcean()) && this.mitBauernCheck) {
 			// 20200419: nicht bei Insekten im Winter, es sei denn, in einer Wüste
 			boolean insektenImWinter=false;
-			if (this.scriptUnit.isInsekt()) {
-				int Runde=this.getOverlord().getScriptMain().gd_ScriptMain.getDate().getDate();
-				int RundenFromStart = Runde - 1;
-				int iWeek = (RundenFromStart % 3) + 1;
-				int iMonth = (RundenFromStart / 3) % 9;
-				
-				// Herdfeuer oder Eiswind
-				if (iMonth==1 || iMonth==2) {
-					// Herdfeuer oder Eiswind
-					insektenImWinter = true;
-				}
-				if (iMonth==3) {
-					// Schneebann, nur Wochen 1+2
-					if (iWeek==1 || iWeek==2) {
-						insektenImWinter = true;
-					}
-				}
-				if (iMonth==0) {
-					// Sturmmond, nur Woche 3
-					if (iWeek==3) {
-						insektenImWinter = true;
-					}
-				}
+			if (this.scriptUnit.isInsekt() && FFToolsGameData.isNextTurnWinter(this.getOverlord().getScriptMain().gd_ScriptMain)) {
+				insektenImWinter = true;
 			}
 			if (insektenImWinter) {
 				// nicht, wenn in Wüste

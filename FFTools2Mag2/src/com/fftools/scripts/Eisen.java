@@ -355,7 +355,11 @@ public class Eisen extends MatPoolScript{
 		// pre Check....werde ich im Bergwerk sein
 		Building b = this.scriptUnit.getUnit().getModifiedBuilding();
 		if (b==null || !b.getType().toString().equalsIgnoreCase("Bergwerk")){
-			this.doNotConfirmOrders("!!!Eisen (modus Laen): ich bin nicht im Bergwerk!!!!");
+			String s = "!!!Eisen: ich bin nicht im Bergwerk!!!! Wenn ich wirklich abbauen soll, bitte mit bergwerk=nein  bestätigen.";
+			if (this.Laen) {
+				s = "!!!Eisen (Modus Laen): ich bin nicht im Bergwerk!!!! (Und das ist zwingend notwendig)";
+			}
+			this.doNotConfirmOrders(s);
 			if (!(b==null)){
 				this.addComment("Debug: ich bin nämlich in:" + b.getType().toString());
 			}
