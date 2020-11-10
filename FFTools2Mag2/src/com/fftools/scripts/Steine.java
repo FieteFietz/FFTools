@@ -39,6 +39,12 @@ public class Steine extends MatPoolScript{
 	private int minTalent = 1;
 	
 	/**
+	 * Wir wollen in einem Steinbruch arbeiten, oder es explizit geagt bekommen, dass wir ausserhalb arbeiten sollen
+	 */
+	private boolean Steinbruch = true;
+	
+	
+	/**
 	 * Parameterloser Constructor
 	 * Drinne Lassen fuer die Instanzierung des Objectes
 	 */
@@ -92,6 +98,8 @@ public class Steine extends MatPoolScript{
 			this.minTalent = unitMinTalent;
 		}
 		
+		this.Steinbruch = OP.getOptionBoolean("Steinbruch", this.Steinbruch);
+		
 		// Eigene Talentstufe ermitteln
 		int skillLevel = 0;
 		SkillType skillType = this.gd_Script.getRules().getSkillType("Steinbau", false);
@@ -131,9 +139,13 @@ public class Steine extends MatPoolScript{
 					} else {
 						// weiter machen
 						this.addComment("Steine in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
-						// this.addOrder("machen Stein ;(script Steine)", true);
-						this.myStandardSkillLevel = skillLevel;
-						this.makeStein=true;
+						if (!this.Steinbruch) {
+							this.addComment("Steine: keine Prüfung auf Arbeit im Steinbruch.");
+						}
+						if (!this.Steinbruch || this.checkSteinbruch()) {
+							this.myStandardSkillLevel = skillLevel;
+							this.makeStein=true;
+						}
 					}
 				} else {
 					this.addComment("Steine in der Region bei T" + RR.getSkillLevel() + ", wir bauen NICHT weiter ab, ich kann ja nur T" + skillLevel + ", ich lerne");
@@ -258,6 +270,20 @@ public class Steine extends MatPoolScript{
 			L.setClient(this.scriptUnit.getScriptMain().client);
 		}
 		this.scriptUnit.addAScript(L);
+	}
+	
+	private boolean checkSteinbruch() {
+		// pre Check....werde ich im Bergwerk sein
+		Building b = this.scriptUnit.getUnit().getModifiedBuilding();
+		if (b==null || !b.getType().toString().equalsIgnoreCase("Steinbruch")){
+			String s = "!!!Steine: ich bin nicht im Steinbruch!!!! Wenn ich wirklich abbauen soll, bitte mit steinbruch=nein  bestätigen.";
+			this.doNotConfirmOrders(s);
+			if (!(b==null)){
+				this.addComment("Debug: ich bin nämlich in:" + b.getType().toString());
+			}
+			return false;
+		}
+		return true;
 	}
 
 }
