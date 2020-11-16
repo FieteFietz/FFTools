@@ -528,6 +528,13 @@ public class TradeAreaConnector {
 		if (this.SU1==null || this.SU2==null){
 			return;
 		}
+		
+		
+		FFToolsRegions.addMapLine(this.SU1.getUnit().getRegion(), this.SU2.getUnit().getRegion().getID(), 153, 255, 204, 5, TradeAreaHandler.MAPLINE_TAG_ID);
+		
+		
+		
+		/*
 		// Tag-Eintrag zusammenbasteln
 		// TargetRegion finden
 		Region r = this.SU2.getUnit().getRegion();
@@ -567,6 +574,7 @@ public class TradeAreaConnector {
 		} 
 		newnewTag = newnewTag.concat(newT);
 		r.putTag(ScriptMain.MAPLINE_TAG, newnewTag);
+		*/
 		
 		
 	}

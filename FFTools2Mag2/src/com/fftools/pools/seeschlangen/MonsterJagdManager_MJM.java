@@ -20,6 +20,9 @@ import magellan.library.Unit;
  */
 public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
 
+	public static final String MAPLINE_MOVE_TAG="FFTools_MJM_MoveLine";
+	public static final String MAPLINE_ATTACK_TAG="FFTools_MJM_AttackLine";
+	
 	
 	private ArrayList<Jagemonster> Jäger = new ArrayList<Jagemonster>(0);
 	

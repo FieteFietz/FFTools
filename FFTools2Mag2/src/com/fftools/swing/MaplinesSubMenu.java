@@ -8,11 +8,15 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
-import magellan.client.Client;
-
 import com.fftools.demo.actions.MenuAction;
+import com.fftools.demo.actions.map.HideMaplinesMJM_Move_Action;
+import com.fftools.demo.actions.map.HideMaplinesSSJM_Move_Action;
 import com.fftools.demo.actions.map.HideMaplinesTAC_Action;
+import com.fftools.demo.actions.map.ShowMaplinesMJM_Move_Action;
+import com.fftools.demo.actions.map.ShowMaplinesSSJM_Move_Action;
 import com.fftools.demo.actions.map.ShowMaplinesTAC_Action;
+
+import magellan.client.Client;
 
 public class MaplinesSubMenu extends JMenu {
 	
@@ -24,6 +28,12 @@ public class MaplinesSubMenu extends JMenu {
 		this.setMnemonic("M".charAt(0));
 	    addMenuItem(this,new ShowMaplinesTAC_Action(client));
 	    addMenuItem(this,new HideMaplinesTAC_Action(client));
+	    
+	    addMenuItem(this,new ShowMaplinesMJM_Move_Action(client));
+	    addMenuItem(this,new HideMaplinesMJM_Move_Action(client));
+	    
+	    addMenuItem(this,new ShowMaplinesSSJM_Move_Action(client));
+	    addMenuItem(this,new HideMaplinesSSJM_Move_Action(client));
 	  
 	}
 	

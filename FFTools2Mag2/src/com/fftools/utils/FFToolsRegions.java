@@ -12,11 +12,13 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import com.fftools.OutTextClass;
 import com.fftools.ReportSettings;
 import com.fftools.ScriptMain;
 import com.fftools.ScriptUnit;
+import com.fftools.trade.TradeAreaHandler;
 
 import magellan.library.Border;
 import magellan.library.Building;
@@ -1104,5 +1106,168 @@ public class FFToolsRegions {
 
 	public static HashMap<PathDistLandInfo, Integer> getPathDistCache() {
 		return pathDistCache;
+	}
+	
+	/**
+	 * legt eine MapLine von Region r nach cID an
+	 * @param r	Startregion, dort wird der Tag gesetzt
+	 * @param cID Koordinaten der Zielregion
+	 * @param R
+	 * @param G
+	 * @param B
+	 * @param lineWidth
+	 * @param identifier
+	 */
+	public static void addMapLine(Region r, CoordinateID cID, int R, int G, int B, int lineWidth, String identifier) {
+		StringBuilder newTag = new StringBuilder();
+		newTag.append(cID.getX());
+		newTag.append(",");
+		newTag.append(cID.getY());
+		newTag.append(",");
+		newTag.append(R); // RGB - R
+		newTag.append(",");
+		newTag.append(G); // RGB - G
+		newTag.append(",");
+		newTag.append(B); // RGB - B
+		newTag.append(",");
+		newTag.append(lineWidth);   // width
+		newTag.append(",");
+		newTag.append(identifier);
+		String newT = newTag.toString();
+		
+		// jetzt in der Region von SU1 ergänzen
+		if(r.containsTag(ScriptMain.MAPLINE_TAG)) {
+			StringTokenizer st = new StringTokenizer(r.getTag(ScriptMain.MAPLINE_TAG), " ");
+			while(st.hasMoreTokens()) {
+                String token = st.nextToken();
+                if (token.equalsIgnoreCase(newT)){
+                	// bereits vorhanden
+                	return;
+                }
+			}
+		}
+		// nicht bereits vorhanden->ergänzen
+		String newnewTag = "";
+		if(r.containsTag(ScriptMain.MAPLINE_TAG)) {
+			newnewTag = r.getTag(ScriptMain.MAPLINE_TAG).concat(" ");
+		} 
+		newnewTag = newnewTag.concat(newT);
+		r.putTag(ScriptMain.MAPLINE_TAG, newnewTag);		
+	}
+	
+	
+	public static void activateMapLine(GameData gd, String identifier) {
+		ArrayList<String> newTags = new ArrayList<String>(); 
+		for (Region r : gd.getRegions()){
+			if (r.containsTag(ScriptMain.MAPLINE_TAG)){
+				newTags = new ArrayList<String>();
+				StringTokenizer st = new StringTokenizer(r.getTag(ScriptMain.MAPLINE_TAG), " ");
+				
+				// alle Elemente des Tags durchgehen
+				while(st.hasMoreTokens()) {
+					String token = st.nextToken();
+					String[] ss = token.split(",");
+					boolean isNew=false;
+					// wir erkennen "unsere" am 7. Parameter
+					if (ss.length>6){
+						if (ss[6].equalsIgnoreCase(identifier)){
+							// Treffer
+							isNew=true;
+						}
+					}
+					// den neunen Tag zusammenbasteln - alle, die keine Treffer sind
+					if (isNew){
+						newTags.add(token);
+					}
+				}
+				
+				
+				// jetzt checken, ob wir einen mapline-Tag haben
+				if (r.containsTag("mapline")){
+					// wir wollen keinen doppelt drin haben
+					if (newTags.size()>0){
+						// ergänzen, wenn noch nicht da...
+						String newnewTag = "";
+						ArrayList<String> toAdd = new ArrayList<String>();  // enthält zu ergänzende Tags
+						for (String token : newTags){
+							StringTokenizer st2 = new StringTokenizer(r.getTag("mapline"), " ");
+							// alle Elemente des Tags durchgehen
+							boolean already_included=false;
+							while(st2.hasMoreTokens()) {
+								String actToken = st2.nextToken();
+								if (actToken.equalsIgnoreCase(token)){
+									already_included=true;
+								}
+							}
+							if (!already_included){
+								toAdd.add(token);
+							}
+						}
+						
+						if (toAdd.size()>0){
+							newnewTag = r.getTag("mapline");
+							for (String token : toAdd){
+								newnewTag = newnewTag.concat(" ").concat(token);
+							}
+							r.putTag("mapline", newnewTag);
+						}
+						
+					}
+				} else {
+					// es gibt noch keinen, ggf einen anlegen
+					if (newTags.size()>0){
+						// ergänzen
+						String newnewTag = "";
+						for (String token : newTags){
+							newnewTag = newnewTag.concat(token).concat(" ");
+						}
+						newnewTag = newnewTag.trim();
+						r.putTag("mapline", newnewTag);
+					}
+				}
+			}	
+		}
+	}
+	
+	public static void deActivateMapLine(GameData gd, String identifier) {
+		ArrayList<String> newTags = new ArrayList<String>(); 
+		for (Region r : gd.getRegions()){
+			if (r.containsTag("mapline")){
+				newTags = new ArrayList<String>(); 
+				StringTokenizer st = new StringTokenizer(r.getTag("mapline"), " ");
+				// alle Elemente des Tags durchgehen
+				while(st.hasMoreTokens()) {
+					String token = st.nextToken();
+					String[] ss = token.split(",");
+					boolean mayStay=true;
+					// wir erkennen "unsere" am 7. Parameter
+					if (ss.length>6){
+						if (ss[6].equalsIgnoreCase(identifier)){
+							// Treffer
+							mayStay=false;
+						}
+					}
+					// den neunen Tag zusammenbasteln - alle, die keine Treffer sind
+					if (mayStay){
+						newTags.add(token);
+					}
+				}
+				
+				if (newTags.size()>0){
+					String newnewTag="";
+					for (String token : newTags){
+						newnewTag = newnewTag.concat(token).concat(" ");
+					}
+					newnewTag = newnewTag.trim();
+					if (!newnewTag.equalsIgnoreCase(r.getTag("mapline"))){
+						r.putTag("mapline", newnewTag);
+					}
+				} else {
+					// nix mehr da - remove des kompletten Tags
+					r.removeTag("mapline");
+				}
+				
+			}	
+		}
 	}
 }

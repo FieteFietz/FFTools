@@ -35,6 +35,8 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 
 	private static final OutTextClass outText = OutTextClass.getInstance();
 	
+	public static final String MAPLINE_TAG="FFTools_SSJM_MoveLine";
+	
 	private Overlord overLord = null;
 	
 	// in diesen Regionen hat schon irgendjemand einen ATTACK auf Monster erhalten
@@ -391,6 +393,14 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 						count_randomers++;
 					}
 				}
+			}
+			// wichtig: SSJ auf Ozean mit mayPatrol=false => moveHOME
+			if (SJ.targetRegionCoord==null && !SJ.is_attacking && !SJ.is_moving_home && !SJ.mayPatrol) {
+				// 
+				SJ.addComment("Returning to Base : no target and patrol not allowed.");
+				SJ.targetRegionCoord = SJ.HomeRegionCoord;
+				SJ.is_moving_home=true;
+				SJ.makeOrderNach();
 			}
 		}
 		long cntLearnen=0;

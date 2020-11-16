@@ -3,6 +3,8 @@ package com.fftools.scripts;
 import java.util.ArrayList;
 
 import com.fftools.pools.ausbildung.Lernplan;
+import com.fftools.pools.seeschlangen.MonsterJagdManager_MJM;
+import com.fftools.pools.seeschlangen.SeeschlangenJagdManager_SJM;
 import com.fftools.trade.TradeArea;
 import com.fftools.trade.TradeRegion;
 import com.fftools.utils.FFToolsOptionParser;
@@ -360,7 +362,7 @@ public class Jagemonster extends Script{
 				// Einheit erhält keinen langen Befehl und bleibt (vermutlich) unbestätigt
 			} else {
 				// wir müssen zur Home Region
-				this.moveTo(this.homeDest);
+				this.moveTo(this.homeDest, MonsterJagdManager_MJM.MAPLINE_MOVE_TAG);
 			}
 		} else {
 			// Ziel ist noch vorhanden
@@ -377,7 +379,7 @@ public class Jagemonster extends Script{
 				this.getOverlord().getMJM().addJäger(this);
 			} else {
 				// wir müssen zum Ziel
-				this.moveTo(this.targetUnit.getRegion().getCoordinate());
+				this.moveTo(this.targetUnit.getRegion().getCoordinate(), MonsterJagdManager_MJM.MAPLINE_ATTACK_TAG);
 				this.getOverlord().getMJM().addTargetUnit(this.targetUnit);
 			}
 		}
@@ -410,10 +412,18 @@ public class Jagemonster extends Script{
 	 * setzt NACH-Befehle - soweit möglich
 	 * @param dest
 	 */
-	private void moveTo(CoordinateID dest) {
+	private void moveTo(CoordinateID dest, String MapLineIdentifier) {
 		this.addComment("JageMonster - befehle GOTO nach " + dest.toString());
 		this.targetDest = dest;
 		
+		if (MapLineIdentifier.equalsIgnoreCase(MonsterJagdManager_MJM.MAPLINE_ATTACK_TAG)) {
+			// rote Attack-Line
+			FFToolsRegions.addMapLine(this.region(), dest, 255, 0, 0, 5, MonsterJagdManager_MJM.MAPLINE_ATTACK_TAG);
+		}
+		if (MapLineIdentifier.equalsIgnoreCase(MonsterJagdManager_MJM.MAPLINE_MOVE_TAG)) {
+			// blaue Move-Line
+			FFToolsRegions.addMapLine(this.region(), dest, 0, 0, 255, 5, MonsterJagdManager_MJM.MAPLINE_MOVE_TAG);
+		}
 	}
 	
 	/**

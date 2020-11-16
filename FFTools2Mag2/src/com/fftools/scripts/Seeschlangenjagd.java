@@ -14,6 +14,7 @@ import magellan.library.Faction;
 import magellan.library.Item;
 import magellan.library.Region;
 import magellan.library.Unit;
+import magellan.library.gamebinding.EresseaConstants;
 import magellan.library.rules.ItemType;
 import magellan.library.rules.Race;
 import magellan.library.utils.Direction;
@@ -79,7 +80,7 @@ public class Seeschlangenjagd extends MatPoolScript{
 			this.attacker();
 		}
 		if (scriptDurchlauf==this.Durchlauf_Mover){
-			this.mover();
+			// this.mover();
 		}
 
 	}
@@ -173,7 +174,7 @@ public class Seeschlangenjagd extends MatPoolScript{
 				this.addComment("SJ: Weg nach HOME benötigt " + Reisewochen + " Woche");
 			}
 		}
-		int MindestSilberbestand = (Reisewochen + this.ReserveWochen + 1) * 10 * this.scriptUnit.getUnit().getModifiedPersons();
+		int MindestSilberbestand = (Reisewochen + this.ReserveWochen) * 10 * this.scriptUnit.getUnit().getModifiedPersons();
 		this.addComment("SJ: MindestSilberbestand=" + MindestSilberbestand + " Silber (" +  this.ReserveWochen + " Reservewochen berücksichtigt)");
 		
 		if (Silberbestand<MindestSilberbestand) {
@@ -212,6 +213,7 @@ public class Seeschlangenjagd extends MatPoolScript{
 			// ok, wir haben genau hier was zum Angreifen
 			// alle scriptunits auf diesem Schiff durchgehen und // angreifer suchen
 			this.addComment("SJ: es befindet sich ein Ziel in der Region....suche Angreifer (// Angreifer)");
+			int countFront = 0 ;
 			for (Unit u : this.getUnit().getModifiedShip().getUnits().values()) {
 				ScriptUnit  su = this.getOverlord().getScriptMain().getScriptUnit(u);
 				if (su!=null) {
@@ -222,8 +224,14 @@ public class Seeschlangenjagd extends MatPoolScript{
 							su.addOrder("ATTACKIERE " + so + " ; SJ von " + this.scriptUnit.toString(), true, false);
 							this.is_attacking=true;
 						}
+						if (su.getUnit().getCombatStatus()==EresseaConstants.CS_AGGRESSIVE || su.getUnit().getCombatStatus() == EresseaConstants.CS_FRONT || su.getUnit().getCombatStatus() == EresseaConstants.CS_DEFENSIVE) {
+							countFront += su.getUnit().getModifiedPersons();
+						}
 					}
 				}
+			}
+			if (countFront<10) {
+				this.doNotConfirmOrders("SSJ: weniger als 10 Angreifer in der Frontreihe - sicher?");
 			}
 			if (this.is_attacking) {
 				// Jetzt dem SJM mitteilen, dass wir in dieser Region bereits zuschlagen
@@ -231,6 +239,9 @@ public class Seeschlangenjagd extends MatPoolScript{
 				this.SJM.addAttackRegion(this.region().getCoordinate());
 			}
 		}
+		
+		
+		
 		
 		// finale: wenn bis hierhin gekommen und nicht auf dem Heimweg: als mover melden
 		if (!this.is_moving_home) {
@@ -257,15 +268,12 @@ public class Seeschlangenjagd extends MatPoolScript{
 		List<Region> targetPath = Regions.planShipRoute(this.scriptUnit.getUnit().getModifiedShip(),super.gd_Script, this.targetRegionCoord);
 		if (targetPath!=null && targetPath.size()>0) {
 			super.addOrder("NACH " + Regions.getDirections(targetPath) + " ; vom SJM zugewiesen", true);
+			FFToolsRegions.addMapLine(this.region(), this.targetRegionCoord, 255, 0, 0, 5, SeeschlangenJagdManager_SJM.MAPLINE_TAG);
 		} else {
 			this.doNotConfirmOrders("!!! vom SJM ungültige Befehle erhalten, Zielregion nicht erreichbar: " + this.targetRegionCoord.toString(",", false));
 		}
 	}
 	
-	
-	private void mover() {	
-		
-	}
 	
 	
 	/*

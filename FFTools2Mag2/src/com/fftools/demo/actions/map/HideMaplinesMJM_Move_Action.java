@@ -25,6 +25,8 @@ import magellan.library.utils.logging.Logger;
 
 import com.fftools.ScriptMain;
 import com.fftools.demo.actions.MenuAction;
+import com.fftools.pools.seeschlangen.MonsterJagdManager_MJM;
+import com.fftools.pools.seeschlangen.SeeschlangenJagdManager_SJM;
 import com.fftools.trade.TradeAreaHandler;
 import com.fftools.utils.FFToolsRegions;
 
@@ -35,7 +37,7 @@ import com.fftools.utils.FFToolsRegions;
  * @author Fiete
  * @version
  */
-public class ShowMaplinesTAC_Action extends MenuAction {
+public class HideMaplinesMJM_Move_Action extends MenuAction {
 
 	static  final long serialVersionUID = 0;
 	private static Logger log = null;
@@ -45,10 +47,10 @@ public class ShowMaplinesTAC_Action extends MenuAction {
 	 *
 	 * @param parent TODO: DOCUMENT ME!
 	 */
-	public ShowMaplinesTAC_Action(Client client) {
+	public HideMaplinesMJM_Move_Action(Client client) {
         super(client);
-        setName("Show TAC MapLines");
-        log = Logger.getInstance(ShowMaplinesTAC_Action.class);
+        setName("Hide MJM MapLines");
+        log = Logger.getInstance(HideMaplinesMJM_Move_Action.class);
 	}
 
 	/**
@@ -58,10 +60,12 @@ public class ShowMaplinesTAC_Action extends MenuAction {
 	 */
 	public void actionPerformed(ActionEvent e) {
 		/*
-		 * Alle Regionen durchgehen, aus den prepared maplines diejenigen mit der richtigen TAG_ID in die maplines einfügen
+		 * Alle Regionen durchgehen, aus den maplines diejenigen mit der richtigen TAG_ID herausnehmen
 		 */
-		log.info("Show TAC MapLines started...");
-		FFToolsRegions.activateMapLine(super.client.getData(), TradeAreaHandler.MAPLINE_TAG_ID);
-		log.info("Show TAC MapLines finished...");
+		log.info("Hide MJM MapLines started...");
+		FFToolsRegions.deActivateMapLine(super.client.getData(), MonsterJagdManager_MJM.MAPLINE_ATTACK_TAG);
+		FFToolsRegions.deActivateMapLine(super.client.getData(), MonsterJagdManager_MJM.MAPLINE_MOVE_TAG);
+		// refreshen  ??
+		log.info("Hide MJM MapLines finished...");
 	}
 }
