@@ -59,6 +59,8 @@ public class Bauen extends MatPoolScript implements Cloneable{
 	public static final int minDefaultBurgenbauTalent=3;  // Burgenbau
 	public static final int minDefaultStrassenbauTalent=2; 
 	
+	private int pers_gewicht = -1;
+	
 	/**
 	 * Typ dieses Scriptes
 	 */
@@ -349,6 +351,9 @@ public void runScript(int scriptDurchlauf){
 		} else {
 			this.addComment("Bauen: keine Eintragung beim Baumanager.");
 		}
+		
+		this.pers_gewicht = OP.getOptionInt("pers_gewicht", this.pers_gewicht);
+		
 	}
 
 
@@ -1437,17 +1442,27 @@ public void runScript(int scriptDurchlauf){
 					this.addComment("unterwegs in die HOME-Region");
 					this.addComment("ETA: " + gotoInfo.getAnzRunden() + " Runden.");
 					// Pferde requesten...
-					if (this.scriptUnit.getSkillLevel("Reiten")>0){
-						int PferdeAnzahl =  this.scriptUnit.getUnit().getModifiedPersons();
-						
-						if (this.scriptUnit.getUnit().getRace().getName().equalsIgnoreCase("Trolle")) {
-							PferdeAnzahl = (int)Math.ceil(PferdeAnzahl * 1.1);
-							this.addComment("Troll-Reiter: Anzahl der Pferde neu berechnet, " + PferdeAnzahl + " Pferde angefordert.");
-						} else {
-							// this.addComment("Keine trolle erkannt, sondern: " + this.scriptUnit.getUnit().getRace().getName());
+					
+					int persons = this.scriptUnit.getUnit().getModifiedPersons();
+					int anz_pferde = persons;
+					if (this.pers_gewicht>0){
+						anz_pferde = (int)Math.ceil(((double)persons * (double)this.pers_gewicht)/20);
+					}
+					SkillType reitType = this.gd_Script.getRules().getSkillType("Reiten");
+					Skill reitSkill = this.scriptUnit.getUnit().getModifiedSkill(reitType);
+					// schauen wir mal, ob unser reittalent ausreicht...
+					int maxPferde=0;
+					if (reitSkill!=null && reitSkill.getLevel()>0) {
+						maxPferde = persons * reitSkill.getLevel() * 2;
+						if (maxPferde<anz_pferde) {
+							this.addComment("Bauen: ich würde gerne " + anz_pferde + " Pferde mitführen, mein Können reicht aber nur für " + maxPferde + " ...");
+							anz_pferde=maxPferde;
 						}
-						MatPoolRequest MPR = new MatPoolRequest(this,PferdeAnzahl, "Pferd", 21, "Bauarbeiter unterwegs" );
+						this.addComment("Bauen: Pferdewunsch antizipiert, " + anz_pferde + " Pferde angefordert.");
+						MatPoolRequest MPR = new MatPoolRequest(this,anz_pferde, "Pferd", 21, "Bauarbeiter unterwegs" );
 						this.addMatPoolRequest(MPR);
+					} else {
+						this.addComment("Bauarbeiter unterwegs aber ohne Reittalent -> keine Pferde...");
 					}
 					this.finalStatusInfo="going HOME";
 					if (this.scriptUnit.getUnit().getModifiedBuilding()!=null) {

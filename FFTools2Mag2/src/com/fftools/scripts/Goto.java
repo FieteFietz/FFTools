@@ -2,6 +2,8 @@ package com.fftools.scripts;
 
 
 import magellan.library.CoordinateID;
+import magellan.library.Skill;
+import magellan.library.rules.SkillType;
 
 import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.utils.FFToolsOptionParser;
@@ -43,8 +45,27 @@ public void runScript(int scriptDurchlauf){
 		OP.addOptionList(this.getArguments());
 		if (OP.getOptionBoolean("pferde", false)) {
 			// kleinen Request für Pferde ergänzen
-			this.addComment("Pferdewunsch erkannt, Pferde angefordert.");
-			this.addMatPoolRequest(new MatPoolRequest(this,this.getUnit().getModifiedPersons(),"Pferd",3,"GOTO mit Pferde=ja"));
+			int persons = this.scriptUnit.getUnit().getModifiedPersons();
+			int user_pers_gewicht = OP.getOptionInt("pers_gewicht", -1);
+			int anz_pferde = persons;
+			if (user_pers_gewicht>0){
+				anz_pferde = (int)Math.ceil(((double)persons * (double)user_pers_gewicht)/20);
+			}
+			SkillType reitType = this.gd_Script.getRules().getSkillType("Reiten");
+			Skill reitSkill = this.scriptUnit.getUnit().getModifiedSkill(reitType);
+			// schauen wir mal, ob unser reittalent ausreicht...
+			int maxPferde=0;
+			if (reitSkill!=null && reitSkill.getLevel()>0) {
+				maxPferde = persons * reitSkill.getLevel() * 2;
+				if (maxPferde<anz_pferde) {
+					this.addComment("Goto: ich würde gerne " + anz_pferde + " Pferde mitführen, mein Können reicht aber nur für " + maxPferde + " ...");
+					anz_pferde=maxPferde;
+				}
+				this.addComment("Pferdewunsch erkannt, " + anz_pferde + " Pferde angefordert.");
+				this.addMatPoolRequest(new MatPoolRequest(this,anz_pferde,"Pferd",3,"GOTO mit Pferde=ja"));
+			} else {
+				this.doNotConfirmOrders("Goto: Einheit soll Pferde mitführen, kann aber gar nicht reiten!!!");
+			}
 		}
 		
 		// hier code fuer GoTo

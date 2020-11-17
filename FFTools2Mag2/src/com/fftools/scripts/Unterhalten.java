@@ -60,6 +60,8 @@ public class Unterhalten extends TransportScript{
 	
 	private String LernfixOrder = "Talent=Unterhaltung";
 	
+	private int pers_gewicht = -1;
+	
 	// Konstruktor
 	public Unterhalten() {
 		super.setRunAt(this.runners);
@@ -104,6 +106,8 @@ public void runScript(int scriptDurchlauf){
 		if (OP.getOptionString("mode").equalsIgnoreCase("auto")){
 			this.automode = true;
 		}
+		
+		this.pers_gewicht = OP.getOptionInt("pers_gewicht", this.pers_gewicht);
 		
 		
 		// FF: eventuell hier setting für die Region ansetzen....falls nötig
@@ -277,7 +281,22 @@ public void runScript(int scriptDurchlauf){
 							addComment("dieser Region NEU als Unterhalter zugeordnet: " + targetRegion.toString());
 							addComment("ETA: " + gotoInfo.getAnzRunden() + " Runden.");
 							// Pferde requesten...
-							MatPoolRequest MPR = new MatPoolRequest(this,this.scriptUnit.getUnit().getModifiedPersons(), "Pferd", 20, "Unterhalter unterwegs" );
+							
+							int persons = this.scriptUnit.getUnit().getModifiedPersons();
+							int anz_pferde = persons;
+							if (this.pers_gewicht>0){
+								anz_pferde = (int)Math.ceil(((double)persons * (double)this.pers_gewicht)/20);
+							}
+							// schauen wir mal, ob unser reittalent ausreicht...
+							int maxPferde=0;
+							
+							maxPferde = persons * reittalent * 2;
+							if (maxPferde<anz_pferde) {
+								this.addComment("Unterhalten: ich würde gerne " + anz_pferde + " Pferde mitführen, mein Können reicht aber nur für " + maxPferde + " ...");
+								anz_pferde=maxPferde;
+							}
+							this.addComment("Unterhalten: Pferdewunsch wird antizipiert, " + anz_pferde + " Pferde angefordert.");
+							MatPoolRequest MPR = new MatPoolRequest(this,anz_pferde, "Pferd", 20, "Unterhalter unterwegs" );
 							this.addMatPoolRequest(MPR);
 						} else {
 							// neu, wir lernen auf T1 Reiten
