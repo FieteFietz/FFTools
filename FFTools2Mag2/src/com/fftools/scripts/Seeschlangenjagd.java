@@ -3,6 +3,7 @@ package com.fftools.scripts;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fftools.ReportSettings;
 import com.fftools.ScriptUnit;
 import com.fftools.pools.seeschlangen.SeeschlangenJagdManager_SJM;
 import com.fftools.utils.FFToolsOptionParser;
@@ -52,6 +53,11 @@ public class Seeschlangenjagd extends MatPoolScript{
 	
 	private String Lernplan="";
 	private String Lerntalent="";
+	
+	/*
+	 * wie viele wochen darf es dauern, das Ziel (SS) zu erreichen?
+	 */
+	public int weeks2attack = 1;
 	
 	
 	/**
@@ -137,7 +143,15 @@ public class Seeschlangenjagd extends MatPoolScript{
 			patrolInfo = "soll keine Patrouille fahren";
 		}
 		
-		this.addComment("SJ: HOME=" + this.HomeRegionCoord.toString(",", false) + ", Entfernung=" + this.Entfernung + " Regionen, ReserveWochen=" + this.ReserveWochen + ", " + patrolInfo);
+		
+		int check_set_weeks2attack = ReportSettings.getInstance().getOptionInt("SSJM_weeks2attack");
+		if (check_set_weeks2attack!=ReportSettings.KEY_NOT_FOUND && check_set_weeks2attack>0) {
+			this.weeks2attack = check_set_weeks2attack;
+		}
+				
+		this.weeks2attack = OP.getOptionInt("weeks2attack", this.weeks2attack);
+		
+		this.addComment("SJ: HOME=" + this.HomeRegionCoord.toString(",", false) + ", Entfernung=" + this.Entfernung + " Regionen, ReserveWochen=" + this.ReserveWochen + ", weeks2attack=" + this.weeks2attack + ", " + patrolInfo);
 		this.Lernplan = OP.getOptionString("Lernplan");
 		this.Lerntalent = OP.getOptionString("Talent");
 		
@@ -161,6 +175,10 @@ public class Seeschlangenjagd extends MatPoolScript{
 		if (!this.actRegionCoord.equals(this.HomeRegionCoord)) {
 			// Pfad nach Hause ermitteln
 			this.homePath = Regions.planShipRoute(this.scriptUnit.getUnit().getModifiedShip(),super.gd_Script, HomeRegionCoord);
+			if (this.homePath==null) {
+				this.doNotConfirmOrders("!!! Pfad zur Homeregion nicht gefunden!!!");
+				return;
+			}
 			
 			Direction d = Direction.INVALID;
 			if (this.scriptUnit.getUnit().getModifiedShip()!=null){

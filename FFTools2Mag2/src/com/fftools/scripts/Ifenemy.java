@@ -52,17 +52,49 @@ public class Ifenemy extends Script{
 			// 20190908: guardingonly
 			String keyWord = super.getArgAt(0);
 			boolean guardingOnly=false;
+			boolean armedOnly=false;
+			
 			int argStartCount=1;
 			if (keyWord.equalsIgnoreCase("guardingonly")) {
 				guardingOnly=true;
 				this.addComment("ifEnemy: nur bewachende feindliche Einheiten sollen berücksichtigt werden (guardingOnly)");
-				keyWord = super.getArgAt(1);
-				// this.addComment("ifEnemy: new keyword: " + keyWord);
 				argStartCount=2;
 			}
 			
+			if (keyWord.equalsIgnoreCase("armedonly")) {
+				armedOnly=true;
+				this.addComment("ifEnemy: nur bewaffnete feindliche Einheiten sollen berücksichtigt werden (armedOnly)");
+				argStartCount=2;
+			}
+			
+			if (argStartCount==2) {	
+				keyWord = super.getArgAt(1);
+			}
+			
+			
+			// falls beide auftreten, auch das noch abfragen
+			if (keyWord.equalsIgnoreCase("guardingonly")) {
+				guardingOnly=true;
+				this.addComment("ifEnemy: nur bewachende feindliche Einheiten sollen berücksichtigt werden (guardingOnly)");
+				argStartCount=3;
+			}
+			
+			if (keyWord.equalsIgnoreCase("armedonly")) {
+				armedOnly=true;
+				this.addComment("ifEnemy: nur bewaffnete feindliche Einheiten sollen berücksichtigt werden (armedOnly)");
+				argStartCount=3;
+			}
+			
+			if (argStartCount==3) {	
+				keyWord = super.getArgAt(2);
+			}
+			
+			
+			
+			
+			
 			// String enemyUnit = FFToolsRegions.isEnemyInRegion(this.scriptUnit.getUnit().getRegion(),this.scriptUnit);
-			String enemyUnit = FFToolsRegions.isEnemyInRegion(this.scriptUnit.getUnit().getRegion(),null,guardingOnly); 
+			String enemyUnit = FFToolsRegions.isEnemyInRegion(this.scriptUnit.getUnit().getRegion(),null,guardingOnly,armedOnly); 
 			if (enemyUnit!=""){
 				this.addComment("IfEnemy: Enemy detected: " + enemyUnit);
 				if (keyWord.equalsIgnoreCase("script")) {

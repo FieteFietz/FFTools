@@ -213,7 +213,7 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 		// Sichtungen
 		for (CoordinateID c:bekannteSchlangen) {
 			if (!this.attackRegions.contains(c)) {
-				Seeschlangenjagd su = findSJ(c);
+				Seeschlangenjagd su = findSJ(c,true);
 				if (su!=null) {
 					// gefunden
 					if (su.targetRegionCoord==null) {
@@ -232,7 +232,7 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 		for (CoordinateID c:SchlangenSchlachten) {
 			if (!this.moveToRegions.contains(c)) {
 				if (!this.attackRegions.contains(c)) {
-					Seeschlangenjagd su = findSJ(c);
+					Seeschlangenjagd su = findSJ(c,true);
 					if (su!=null) {
 						// gefunden
 						if (su.targetRegionCoord==null) {
@@ -252,7 +252,7 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 		int countProtectedShips=0;
 		for (ProtectedShip pS : protectedShips) {
 			if (!this.moveToRegions.contains(pS.nextShipStop.getCoordinate())) {
-				Seeschlangenjagd su = findSJ(pS.nextShipStop.getCoordinate());
+				Seeschlangenjagd su = findSJ(pS.nextShipStop.getCoordinate(),false);
 				if (su!=null) {
 					// gefunden
 					if (su.targetRegionCoord==null) {
@@ -280,7 +280,7 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 		for (CoordinateID c:vermuteteSchlangen) {
 			if (!this.moveToRegions.contains(c)) {
 				if (!this.attackRegions.contains(c)) {
-					Seeschlangenjagd su = findSJ(c);
+					Seeschlangenjagd su = findSJ(c, true);
 					if (su!=null) {
 						// gefunden
 						if (su.targetRegionCoord==null) {
@@ -300,7 +300,7 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 		for (CoordinateID c:SchlangenSchlachtenUmgebung) {
 			if (!this.moveToRegions.contains(c)) {
 				if (!this.attackRegions.contains(c)) {
-					Seeschlangenjagd su = findSJ(c);
+					Seeschlangenjagd su = findSJ(c,true);
 					if (su!=null) {
 						// gefunden
 						if (su.targetRegionCoord==null) {
@@ -432,7 +432,7 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 	 * @return
 	 */
 	
-	private Seeschlangenjagd findSJ(CoordinateID c) {
+	private Seeschlangenjagd findSJ(CoordinateID c, boolean respectWeeksToAttack) {
 		
 		// die Mover nach Entfernung zu c Sortieren
 		SJ_Mover_Comparator SJC = new SJ_Mover_Comparator(c);
@@ -446,7 +446,13 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 			if (SJ.targetRegionCoord==null) {
 				// schnell mal Distance checken - geht am schnellsten - als Vorprüfung
 				int dist = Regions.getDist(SJ.actRegionCoord, c);
-				if (dist<=SJ.speed) {
+				
+				int maxWeeks = 1;
+				if (respectWeeksToAttack) {
+					maxWeeks = SJ.weeks2attack;
+				}
+				
+				if (dist<=(SJ.speed * maxWeeks)) {
 					// prinzipiell möglich, genau berechnen
 					Direction d = Direction.INVALID;
 					if (SJ.getUnit().getModifiedShip()!=null){
@@ -454,7 +460,7 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 					} 
 					
 					dist = FFToolsRegions.getShipPathSizeTurns_Virtuell_Ports(SJ.actRegionCoord,d, c, this.overLord.getScriptMain().gd_ScriptMain, SJ.speed, null);
-					if (dist==1) {
+					if (dist<=maxWeeks) {
 						// er kann hin...noch HOME checken
 						int actEntf = Regions.getDist(c, SJ.HomeRegionCoord);
 						if (actEntf<=SJ.Entfernung) {

@@ -876,7 +876,7 @@ public class FFToolsRegions {
 	 * @param r
 	 * @return the number of the enemy-unit or "" of no enemy present
 	 */
-	public static String isEnemyInRegion(Region r, ScriptUnit su, boolean guardingOnly) {
+	public static String isEnemyInRegion(Region r, ScriptUnit su, boolean guardingOnly, boolean armedOnly) {
 		String erg = "";
 		
 		String[] trustedFactions = null;
@@ -898,6 +898,11 @@ public class FFToolsRegions {
 			
 			// wenn nicht bewacht, aber nur bewachende Zählen sollen....
 			if (guardingOnly && !(u.getGuard()>0)) {
+				continue;
+			}
+			
+			// wenn nur bewaffnete zählen sollen, aber u nicht bewaffnet ist
+			if (armedOnly && FFToolsUnits.getAmountOfWeapons(u)==0) {
 				continue;
 			}
 			
