@@ -284,7 +284,7 @@ public class FFToolsUnits {
 		int erg= 0;
 		for (Item i : u.getModifiedItems()) {
 			ItemType t = i.getItemType();
-			if (t!=null && (t.getCategory().getName().equalsIgnoreCase("Waffen") || t.getCategory().getName().equalsIgnoreCase("Distanz-Waffen"))){
+			if (t!=null && t.getCategory()!=null && (t.getCategory().getName().equalsIgnoreCase("Waffen") || t.getCategory().getName().equalsIgnoreCase("Distanz-Waffen"))){
 				erg+=i.getAmount();
 			}
 		}
