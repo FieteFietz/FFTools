@@ -395,12 +395,16 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 				}
 			}
 			// wichtig: SSJ auf Ozean mit mayPatrol=false => moveHOME
+			// wichtig: SSJ könnte auch in der HOME liegen!
 			if (SJ.targetRegionCoord==null && !SJ.is_attacking && !SJ.is_moving_home && !SJ.mayPatrol) {
-				// 
-				SJ.addComment("Returning to Base : no target and patrol not allowed.");
-				SJ.targetRegionCoord = SJ.HomeRegionCoord;
-				SJ.is_moving_home=true;
-				SJ.makeOrderNach();
+				if (!SJ.getUnit().getRegion().getCoordinate().equals(SJ.HomeRegionCoord)) {
+					// 
+					SJ.addComment("Returning to Base : no target and patrol not allowed.");
+					SJ.targetRegionCoord = SJ.HomeRegionCoord;
+					SJ.is_moving_home=true;
+					SJ.makeOrderNach();
+				}
+				
 			}
 		}
 		long cntLearnen=0;
