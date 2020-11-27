@@ -491,34 +491,8 @@ public class TradeAreaConnector {
 			return;
 		}
 		Region r = this.SU1.getUnit().getRegion();
-		if (r.containsTag(ScriptMain.MAPLINE_TAG)){
-			StringTokenizer st = new StringTokenizer(r.getTag(ScriptMain.MAPLINE_TAG), " ");
-			String newTag = "";
-			// alle Elemente des Tags durchgehen
-			while(st.hasMoreTokens()) {
-				String token = st.nextToken();
-				String[] ss = token.split(",");
-				boolean mayStay=true;
-				// wir erkennen "unsere" am 7. Parameter
-				if (ss.length>6){
-					if (ss[6].equalsIgnoreCase(TradeAreaHandler.MAPLINE_TAG_ID)){
-						// Treffer
-						mayStay=false;
-					}
-				}
-				// den neunen Tag zusammenbasteln - alle, die keine Treffer sind
-				if (mayStay){
-					newTag = newTag.concat(" ").concat(token);
-				}
-			}
-			if (newTag.length()>1){
-				// neu setzen
-				r.putTag(ScriptMain.MAPLINE_TAG, newTag);
-			} else {
-				// tja, nix mehr da, löschen
-				r.removeTag(ScriptMain.MAPLINE_TAG);
-			}
-		}
+		FFToolsRegions.remove_MapLines_From_Region(r, TradeAreaHandler.MAPLINE_TAG_ID);
+		
 	}
 	
 	/*
@@ -531,51 +505,6 @@ public class TradeAreaConnector {
 		
 		
 		FFToolsRegions.addMapLine(this.SU1.getUnit().getRegion(), this.SU2.getUnit().getRegion().getID(), 153, 255, 204, 5, TradeAreaHandler.MAPLINE_TAG_ID);
-		
-		
-		
-		/*
-		// Tag-Eintrag zusammenbasteln
-		// TargetRegion finden
-		Region r = this.SU2.getUnit().getRegion();
-		CoordinateID cID = r.getID();
-		StringBuilder newTag = new StringBuilder();
-		newTag.append(cID.getX());
-		newTag.append(",");
-		newTag.append(cID.getY());
-		newTag.append(",");
-		newTag.append("153"); // RGB - R
-		newTag.append(",");
-		newTag.append("255"); // RGB - G
-		newTag.append(",");
-		newTag.append("204"); // RGB - B
-		newTag.append(",");
-		newTag.append("5");   // width
-		newTag.append(",");
-		newTag.append(TradeAreaHandler.MAPLINE_TAG_ID);
-		String newT = newTag.toString();
-		
-		// jetzt in der Region von SU1 ergänzen
-		r = this.SU1.getUnit().getRegion();
-		if(r.containsTag(ScriptMain.MAPLINE_TAG)) {
-			StringTokenizer st = new StringTokenizer(r.getTag(ScriptMain.MAPLINE_TAG), " ");
-			while(st.hasMoreTokens()) {
-                String token = st.nextToken();
-                if (token.equalsIgnoreCase(newT)){
-                	// bereits vorhanden
-                	return;
-                }
-			}
-		}
-		// nicht bereits vorhanden->ergänzen
-		String newnewTag = "";
-		if(r.containsTag(ScriptMain.MAPLINE_TAG)) {
-			newnewTag = r.getTag(ScriptMain.MAPLINE_TAG).concat(" ");
-		} 
-		newnewTag = newnewTag.concat(newT);
-		r.putTag(ScriptMain.MAPLINE_TAG, newnewTag);
-		*/
-		
 		
 	}
 

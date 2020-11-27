@@ -26,6 +26,7 @@ import com.fftools.pools.seeschlangen.MonsterJagdManager_MJM;
 import com.fftools.pools.treiber.TreiberPoolManager;
 import com.fftools.scripts.Script;
 import com.fftools.trade.TradeAreaHandler;
+import com.fftools.utils.FFToolsRegions;
 import com.fftools.utils.FFToolsTags;
 
 
@@ -201,6 +202,8 @@ public class ScriptMain {
 		
 		
 		this.stopRelationUpdates();
+		
+		FFToolsRegions.remove_AllMapLines_CR(this.gd_ScriptMain);
 		
 		
 		this.readReportSettings();

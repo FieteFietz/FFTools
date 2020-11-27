@@ -10,6 +10,7 @@ import javax.swing.KeyStroke;
 
 import com.fftools.demo.actions.MenuAction;
 import com.fftools.demo.actions.map.HideRegionIcons_Action;
+import com.fftools.demo.actions.map.RemoveRegionIcons_Action;
 import com.fftools.demo.actions.map.ShowRegionIcons_Action;
 
 import magellan.client.Client;
@@ -24,6 +25,7 @@ public class RegionIconsSubMenu extends JMenu {
 		this.setMnemonic("R".charAt(0));
 	    addMenuItem(this,new ShowRegionIcons_Action(client));
 	    addMenuItem(this,new HideRegionIcons_Action(client));
+	    addMenuItem(this,new RemoveRegionIcons_Action(client));
 	  
 	}
 

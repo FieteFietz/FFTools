@@ -1275,4 +1275,81 @@ public class FFToolsRegions {
 			}	
 		}
 	}
+	
+	public static void remove_AllMapLines(GameData gd,String identifier){
+		
+		for (Region r : gd.getRegions()){
+			if (r.containsTag(ScriptMain.MAPLINE_TAG)){
+				StringTokenizer st = new StringTokenizer(r.getTag(ScriptMain.MAPLINE_TAG), " ");
+				String newTag = "";
+				// alle Elemente des Tags durchgehen
+				while(st.hasMoreTokens()) {
+					String token = st.nextToken();
+					String[] ss = token.split(",");
+					boolean mayStay=true;
+					// wir erkennen "unsere" am 7. Parameter
+					if (ss.length>6){
+						if (ss[6].equalsIgnoreCase(identifier)){
+							// Treffer
+							mayStay=false;
+						}
+					}
+					// den neunen Tag zusammenbasteln - alle, die keine Treffer sind
+					if (mayStay){
+						newTag = newTag.concat(" ").concat(token);
+					}
+				}
+				if (newTag.length()>1){
+					// neu setzen
+					r.putTag(ScriptMain.MAPLINE_TAG, newTag);
+				} else {
+					// tja, nix mehr da, löschen
+					r.removeTag(ScriptMain.MAPLINE_TAG);
+				}
+			}
+		}
+	}
+	
+	public static void remove_MapLines_From_Region(Region r,String identifier){
+
+		if (r.containsTag(ScriptMain.MAPLINE_TAG)){
+			StringTokenizer st = new StringTokenizer(r.getTag(ScriptMain.MAPLINE_TAG), " ");
+			String newTag = "";
+			// alle Elemente des Tags durchgehen
+			while(st.hasMoreTokens()) {
+				String token = st.nextToken();
+				String[] ss = token.split(",");
+				boolean mayStay=true;
+				// wir erkennen "unsere" am 7. Parameter
+				if (ss.length>6){
+					if (ss[6].equalsIgnoreCase(identifier)){
+						// Treffer
+						mayStay=false;
+					}
+				}
+				// den neunen Tag zusammenbasteln - alle, die keine Treffer sind
+				if (mayStay){
+					newTag = newTag.concat(" ").concat(token);
+				}
+			}
+			if (newTag.length()>1){
+				// neu setzen
+				r.putTag(ScriptMain.MAPLINE_TAG, newTag);
+			} else {
+				// tja, nix mehr da, löschen
+				r.removeTag(ScriptMain.MAPLINE_TAG);
+			}
+		}
+		
+	}
+	
+	public static void remove_AllMapLines_CR(GameData gd){
+		for (Region r : gd.getRegions()){
+			if (r.containsTag(ScriptMain.MAPLINE_TAG)){
+				r.removeTag(ScriptMain.MAPLINE_TAG);
+			}
+		}
+	}
+	
+	
 }
