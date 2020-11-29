@@ -464,7 +464,7 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 					} 
 					
 					dist = FFToolsRegions.getShipPathSizeTurns_Virtuell_Ports(SJ.actRegionCoord,d, c, this.overLord.getScriptMain().gd_ScriptMain, SJ.speed, null);
-					if (dist<=maxWeeks) {
+					if (dist<=maxWeeks && dist>0) {
 						// er kann hin...noch HOME checken
 						int actEntf = Regions.getDist(c, SJ.HomeRegionCoord);
 						if (actEntf<=SJ.Entfernung) {
