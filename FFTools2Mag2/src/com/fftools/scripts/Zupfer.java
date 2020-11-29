@@ -413,7 +413,7 @@ public class Zupfer extends MatPoolScript{
 						}
 						
 						
-						this.addComment("ZupferWinterOption bewirkt Lernen von " + LernTalentName + ", da in Winterpause");
+						this.addComment("ZupferWinterOption *Lernen* bewirkt Lernen von " + LernTalentName + ", da in Winterpause");
 						// Lernen
 						this.addComment("Ergänze Lernfix Eintrag mit Talent=" + LernTalentName);
 						Script L = new Lernfix();
@@ -431,7 +431,7 @@ public class Zupfer extends MatPoolScript{
 						}
 						this.scriptUnit.addAScript(L);
 					} else {
-						this.addComment("ZupferWinterOption bewirkt Lernplan " + LernPlan + ", da in Winterpause");
+						this.addComment("ZupferWinterOption *Lernen* bewirkt Lernplan " + LernPlan + ", da in Winterpause");
 						// Lernen
 						this.addComment("Ergänze Lernfix Eintrag mit Lernplan=" + LernPlan);
 						Script L = new Lernfix();
@@ -465,7 +465,7 @@ public class Zupfer extends MatPoolScript{
 					
 					if (skillLevel<7 || !vorletzteWinterwoche) {
 						if (skillLevel<7) {
-							this.addComment("ZupferWinterOption bewirkt Lernen von Kräuterkunde, da noch nicht T7");
+							this.addComment("ZupferWinterOption *LernenForschen* bewirkt Lernen von Kräuterkunde, da noch nicht T7");
 							// Lernen
 							this.addComment("Ergänze Lernfix Eintrag mit Talent=" + LernTalentName);
 							Script L = new Lernfix();
@@ -487,7 +487,7 @@ public class Zupfer extends MatPoolScript{
 								if (LernTalentSkillType!=null) {
 									LernTalentName = LernTalentSkillType.toString();
 								}
-								this.addComment("ZupferWinterOption bewirkt Lernen von " + LernTalentName + ", da in Winterpause");
+								this.addComment("ZupferWinterOption *LernenForschen* bewirkt Lernen von " + LernTalentName + ", da in Winterpause");
 								// Lernen
 								this.addComment("Ergänze Lernfix Eintrag mit Talent=" + LernTalentName);
 								Script L = new Lernfix();
@@ -505,7 +505,7 @@ public class Zupfer extends MatPoolScript{
 								}
 								this.scriptUnit.addAScript(L);
 							} else {
-								this.addComment("ZupferWinterOption bewirkt Lernplan " + LernPlan + ", da in Winterpause");
+								this.addComment("ZupferWinterOption *LernenForschen* bewirkt Lernplan " + LernPlan + ", da in Winterpause");
 								// Lernen
 								this.addComment("Ergänze Lernfix Eintrag mit Lernplan=" + LernPlan);
 								Script L = new Lernfix();
@@ -526,7 +526,7 @@ public class Zupfer extends MatPoolScript{
 						}
 					} else {
 						
-						this.addComment("ZupferWinterOption bewirkt Forschen, in 2 Wochen ist der Winter vorbei.");
+						this.addComment("ZupferWinterOption *LernenForschen* bewirkt Forschen, in 2 Wochen ist der Winter vorbei.");
 						this.addOrder("FORSCHE KRÄUTER", true);
 					}
 					hasWinterpausenOrder=true;
