@@ -892,6 +892,8 @@ public class ScriptUnit {
 	 */
 	
 	public void readReportSettings(){
+		ArrayList<String> laterComments = new ArrayList<String>();
+		ArrayList<String> laterDoNotConfirmMessages = new ArrayList<String>();
 		for(Iterator<Order> iter = this.unit.getOrders2().iterator(); iter.hasNext();) {
 			Order o = (Order) iter.next();
 			String s = o.getText();
@@ -911,8 +913,18 @@ public class ScriptUnit {
 					 case 2:stringPrio = st.nextToken();break;
 					 }
 					 i++;
+					 if (i>2) {
+						 break;
+					 }
 				 }
-			     int intPrio = Integer.parseInt(stringPrio);
+			     int intPrio = 1;
+			     
+			     try {
+			    	 intPrio = Integer.parseInt(stringPrio);
+			     } catch (NumberFormatException nfe) {
+			    	 laterDoNotConfirmMessages.add("Fehler in setItemGroup - Priorität nicht erkannt!");
+			    	 laterComments.add(nfe.getMessage());
+			     }
 			     
 			     // platzhalter _ durch space ersetzen
 				 itemTypeName = itemTypeName.replace("_", " ");
@@ -928,6 +940,12 @@ public class ScriptUnit {
 				String s2 = s.substring(findKey.length());
 				reportSettings.parseOption(s2,this.getUnit(),false);
 			}
+		}
+		for (String s:laterDoNotConfirmMessages) {
+			this.doNotConfirmOrders(s);
+		}
+		for (String s:laterComments) {
+			this.addComment(s);
 		}
 	}
 	/**
