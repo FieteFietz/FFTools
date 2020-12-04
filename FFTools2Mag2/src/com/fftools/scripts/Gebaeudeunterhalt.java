@@ -106,6 +106,12 @@ public class Gebaeudeunterhalt extends MatPoolScript{
 		if (newSteinPrio>-1){
 			this.defaultSteinPrio=newSteinPrio;
 		}
+		
+		int newVersorgungsrunden=reportSettings.getOptionInt("Gebaeudeunterhalt_Runden", this.region());
+		if (newVersorgungsrunden>1) {
+			this.versorgungsRunden=newVersorgungsrunden;
+		}
+		
 
 		// Gebäude und Runde aus GD holen
 		gebaeude = super.scriptUnit.getUnit().getModifiedBuilding();
@@ -119,8 +125,8 @@ public class Gebaeudeunterhalt extends MatPoolScript{
 			 if (iter != null){ 
 				 for(;iter.hasNext();){
 					 Item item = (Item) iter.next();		
-					 super.addComment("Gebäudeunterhalt für " + versorgungsRunden + " Runden angefordert");  
-					 for (int n=0;n<=versorgungsRunden-1;n++){
+					 super.addComment("Gebäudeunterhalt für " + this.versorgungsRunden + " Runden angefordert");  
+					 for (int n=0;n<=this.versorgungsRunden-1;n++){
 			    	      if (item!=null){
 				    	      super.setPrioParameter(this.defaultSilberPrio, -0.5, 0, 1);
 				    	      if (item.getName().equalsIgnoreCase("Eisen")){
