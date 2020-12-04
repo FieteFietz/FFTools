@@ -108,7 +108,7 @@ public class Gebaeudeunterhalt extends MatPoolScript{
 		}
 		
 		int newVersorgungsrunden=reportSettings.getOptionInt("Gebaeudeunterhalt_Runden", this.region());
-		if (newVersorgungsrunden>1) {
+		if (newVersorgungsrunden>0) {
 			this.versorgungsRunden=newVersorgungsrunden;
 		}
 		
