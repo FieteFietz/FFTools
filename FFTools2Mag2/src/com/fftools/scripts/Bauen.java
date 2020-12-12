@@ -1657,6 +1657,12 @@ public void runScript(int scriptDurchlauf){
 		}
 		b.setFinalStatusInfo("baut " + actStufen + " Burg (Unterstützer)");
 		
+		Supporter sup = new Supporter();
+		sup.setETA(0);
+		sup.setLevels(actStufen);
+		sup.setBauen(b);
+		this.addSupporter(sup);
+		
 		
 		// turns to go...
 		int newSum = this.calcAnzTalBurg(this.actSize) + this.supportedLevels;
@@ -1664,16 +1670,19 @@ public void runScript(int scriptDurchlauf){
 			newSum = this.calcAnzahlTalent(this.buildingType.getBuildSkillLevel());
 		}
 		int newTurnsToGo = (int)Math.ceil((double)this.AnzahlLevelNachRessourcen / (double)newSum);
-		this.addComment("Mit Unterstützer diese Runde ein Weiterbau von " + newSum + " Stufe an der Burg. (Baudauer: " + newTurnsToGo + " Runden.");
+		this.addComment("Mit Unterstützer diese Runde ein Weiterbau von " + newSum + " Stufe an der Burg. (Baudauer: " + newTurnsToGo + " Runden.)",false);
 		this.turnsToGo = newTurnsToGo;
 		this.turnsToGo = this.anzRundenWithSupporters(this.AnzahlLevelNachRessourcen, false);
-		this.addComment("Genaue Neuberechnung ergibt: " + this.turnsToGo);
 		
-		Supporter sup = new Supporter();
-		sup.setETA(0);
-		sup.setLevels(actStufen);
-		sup.setBauen(b);
-		this.addSupporter(sup);
+		String sInfo = "Genaue Neuberechnung ergibt: " + this.turnsToGo;
+		if (this.turnsToGo==0) {
+			sInfo += " (wird fertig) ";
+			b.setFinalStatusInfo(" (wird fertig!)");
+			this.setFinalStatusInfo(" (wird fertig!)");
+		}
+		this.addComment(sInfo, false);
+		
+		
 		
 		// debug: zum Wiederfinden
 		
@@ -1696,17 +1705,17 @@ public void runScript(int scriptDurchlauf){
 			// ja, hinreiten und pferde requesten
 			GotoInfo gotoInfo = FFToolsRegions.makeOrderNACH(b.scriptUnit, b.region().getCoordinate(), this.region().getCoordinate(), false,"setSupporterOnRoute");
 			if (gotoInfo.getAnzRunden()>=(this.turnsToGo - 1)){
-				b.addComment("Kann nicht helfen bei: " + this.toString() + " (zu weit weg), ETA:" + gotoInfo.getAnzRunden() + " Runden bei noch " + this.turnsToGo + " weiteren Runden Bauzeit.");
-				this.addComment(b.unitDesc() + " zu weit weg für Hilfe hier.  ETA:" + gotoInfo.getAnzRunden() + " Runden bei noch " + this.turnsToGo + " weiteren Runden Bauzeit.");
+				b.addComment("Kann nicht helfen bei: " + this.toString() + " (zu weit weg), ETA:" + gotoInfo.getAnzRunden() + " Runden bei noch " + (this.turnsToGo + 1) + " weiteren Runden Bauzeit.");
+				this.addComment(b.unitDesc() + " zu weit weg für Hilfe hier.  ETA:" + gotoInfo.getAnzRunden() + " Runden bei noch " + (this.turnsToGo + 1) + " weiteren Runden Bauzeit.");
 			} else {
 				gotoInfo = FFToolsRegions.makeOrderNACH(b.scriptUnit, b.region().getCoordinate(), this.region().getCoordinate(), true,"setSupporterOnRoute");
 				b.addComment("dieser Region NEU als Bauunterstützer zugeordnet: " +  this.region().toString());
 				b.addComment("Auftrag: " + this.toString());
-				b.addComment("ETA: " + gotoInfo.getAnzRunden() + " Runden bei noch " + this.turnsToGo + " weiteren Runden Bauzeit.");
+				b.addComment("ETA: " + gotoInfo.getAnzRunden() + " Runden bei noch " + (this.turnsToGo + 1) + " weiteren Runden Bauzeit.");
 				b.setAutomode_hasPlan(true);
 				b.setHasGotoOrder(true);
 				b.setFinalStatusInfo("moving to work (supporter)");
-				this.addComment("Bauen: " + b.unitDesc() + " unterstützt beim Bauen. ETA: " + gotoInfo.getAnzRunden() + " Runden bei noch " + this.turnsToGo + " weiteren Runden Bauzeit.");
+				this.addComment("Bauen: " + b.unitDesc() + " unterstützt beim Bauen. ETA: " + gotoInfo.getAnzRunden() + " Runden bei noch " + (this.turnsToGo + 1) + " weiteren Runden Bauzeit.");
 				// Pferde requesten...
 				if (b.scriptUnit.getSkillLevel("Reiten")>0){
 					int PferdeAnzahl =  b.scriptUnit.getUnit().getModifiedPersons();
@@ -1717,9 +1726,6 @@ public void runScript(int scriptDurchlauf){
 					} else {
 						// b.addComment("Keine trolle erkannt, sondern: " + this.scriptUnit.getUnit().getRace().getName());
 					}
-					
-					
-					
 					MatPoolRequest MPR = new MatPoolRequest(b,PferdeAnzahl, "Pferd", 21, "Bauunterstützer unterwegs" );
 					b.addMatPoolRequest(MPR);
 				}
@@ -1743,17 +1749,15 @@ public void runScript(int scriptDurchlauf){
 				sup.setLevels(otherAnzTal);
 				sup.setBauen(b);
 				this.addSupporter(sup);
+				this.hasMovingSupporters=true;
 				
 				this.turnsToGo = this.anzRundenWithSupporters(this.AnzahlLevelNachRessourcen, false);
-				this.addComment("neue Bauzeit: " + this.turnsToGo);
+				this.addComment("neue Bauzeit: " + (this.turnsToGo + 1) + " Runden");
 				
-				this.hasMovingSupporters=true;
 				
 				// debug: zum Wiederfinden
 				
 				// outText.addOutLine("++++ *** ++++ **** ++++Bauunterstützung bei " + this.unitDesc() + " (moving)", true);
-				
-				
 			}
 			
 		} else {
@@ -1847,6 +1851,13 @@ public void runScript(int scriptDurchlauf){
 		}
 	}
 	
+	public int getCountSupporters() {
+		if (this.supporters!=null) {
+			return this.supporters.size();
+		}
+		return 0;
+	}
+	
 	
 	public int anzRundenWithSupporters(int levels, boolean addComment){
 		if (this.supporters==null || this.supporters.size()==0){
@@ -1857,9 +1868,10 @@ public void runScript(int scriptDurchlauf){
 		int lastRunningSum=-1;
 		int anzRunden = 0;
 		if (addComment){
-			this.addComment("Berechnung der finalen Bauzeit für " + levels + " Level");
+			this.addComment("Berechnung der finalen Bauzeit für " + levels + " Level", false);
 		}
-		while (runningSum<=levels){
+		int remaining = levels;
+		while (runningSum<levels){
 			// alle Aufsummieren, die ETA >= anzRunden haben
 			int runningSumTurn=0;
 			for (Supporter sup:this.supporters){
@@ -1868,21 +1880,26 @@ public void runScript(int scriptDurchlauf){
 				}
 			}
 			runningSum+=runningSumTurn;
+			remaining = Math.max(levels-runningSum,0);
 			if (addComment){
-				this.addComment("Runde " + anzRunden + ": " + runningSumTurn + " level, Summe: " + runningSum);
+				this.addComment("Runde " + anzRunden + ": " + runningSumTurn + " level, Summe: " + runningSum + ", verbleibend: " + remaining + " Level", false);
 			}
-			if (runningSum<=levels){
+			if (runningSum<levels){
 				anzRunden++;
 			}
 			
 			if (runningSum==lastRunningSum){
-				this.addComment("Abbruch der Berechnung wg Konstanz in Runde " + anzRunden);
+				this.addComment("Abbruch der Berechnung wg Konstanz in Runde " + anzRunden, false);
 				return -1;
 			}
 			lastRunningSum=runningSum;
 		}
 		if (addComment){
-			this.addComment("Geplante Fertigstellung in " + anzRunden + " Runden.");
+			if (anzRunden==0) {
+				this.addComment("Gebäude wird nächste Runde fertig sein!");
+			} else {
+				this.addComment("Geplante Fertigstellung in " + (anzRunden + 1) + " Runden.", false);
+			}
 		}
 		return anzRunden;
 	}

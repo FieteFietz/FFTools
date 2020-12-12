@@ -293,6 +293,7 @@ public class TradeAreaBauManager {
 		for (Bauen arbeiter:autoBauer){
 			if (!arbeiter.hasPlan() && arbeiter.scriptUnit.getSkillLevel(actTalentName)>=level_needed && arbeiter.region().equals(b.region())){
 				availableBauarbeiter.add(arbeiter);
+				b.addComment("Debug: Suche nach Unterstützer in der Region: " + arbeiter.unitDesc() + " kommt in Frage.");
 			}
 		}
 		
@@ -303,7 +304,7 @@ public class TradeAreaBauManager {
 			Collections.sort(availableBauarbeiter, bc);
 			// Zuordnen an den ersten besten
 			for (Bauen arbeiter:availableBauarbeiter){
-				if (b.getTurnsToGo()<=1){
+				if (b.getTurnsToGo()<=0){
 					break;
 				}
 				// ok...umsetzen
@@ -534,7 +535,7 @@ public class TradeAreaBauManager {
 		// 20120331 - fangen wir vorsichtig mit den Burgenbauern an
 		if (this.supportableBuilder!=null && this.supportableBuilder.size()>0){
 			for (Bauen b:this.supportableBuilder){
-				if (!b.isFertig() && b.getTurnsToGo()>1 && (b.getActTyp()==Bauen.BURG || b.getActTyp()==Bauen.BUILDING)){
+				if (!b.isFertig() && b.getTurnsToGo()>0 && (b.getActTyp()==Bauen.BURG || b.getActTyp()==Bauen.BUILDING)){
 					b.addComment("Prüfe Bauarbeiter auf Unterstützer...");
 					// noch nicht fertig
 					// müsste noch diverse (>1) runden arbeiten (hat also genug ressourcen)
@@ -554,12 +555,17 @@ public class TradeAreaBauManager {
 						b.addComment("Suche arbeitslose Unterstützer in diesem TA...");
 						checkForIddleSupporterInTA(b);
 					}
-					b.addComment("Suche abgeschlossen. Aktuell verbleibende Runden: " + b.getTurnsToGo());
+					b.addComment("Suche abgeschlossen. Aktuell verbleibende Runden: " + (b.getTurnsToGo() + 1));
 				} else {
 					b.addComment("Bauarbeiter sucht keine Unterstützung (Typ=" + b.getActTyp() + ")");
-					b.addComment("DEBUG: fertig: " + b.isFertig() + ", Turns: " + b.getTurnsToGo() + ", Typ:" + b.getActTyp());
+					b.addComment("DEBUG: fertig: " + b.isFertig() + ", Turns: " + (b.getTurnsToGo() + 1) + ", Typ:" + b.getActTyp());
 				}
+				if (b.getCountSupporters()>0) {
+					b.informTurnsToGo();
+				}
+				
 			}
+			
 		}
 		
 		// was ist mit nicht versorgten Bauarbeitern?
@@ -569,7 +575,7 @@ public class TradeAreaBauManager {
 					processWaitingArbeiter(arbeiter);
 				}
 				if (arbeiter.hasMovingSupporters()){
-					arbeiter.informTurnsToGo();
+					// arbeiter.informTurnsToGo();
 				}
 			}
 		}
