@@ -215,7 +215,7 @@ public class Rekrutieren extends MatPoolScript{
 					// Kommandos durchlaufen
 					for (Order o:this.scriptUnit.getUnit().getOrders2()){
 						String s = o.getText();
-						if (s.startsWith("// tempunit:")){
+						if (s.toLowerCase().startsWith("// tempunit:")){
 							s = s.substring(12);
 							tempUnit.addOrder(s);
 						}
@@ -228,7 +228,7 @@ public class Rekrutieren extends MatPoolScript{
 					}
 					String newCommand = "GIB TEMP " + id.toString() + " " + tempModPersons + " Personen ;script Rekrutieren";
 					super.addOrder(newCommand, true);
-					personen -= tempAB;
+					personen -= tempModPersons;
 				}
 
 			} else {
