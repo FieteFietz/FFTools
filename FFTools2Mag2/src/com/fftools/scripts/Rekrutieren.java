@@ -222,7 +222,11 @@ public class Rekrutieren extends MatPoolScript{
 					}
 					tempUnit.setOrdersConfirmed(true);
 					// Personen übergeben
-					String newCommand = "GIB TEMP " + id.toString() + " " + tempAB + " Personen ;script Rekrutieren";
+					int tempModPersons= tempAB;
+					if (OP.getOptionBoolean("tempSingleUnit", false)) {
+						tempModPersons = personen-1;
+					}
+					String newCommand = "GIB TEMP " + id.toString() + " " + tempModPersons + " Personen ;script Rekrutieren";
 					super.addOrder(newCommand, true);
 					personen -= tempAB;
 				}
