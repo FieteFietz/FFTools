@@ -294,7 +294,7 @@ public class ReportSettings {
 	 * parst den string und setzt entsprechend optionen
 	 * @param optionS
 	 */
-	public void parseOption(String optionS,Unit u,boolean toLowerCase) {
+	public boolean parseOption(String optionS,Unit u,boolean toLowerCase) {
 		/** mögliche angabe des Geltungsbereiches der Option
 		 * region
 		 * insel
@@ -303,6 +303,7 @@ public class ReportSettings {
 		 */
 		Region r = u.getRegion();
 		String geltungsbereich = null;
+		boolean erg = true;
 		// habe  wir mehrere Angaben?
 		String[] couple = optionS.split(" ");
 		if (couple.length>0){
@@ -311,18 +312,23 @@ public class ReportSettings {
 				if (option.length()>0){
 					if (option.indexOf("=")>0){
 						// ne Option mit Gleichheitszeichen
-						this.parseOption2(geltungsbereich,option,r,toLowerCase);
+						if (!this.parseOption2(geltungsbereich,option,r,toLowerCase)) {
+							erg = false;
+						}
+							
 					} else {
 						// keine option, eventuell ein geltungsbereich
 						if (option.equalsIgnoreCase("region")||option.equalsIgnoreCase("insel")){
 							geltungsbereich = option;
 						} else {
 							outText.addOutLine("Reportsettings: unbekannter Geltungsbereich " + option +  " bei" + u.toString(true) + " (" + optionS +";part " + option + ")");
+							erg = false;
 						}
 					}
 				}
 			}
 		}
+		return erg;
 	}
 	
 	
@@ -334,11 +340,12 @@ public class ReportSettings {
 	 * und fügt diesen der liste hinzu bzw setzt neu
 	 * @param s
 	 */
-	private void parseOption2(String geltungsbereich, String s,Region r, boolean tolowercase){
+	private boolean parseOption2(String geltungsbereich, String s,Region r, boolean tolowercase){
 		String[] setting = s.split("=");
 		if (setting.length!=2){
 			outText.addOutLine("!! Reportsettings: not korrect option:" + s);
-			return;
+			outText.addOutLine("!!! ReportSettings: Region " + r.toString() + ", text=" + s);
+			return false;
 		}
 		String key = setting[0].toLowerCase();
 		String value = setting[1];
@@ -367,7 +374,8 @@ public class ReportSettings {
 			if (regions==null){
 				// should never happen
 				outText.addOutLine("!!! ReportSettings: keine Insel gefunden.");
-				return;
+				outText.addOutLine("!!! ReportSettings: Region " + r.toString() + ", text=" + s);
+				return false;
 			}
 			// alle regionen der insel dazupacken..genauer: die Optionen
 			for (Iterator<Region> iter = regions.values().iterator();iter.hasNext();){
@@ -380,7 +388,8 @@ public class ReportSettings {
 		if (myReportOptions.size()==0){
 			// tja, irgendetwas schief gelaufen...keine Optionen zum ablegen
 			outText.addOutLine("!!! Reportsettings: Geltungsbereich nicht erkannt!");
-			return;
+			outText.addOutLine("!!! ReportSettings: Region " + r.toString() + ", text=" + s);
+			return false;
 		}
 		
 		for (Iterator<ReportOptions> iter = myReportOptions.iterator();iter.hasNext();){
@@ -390,11 +399,13 @@ public class ReportSettings {
 			actRO.addReportOption(key, value,doNotOverride);
 		}
 		
+		return true;
+		
 		
 	}
 	
 	/**
-	 * liefert zu einer Region die RegioOptions bzw 
+	 * liefert zu einer Region die RegionOptions bzw 
 	 * legt sie neu an und liefert sie
 	 * @param r
 	 * @return

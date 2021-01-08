@@ -362,8 +362,11 @@ public class PferdeManager implements OverlordRun,OverlordInfo {
 					}
 					actMover.setGotoInfo(gotoInfo);
 					// noch nen Pferde MPR hinzufügen
-					MatPoolRequest MPR = new MatPoolRequest(actMover,actMover.scriptUnit.getUnit().getModifiedPersons(), "Pferd", 20, "Pferdefänger unterwegs" );
-					actMover.addMatPoolRequest(MPR);
+					if (actMover.scriptUnit.getSkillLevel("Reiten")>0) {
+					  MatPoolRequest MPR = new MatPoolRequest(actMover,actMover.scriptUnit.getUnit().getModifiedPersons(), "Pferd", 20, "Pferdefänger unterwegs" );
+					  actMover.addMatPoolRequest(MPR);
+					}
+					
 					
 					break;
 				} else {

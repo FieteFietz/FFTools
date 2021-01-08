@@ -933,12 +933,16 @@ public class ScriptUnit {
 			}
 			if (s.toLowerCase().startsWith("// script setscripteroption")) {
 				String s2 = s.substring(28);
-				reportSettings.parseOption(s2,this.getUnit(),true);
+				if (!reportSettings.parseOption(s2,this.getUnit(),true)) {
+					laterDoNotConfirmMessages.add("setscripteroption / readReportsettings meldete einen Fehler....");
+				}
 			}
 			String findKey = "// script setscripteroption2 ";
 			if (s.toLowerCase().startsWith(findKey)) {
 				String s2 = s.substring(findKey.length());
-				reportSettings.parseOption(s2,this.getUnit(),false);
+				if (!reportSettings.parseOption(s2,this.getUnit(),false)) {
+					laterDoNotConfirmMessages.add("setscripteroption2 / readReportsettings meldete einen Fehler....");
+				}
 			}
 		}
 		for (String s:laterDoNotConfirmMessages) {

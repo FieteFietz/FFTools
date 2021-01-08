@@ -5,6 +5,8 @@ import magellan.library.CoordinateID;
 import magellan.library.Skill;
 import magellan.library.rules.SkillType;
 
+import java.util.ArrayList;
+
 import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.utils.FFToolsOptionParser;
 import com.fftools.utils.FFToolsRegions;
@@ -21,6 +23,8 @@ public class Goto extends MatPoolScript implements WithGotoInfo{
 	
 	private CoordinateID move_dest = null;
 	private CoordinateID move_act = null;
+	
+	private boolean needReiten=false;
 	
 	
 	// Parameterloser constructor
@@ -64,7 +68,22 @@ public void runScript(int scriptDurchlauf){
 				this.addComment("Pferdewunsch erkannt, " + anz_pferde + " Pferde angefordert.");
 				this.addMatPoolRequest(new MatPoolRequest(this,anz_pferde,"Pferd",3,"GOTO mit Pferde=ja"));
 			} else {
-				this.doNotConfirmOrders("Goto: Einheit soll Pferde mitführen, kann aber gar nicht reiten!!!");
+				// this.doNotConfirmOrders("Goto: Einheit soll Pferde mitführen, kann aber gar nicht reiten!!!");
+				this.addComment("Goto: Einheit soll Pferde mitführen, kann aber gar nicht reiten!!! - daher lerne ich.");
+				this.needReiten=true;
+				String LernfixOrder = "Talent=Reiten Lehrer=nein";
+				this.scriptUnit.addComment("Lernfix wird initialisiert mit dem Parameter: " + LernfixOrder);
+				Script L = new Lernfix();
+				ArrayList<String> order = new ArrayList<String>();
+				order.add(LernfixOrder);
+				L.setArguments(order);
+				L.setScriptUnit(this.scriptUnit);
+				L.setGameData(this.scriptUnit.getScriptMain().gd_ScriptMain);
+				if (this.scriptUnit.getScriptMain().client!=null){
+					L.setClient(this.scriptUnit.getScriptMain().client);
+				}
+				this.scriptUnit.addAScript(L);
+				return;
 			}
 		}
 		
@@ -171,6 +190,9 @@ public void runScript(int scriptDurchlauf){
 	}
 	
 	private void sndRun() {
+		if (this.needReiten) {
+			return;
+		}
 		this.gotoInfo = new GotoInfo();
 		if (this.move_act!=null && this.move_dest!=null) {
 			this.gotoInfo = FFToolsRegions.makeOrderNACH(this.scriptUnit, this.move_act, this.move_dest,true,"Goto - makeOrderNach 2ndRun");

@@ -512,15 +512,6 @@ public class Transporter {
 		// this.informUnits(Anzahl, offer, request);
 	}
 	
-	/**
-	private void informUnits(int Anzahl,TransportOffer offer, TransportRequest request){
-		
-		// ETA berechnung
-		int ETAAnzahlRunden = this.getETA(offer, request);
-		offer.getScriptUnit().addComment("TM(-):" + Anzahl + " " + offer.getItemName() + " (P:" + request.getPrio()  + ",ETA:" + ETAAnzahlRunden + ") nach " + request.getRegion().toString() + " mit " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
-		request.getScriptUnit().addComment("TM(+):" + Anzahl + " " + offer.getItemName() + " (P:" + request.getPrio() + ",ETA:" + ETAAnzahlRunden +  ") von " + offer.getRegion().toString() + ") mit " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
-	}
-	**/
 	
 	/**
 	 * informiert die requester und offerer über die zugeteilten transporter

@@ -1327,9 +1327,18 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		int anzahl = Math.min(request.getForderung(), offer.getAnzahl_nochOfferiert());
 		if (anzahl>0) {
 			request.incBearbeitet(anzahl);
-			request.getScriptUnit().addComment("TM: von dieser Region: " + anzahl + " " + offer.getItemName() + " (Prio " + request.getPrio() + " von " + offer.getScriptUnit().getUnit().toString(true) + ")");
+			String commentText = "TM: von dieser Region: " + anzahl + " " + offer.getItemName() + " (Prio " + request.getPrio() + " von " + offer.getScriptUnit().getUnit().toString(true) + ")";
+			if (request.getKommentar().length()>0) {
+				commentText+=" {" + request.getKommentar() + "} "; 
+			}
+			request.getScriptUnit().addComment(commentText);
+			
+			commentText = "TM: für diese Region: " + anzahl + " " + offer.getItemName()+ " (Prio " + request.getPrio() + " für " + request.getScriptUnit().getUnit().toString(true) + ")"; 
+			if (request.getKommentar().length()>0) {
+				commentText+=" {" + request.getKommentar() + "} "; 
+			}
 			offer.incBearbeitet(anzahl);
-			offer.getScriptUnit().addComment("TM: für diese Region: " + anzahl + " " + offer.getItemName()+ " (Prio " + request.getPrio() + " für " + request.getScriptUnit().getUnit().toString(true) + ")");
+			offer.getScriptUnit().addComment(commentText);
 			if (!this.reportOFF) {
 				outText.addOutLine("Bereits in " + request.getRegion().toString() + ": " + anzahl + " " + offer.getItemName() + ". Noch offen:" + request.getForderung());
 			}

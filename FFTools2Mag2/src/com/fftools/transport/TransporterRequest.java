@@ -59,9 +59,23 @@ public class TransporterRequest {
     public void informUnits(){
 		// ETA berechnung
 		int ETAAnzahlRunden = this.getETA();
-		transportOffer.getScriptUnit().addComment("TM(-):" + Anzahl + " " + transportOffer.getItemName() + " (P:" + transportRequest.getPrio()  + ",ETA:" + ETAAnzahlRunden + ") nach " + transportRequest.getRegion().toString() + " mit " + this.transporter.getScriptUnit().getUnit().toString(true) + " in " + this.transporter.getScriptUnit().getUnit().getRegion().toString() + " für " + transportRequest.getScriptUnit().toString());
-		transportRequest.getScriptUnit().addComment("TM(+):" + Anzahl + " " + transportOffer.getItemName() + " (P:" + transportRequest.getPrio() + ",ETA:" + ETAAnzahlRunden +  ") von " + transportOffer.getRegion().toString() + ") mit " + this.transporter.getScriptUnit().getUnit().toString(true) + " in " + this.transporter.getScriptUnit().getUnit().getRegion().toString() + " von " + transportOffer.getScriptUnit().toString());
-		this.transporter.getScriptUnit().addComment(intro + ":" + Anzahl + " " + transportOffer.getItemName() + "(P:" + transportRequest.getPrio() + ",ETA:" + ETAAnzahlRunden + ") von " + transportOffer.getRegion().toString() + " nach " + transportRequest.getRegion().toString() + " für " + transportRequest.getScriptUnit().toString());
+		String commentText = "TM(-):" + Anzahl + " " + transportOffer.getItemName() + " (P:" + transportRequest.getPrio()  + ",ETA:" + ETAAnzahlRunden + ") nach " + transportRequest.getRegion().toString() + " mit " + this.transporter.getScriptUnit().getUnit().toString(true) + " in " + this.transporter.getScriptUnit().getUnit().getRegion().toString() + " für " + transportRequest.getScriptUnit().toString();
+		if (transportRequest.getKommentar().length()>0) {
+			commentText += " {" + transportRequest.getKommentar() + "} ";
+		}
+		transportOffer.getScriptUnit().addComment(commentText);
+		
+		commentText = "TM(+):" + Anzahl + " " + transportOffer.getItemName() + " (P:" + transportRequest.getPrio() + ",ETA:" + ETAAnzahlRunden +  ") von " + transportOffer.getRegion().toString() + ") mit " + this.transporter.getScriptUnit().getUnit().toString(true) + " in " + this.transporter.getScriptUnit().getUnit().getRegion().toString() + " von " + transportOffer.getScriptUnit().toString();
+		if (transportRequest.getKommentar().length()>0) {
+			commentText += " {" + transportRequest.getKommentar() + "} ";
+		}
+		transportRequest.getScriptUnit().addComment(commentText);
+		
+		commentText = intro + ":" + Anzahl + " " + transportOffer.getItemName() + "(P:" + transportRequest.getPrio() + ",ETA:" + ETAAnzahlRunden + ") von " + transportOffer.getRegion().toString() + " nach " + transportRequest.getRegion().toString() + " für " + transportRequest.getScriptUnit().toString();
+		if (transportRequest.getKommentar().length()>0) {
+			commentText += " {" + transportRequest.getKommentar() + "} ";
+		}
+		this.transporter.getScriptUnit().addComment(commentText);
 	}
 	
     private int getETA(){
