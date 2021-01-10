@@ -124,7 +124,15 @@ public class Rekrutieren extends MatPoolScript{
 			
 		} else {
 			// falls nicht Anzahl angegeben wurde....
-			anzahl = Integer.valueOf(super.getArgAt(0));
+			try {
+				anzahl = Integer.valueOf(super.getArgAt(0));
+			} catch (NumberFormatException NFE) {
+				anzahl=0;
+				this.doNotConfirmOrders("!Fehler in Erkennung der Anzahl!");
+				this.addComment(NFE.toString());
+				addOutLine("!!! " + super.scriptUnit.getUnit().toString(true) + ": Rekrutiere Fehler in Erkennung der Anzahl");
+				return;
+			}
 		}
 		if (anzahl == 0){
 			addOutLine(super.scriptUnit.getUnit().toString(true) + ": Rekrutiere...unpassende Anzahl Rekruten");
