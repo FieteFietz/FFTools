@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import magellan.library.Building;
 import magellan.library.Skill;
 import magellan.library.StringID;
 import magellan.library.rules.SkillType;
@@ -28,6 +29,11 @@ public class Lernfix extends MatPoolScript{
 	private AusbildungsPool ausbildungsPool=null;
 	
 	private String LernplanName = null;
+	
+	/**
+	 * parameter aka=false - bewirkt, dass trotz Lernfix kein Zugriff durch Akademiemanager 
+	 */
+	private boolean avoidAka=false;
 	
 	/**
 	 * @return the lernplanName
@@ -77,6 +83,14 @@ public class Lernfix extends MatPoolScript{
 		// FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Lernfix");
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit);
 		OP.addOptionList(this.getArguments());
+		
+		this.setAvoidAka(!OP.getOptionBoolean("aka", true));
+		if (this.isAvoidAka()) {
+			this.addComment("Lernfix: ich werde eine Einladung in eine Akademie ausschlagen!");
+		} else {
+			this.addComment("Lernfix: Akademieplatz denkbar!");
+		}
+		
 		String talentName = OP.getOptionString("Talent");
 		if (talentName.length()>1){
 			// wir haben Talent=XXX angabe in der scriot anweiseiung
@@ -266,6 +280,16 @@ public class Lernfix extends MatPoolScript{
 		public boolean allowMultipleScripts(){
 			return false;
 		}
+
+
+	public boolean isAvoidAka() {
+		return avoidAka;
+	}
+
+
+	public void setAvoidAka(boolean avoidAka) {
+		this.avoidAka = avoidAka;
+	}
 
 
 

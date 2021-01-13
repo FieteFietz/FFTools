@@ -60,6 +60,9 @@ public class AusbildungsRelation {
 	
 	// Nimmt die aktuell erlaubten Lehrmöglichkeiten auf
 	private HashMap<SkillType,Skill> teachOffer=null;
+	
+	// Lernfix aka=nein => nicht in aka, wenn drinne, raus
+	private boolean avoidAka = false;
     
 	
 	
@@ -80,7 +83,7 @@ public class AusbildungsRelation {
 	private Building akademieFromAM = null;
 	
 	/**
-	 * damit schüler nicht von jedem Lehrer in die Aka geschickt werdeb
+	 * damit schüler nicht von jedem Lehrer in die Aka geschickt werden
 	 */
 	private boolean orderedNewAka = false;
 	
@@ -100,7 +103,7 @@ public class AusbildungsRelation {
     	// akademie feststellen falls einheit darin ist oder betritt.
     	Building gebaeude = this.scriptUnit.getUnit().getModifiedBuilding();
     	if (gebaeude != null){
-    		if ((this.scriptUnit.getScriptMain().gd_ScriptMain.rules.getBuildingType("Akademie").equals(gebaeude.getBuildingType()))&&(gebaeude.getSize()>=25)){
+    		if ((this.scriptUnit.getScriptMain().gd_ScriptMain.getRules().getBuildingType("Akademie").equals(gebaeude.getBuildingType()))&&(gebaeude.getSize()>=25)){
     			this.akademie = gebaeude;
     		}
       	}
@@ -626,6 +629,14 @@ public class AusbildungsRelation {
 		 */
 		public void setOrderedNewAka(boolean orderedNewAka) {
 			this.orderedNewAka = orderedNewAka;
+		}
+
+		public boolean isAvoidAka() {
+			return avoidAka;
+		}
+
+		public void setAvoidAka(boolean avoidAka) {
+			this.avoidAka = avoidAka;
 		}
 		
 }

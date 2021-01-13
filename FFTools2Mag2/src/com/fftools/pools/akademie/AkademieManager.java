@@ -3,10 +3,6 @@ package com.fftools.pools.akademie;
 	import java.util.ArrayList;
 import java.util.HashMap;
 
-import magellan.library.Building;
-import magellan.library.Region;
-import magellan.library.Rules;
-
 import com.fftools.OutTextClass;
 import com.fftools.ScriptMain;
 import com.fftools.ScriptUnit;
@@ -16,6 +12,11 @@ import com.fftools.pools.ausbildung.AusbildungsManager;
 import com.fftools.pools.ausbildung.AusbildungsPool;
 import com.fftools.pools.ausbildung.relations.AusbildungsRelation;
 import com.fftools.scripts.Akademie;
+import com.fftools.scripts.Lernfix;
+
+import magellan.library.Building;
+import magellan.library.Region;
+import magellan.library.Rules;
 
 	public class AkademieManager implements OverlordRun,OverlordInfo {
 		
@@ -186,6 +187,23 @@ import com.fftools.scripts.Akademie;
 	    			isInFilter=false;
 	    			sU.addComment("Akadademiemanager: Einheit auf Schiff, daher unberücksichtigt");
 	    		}
+	    		
+	    		// wenn er partou nicht will (aka=false)
+	    		Object o = sU.getScript(Lernfix.class);
+	    		if (o != null) {
+	    			Lernfix L = (Lernfix)o;
+	    			if (L.isAvoidAka()) {
+	    				AR.setAvoidAka(true);
+		    			sU.addComment("Akadademiemanager: Einheit widersetzt sich meinen Planungen, daher unberücksichtigt");
+	    			} else {
+	    				sU.addComment("Akadademiemanager: Einheit wird verplant");
+	    			}
+	    		} else {
+	    			sU.addComment("Akadademiemanager: kein Lernfix script gefunden");
+	    		}
+	    		
+	    		
+	    		
 	    		// Akademiebesitzer immer drinne ?! (Nur wenn <=25 Pers!
 	    		Building b = AR.getScriptUnit().getUnit().getModifiedBuilding();
 	    		if (b!=null && b.getOwner()!=null && b.getOwner().equals(sU.getUnit()) && sU.getUnit().getModifiedPersons()<=25){

@@ -113,7 +113,7 @@ public class AkademiePool {
 					AR.getScriptUnit().doNotConfirmOrders("!!!Unbekanntes Talent!!!");
 				} else {
 					if (AR.getAkademieFromAM()==null && AR.getOrderedSkillType().equals(AT.getSkillType())){
-						if (!AR.isSchueler()){
+						if (!AR.isSchueler() && !AR.isAvoidAka()){
 							actRel.add(AR);
 						}
 						
