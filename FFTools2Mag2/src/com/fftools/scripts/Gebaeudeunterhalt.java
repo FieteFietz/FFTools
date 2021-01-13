@@ -31,6 +31,7 @@ public class Gebaeudeunterhalt extends MatPoolScript{
 
 	
 	private final String MauernDerEwigkeit = "Der Zahn der Zeit kann diesen Mauern nichts anhaben.";
+	private final String magischerSchimmer = "Ein magischer Schimmer liegt auf diesen Mauern.";
 		
 	// Parameter des Scripts... Zuweisung im Konstruktor!
 	
@@ -211,6 +212,9 @@ public class Gebaeudeunterhalt extends MatPoolScript{
 			for (Iterator<String> iter = b.getEffects().iterator();iter.hasNext();){
 				String s = (String)iter.next();
 				if (s.startsWith(MauernDerEwigkeit)){
+					return true;
+				}
+				if (s.startsWith(magischerSchimmer)){
 					return true;
 				}
 			}
