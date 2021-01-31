@@ -18,7 +18,7 @@ import magellan.library.Unit;
 import magellan.library.gamebinding.EresseaConstants;
 import magellan.library.rules.SkillType;
 
-public class Jagemonster extends Script{
+public class Jagemonster extends TradeAreaScript{
 	
 	public static int role_Undef=0;
 	public static int role_AttackFront=1;
@@ -79,6 +79,10 @@ public class Jagemonster extends Script{
 	public boolean isReady4AttackThisWeek() {
 		return Ready4AttackThisWeek;
 	}
+	
+	public void setReady4AttackThisWeek(boolean set) {
+		Ready4AttackThisWeek = set;
+	}
 
    
 	private boolean MJM_setAttack = false;
@@ -105,6 +109,17 @@ public class Jagemonster extends Script{
 	public void setTactican(boolean isTactican) {
 		this.isTactican = isTactican;
 	}
+	
+	// nutzt bei wahr den MJM_HC
+	private boolean automode=false;
+	
+	// wahr, wenn HC Einheit fertig bearbeitet hat
+	private boolean HC_ready = false;
+	
+	// wird vom HC benutzt um die MJ zu sortieren
+	private int HC_weeks2target = 0;
+	
+	
 
 	
 	/*
@@ -235,33 +250,45 @@ public class Jagemonster extends Script{
 			}
 		}
 		
-		// target
-		String targetUnitName = OP.getOptionString("ziel");
-		if (targetUnitName.length()==0) {
-			targetUnitName = OP.getOptionString("target");
-		}
-		if (targetUnitName.length()==0){
-			this.doNotConfirmOrders("!!! JageMonster - ziel fehlt! -> Unbestaetigt!!");
-			return;
-		}
 		// target soll sich im TA aufhalten
 		TradeArea TA = this.getOverlord().getTradeAreaHandler().getTAinRange(this.getUnit().getRegion());
 		if (TA==null) {
 			this.doNotConfirmOrders("!!! JageMonster - ich bin nicht in einem TradeArea! -> Unbestaetigt!!");
 			return;
 		}
-		for (TradeRegion TR:TA.getTradeRegions()) {
-			Region actRegion = TR.getRegion();
-			for (Unit actU : actRegion.getUnits().values()) {
-				String test = actU.getName();
-				if (test==null){
-					test = actU.getModifiedName();
-				}
-				ID test2 = actU.getID();
-				if (test != null && test2 != null){
-					if (test.equalsIgnoreCase(targetUnitName) || actU.toString(false).equalsIgnoreCase(targetUnitName)){
-						this.targetUnit = actU;
-					} 
+		
+		// mode= auto
+		if (OP.getOptionString("mode").equalsIgnoreCase("auto")) {
+			this.automode=true;
+			// beim MJM HC anmelden - wird über das TA sortiert
+			TA.getMJM_HC().addJäger(this); 
+		}
+		
+		
+		// target
+		String targetUnitName = OP.getOptionString("ziel");
+		if (targetUnitName.length()==0) {
+			targetUnitName = OP.getOptionString("target");
+		}
+		if (targetUnitName.length()==0 && !this.automode){
+			this.doNotConfirmOrders("!!! JageMonster - ziel fehlt! -> Unbestaetigt!!");
+			return;
+		}
+		
+		if (!this.automode) {
+			for (TradeRegion TR:TA.getTradeRegions()) {
+				Region actRegion = TR.getRegion();
+				for (Unit actU : actRegion.getUnits().values()) {
+					String test = actU.getName();
+					if (test==null){
+						test = actU.getModifiedName();
+					}
+					ID test2 = actU.getID();
+					if (test != null && test2 != null){
+						if (test.equalsIgnoreCase(targetUnitName) || actU.toString(false).equalsIgnoreCase(targetUnitName)){
+							this.targetUnit = actU;
+						} 
+					}
 				}
 			}
 		}
@@ -348,40 +375,43 @@ public class Jagemonster extends Script{
 		this.isTactican = OP.getOptionBoolean("tactican", this.isTactican);
 		this.isTactican = OP.getOptionBoolean("tactic", this.isTactican);
 		
-		
-		/*
-		 * *******************     T A S K   *****************************************
-		 */
-		// Feststellen, ob die Zieleinheit noch sichtbar ist - ist bereits erfolgt
-		if (this.targetUnit==null) {
-			// kein Ziel mehr vorhanden
-			// sind wir in der Home-Region ?
-			if (this.getUnit().getRegion().getCoordinate().equals(this.homeDest)) {
-				// wir sind (wieder) in der Home Region
-				this.addComment("JageMonster - Ziel im TA nicht auffindbar, ich wieder zu Hause, kein Auftrag mehr.");
-				// Einheit erhält keinen langen Befehl und bleibt (vermutlich) unbestätigt
+		if (!this.automode) {
+			/*
+			 * *******************     T A S K   *****************************************
+			 */
+			// Feststellen, ob die Zieleinheit noch sichtbar ist - ist bereits erfolgt
+			if (this.targetUnit==null) {
+				// kein Ziel mehr vorhanden
+				// sind wir in der Home-Region ?
+				if (this.getUnit().getRegion().getCoordinate().equals(this.homeDest)) {
+					// wir sind (wieder) in der Home Region
+					this.addComment("JageMonster - Ziel im TA nicht auffindbar, ich wieder zu Hause, kein Auftrag mehr.");
+					// Einheit erhält keinen langen Befehl und bleibt (vermutlich) unbestätigt
+				} else {
+					// wir müssen zur Home Region
+					this.moveTo(this.homeDest, MonsterJagdManager_MJM.MAPLINE_MOVE_TAG);
+				}
 			} else {
-				// wir müssen zur Home Region
-				this.moveTo(this.homeDest, MonsterJagdManager_MJM.MAPLINE_MOVE_TAG);
+				// Ziel ist noch vorhanden
+				// sind wir in target Region ?
+				if (this.getUnit().getRegion().equals(this.targetUnit.getRegion())) {
+					// wir sind vor Ort
+					// Check, ob Attackiere Sinnvoll, und ich kenne nur mich (diese Einheit), ich weiss nicht, wer sonst noch angreift...
+					// melde die Bereitschaft zum Angriff, warte auf GO durch MJM
+					// MJM prüft, ob Bedingungen erfüllt sind
+					//	- genug Angreifer
+					//  - kein BACK ohne FRONT
+					this.Ready4AttackThisWeek=true;
+					this.addComment("Melde dem MJM: bereit zum Angriff");
+					this.getOverlord().getMJM().addJäger(this);
+				} else {
+					// wir müssen zum Ziel
+					this.moveTo(this.targetUnit.getRegion().getCoordinate(), MonsterJagdManager_MJM.MAPLINE_ATTACK_TAG);
+					this.getOverlord().getMJM().addTargetUnit(this.targetUnit);
+				}
 			}
 		} else {
-			// Ziel ist noch vorhanden
-			// sind wir in target Region ?
-			if (this.getUnit().getRegion().equals(this.targetUnit.getRegion())) {
-				// wir sind vor Ort
-				// Check, ob Attackiere Sinnvoll, und ich kenne nur mich (diese Einheit), ich weiss nicht, wer sonst noch angreift...
-				// melde die Bereitschaft zum Angriff, warte auf GO durch MJM
-				// MJM prüft, ob Bedingungen erfüllt sind
-				//	- genug Angreifer
-				//  - kein BACK ohne FRONT
-				this.Ready4AttackThisWeek=true;
-				this.addComment("Melde dem MJM: bereit zum Angriff");
-				this.getOverlord().getMJM().addJäger(this);
-			} else {
-				// wir müssen zum Ziel
-				this.moveTo(this.targetUnit.getRegion().getCoordinate(), MonsterJagdManager_MJM.MAPLINE_ATTACK_TAG);
-				this.getOverlord().getMJM().addTargetUnit(this.targetUnit);
-			}
+			this.addComment("JM: ich erwarte Befehle vom MJM_HC (HighCommand)");
 		}
 	}
 	
@@ -396,7 +426,7 @@ public class Jagemonster extends Script{
 		// Auf jeden Fall Lern-Befehl geben
 		this.AttackLerne();
 		if (MJM_setAttack) {
-			// Angreifen - ATTACKIERE und FOLGE sind schon gesetzt, BEWACHE kommt von BEWACHE ?! Nope, wir beachen auch
+			// Angreifen - ATTACKIERE und FOLGE sind schon gesetzt, BEWACHE kommt von BEWACHE ?! Nope, wir bewachen auch
 			this.addOrder("BEWACHEN ;Jagemonster - angreifende Einheiten bewachen.", true);
 		} else {
 			// ok, wir wollten angreifen, MJM hat aber kein GO gegeben, wir sind wohl zu wenige
@@ -412,7 +442,7 @@ public class Jagemonster extends Script{
 	 * setzt NACH-Befehle - soweit möglich
 	 * @param dest
 	 */
-	private void moveTo(CoordinateID dest, String MapLineIdentifier) {
+	public void moveTo(CoordinateID dest, String MapLineIdentifier) {
 		this.addComment("JageMonster - befehle GOTO nach " + dest.toString());
 		this.targetDest = dest;
 		
@@ -469,6 +499,22 @@ public class Jagemonster extends Script{
 			L.setClient(this.scriptUnit.getScriptMain().client);
 		}
 		this.scriptUnit.addAScript(L);
+	}
+
+	public boolean isHC_ready() {
+		return HC_ready;
+	}
+
+	public void setHC_ready(boolean hC_ready) {
+		HC_ready = hC_ready;
+	}
+
+	public int getHC_weeks2target() {
+		return HC_weeks2target;
+	}
+
+	public void setHC_weeks2target(int hC_weeks2target) {
+		HC_weeks2target = hC_weeks2target;
 	}
 	
 	

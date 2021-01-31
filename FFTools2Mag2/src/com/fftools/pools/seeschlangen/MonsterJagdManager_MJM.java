@@ -8,6 +8,7 @@ import com.fftools.overlord.OverlordInfo;
 import com.fftools.overlord.OverlordRun;
 import com.fftools.scripts.Jagemonster;
 
+import magellan.client.swing.TradeOrganizerOld;
 import magellan.library.Region;
 import magellan.library.Unit;
 
@@ -36,6 +37,8 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
 	private ArrayList<String> monsterThreatInfos = new ArrayList<String>(0);
 	
 	private ArrayList<Jagemonster> MJM_Informanten = new ArrayList<Jagemonster>(0);
+	
+	private ArrayList<MJM_HighCommand> MJM_HCs = new ArrayList<MJM_HighCommand>(0);
 	
 	
 	private class MonsterThreat {
@@ -145,7 +148,7 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
 			}
 			
 			if (jm.wants_info_MJM_Region()) {
-				int i = countMonsterValue(jm.region());
+				int i = countMonsterValue(jm.region()).getThreadLevel();
 				if (i>0) {
 					jm.addComment("MJM_RegionInfo: Bedrohungswert in der Region: " + i);
 				} else {
@@ -177,7 +180,7 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
 		int Support = countRow(r,Jagemonster.role_Support);
 		
 		// MonsterWert berechnen
-		int monsterValue = countMonsterValue(r);
+		int monsterValue = countMonsterValue(r).getThreadLevel();
 		int monsterCount = countMonster(r);
 		informJägerRegion(r, "MJM: " + monsterCount + " Monster in der Region. Bedrohungswert: " + monsterValue);
 		
@@ -235,7 +238,7 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
 	
 	/**
 	 * setzt die Angriffsbefehle für einen JM
-	 * setzt folge auf die grösste einheite
+	 * setzt folge auf die grösste einheit
 	 * @param r
 	 * @param JM
 	 */
@@ -291,7 +294,7 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
 	 * @param rolle
 	 * @return
 	 */
-	private int countRow(Region r, int rolle) {
+	public int countRow(Region r, int rolle) {
 		int erg  = 0;
 		for (Jagemonster jm : Jäger) {
 			Region r_jm = jm.getUnit().getRegion();
@@ -322,11 +325,11 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
 	}
 	
 	/**
-	 * Berechnet den KampfWert aller Monster in der Region
+	 * Berechnet die Anzahl aller Monster in der Region
 	 * @param r
 	 * @return
 	 */
-	private int countMonster(Region r) {
+	public int countMonster(Region r) {
 		int monsterValue=0;
 		for(Unit u: r.units()) {
 			if (u.getFaction()!=null && u.getFaction().getID().toString().equals("ii")) {				
@@ -341,9 +344,8 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
 	 * @param r
 	 * @return
 	 */
-	private int countMonsterValue(Region r) {
-		int monsterValue=0;
-		boolean needTaktik = false;
+	public MonsterRegion countMonsterValue(Region r) {
+		MonsterRegion ergObject = new MonsterRegion(r, 0,false);
 		String erg="";
 		this.monsterThreatInfos = new ArrayList<String>(0);
 		for(Unit u: r.units()) {
@@ -351,24 +353,23 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
 				// Monster		
 				MonsterThreat MT = this.monsterThreats.get(u.getRace().toString());
 				if (MT!=null) {
-					long actMonsterValue = Math.round(MT.getFactor() * (double)u.getPersons()); 
-					monsterValue += actMonsterValue;
+					int actMonsterValue = (int) Math.round(MT.getFactor() * (double)u.getPersons()); 
+					ergObject.addThread(actMonsterValue);
 					erg = u.getPersons() + " " + u.getRace().toString() + ", Faktor: " + MT.getFactor() + "; Wert: " + actMonsterValue;
 					if (MT.needTactican()) {
-						needTaktik=true;
 						erg += " (erfordert Taktiker)";
+						ergObject.setNeedTactican(true);
 					}
-					
 				} else {
 					erg = "!!! keine Vorgabe für " + u.getRace().toString() + " vorhanden !!! (" + u.getPersons() + " Monster)";
 				}
 				this.monsterThreatInfos.add(erg);
 			}
 		}
-		if (needTaktik && !this.needTacticRegions.contains(r)) {
+		if (ergObject.needTactican() && !this.needTacticRegions.contains(r)) {
 			this.needTacticRegions.add(r);
 		}
-		return monsterValue;
+		return ergObject;
 	}
 	
 	/**
@@ -430,6 +431,12 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
     	erg = MT.toString();
     	this.monsterThreats.put(s, MT);
     	return erg;
+    }
+    
+    public void addMJM_HC(MJM_HighCommand MJM_HC) {
+    	if (!this.MJM_HCs.contains(MJM_HC)) {
+    		this.MJM_HCs.add(MJM_HC);
+    	}
     }
 
 }

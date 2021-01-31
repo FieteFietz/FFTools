@@ -18,6 +18,7 @@ import com.fftools.pools.circus.CircusPoolManager;
 import com.fftools.pools.circus.CircusPoolRelation;
 import com.fftools.pools.matpool.MatPool;
 import com.fftools.pools.matpool.MatPoolManager;
+import com.fftools.pools.seeschlangen.MJM_HighCommand;
 import com.fftools.pools.seeschlangen.MonsterJagdManager_MJM;
 import com.fftools.pools.treiber.TreiberPool;
 import com.fftools.pools.treiber.TreiberPoolManager;
@@ -101,9 +102,16 @@ public class TradeArea {
 	
 	
 	/**
-	 * Zur Veraltung der Bauscripte in diesem TA
+	 * Zur Verwaltung der Bauscripte in diesem TA
 	 */
 	private TradeAreaBauManager tradeAreaBauManager = null;
+	
+	
+	/**
+	 * Zur automatischen Zielzuweisung für die MJ in dem TA
+	 */
+	private MJM_HighCommand MJM_HC = null;
+	
 	
 	private boolean hasInsektenTransporter = false;
 	
@@ -1404,7 +1412,6 @@ public class TradeArea {
 		return this.tradeAreaBauManager;
 	}
 	
-	
 	/**
 	 * Exists a BauManager ?
 	 * @return bool
@@ -1415,6 +1422,19 @@ public class TradeArea {
 		}
 		return true;
 	}
+	
+	/**
+	 * returns the MJM_HC
+	 * @return MJM_HighCommand
+	 */
+	public MJM_HighCommand getMJM_HC() {
+		if (this.MJM_HC==null) {
+			this.MJM_HC = new MJM_HighCommand(this);
+		}
+		return this.MJM_HC;
+	}
+	
+	
 	
 	public boolean includesRegion(Region r){
 		for (TradeRegion TR:this.tradeRegions){
@@ -1636,5 +1656,8 @@ public class TradeArea {
 		this.Profit = profit;
 	}
 	
+	public Overlord getOverlord() {
+		return this.overlord;
+	}
 	
 }

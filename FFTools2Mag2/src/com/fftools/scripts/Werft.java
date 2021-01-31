@@ -170,6 +170,11 @@ public class Werft extends MatPoolScript{
 		int Baulevel = OP.getOptionInt("BauLevel", 1);
 		HolzBedarf = (int) (Math.ceil(BauPunkte / Baulevel));
 		
+		if (OP.getOptionInt("Holz", 0)>0) {
+			this.addComment("manueller Holzbedarf festgelegt auf " + OP.getOptionInt("Holz", 0) );
+			HolzBedarf = OP.getOptionInt("Holz", 0);
+		}
+		
 		if (HolzBedarf>0){
 			// Prio bestimmen
 			

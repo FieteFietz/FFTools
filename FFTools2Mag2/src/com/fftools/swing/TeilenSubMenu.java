@@ -33,6 +33,8 @@ public class TeilenSubMenu extends JMenu {
 		addMenuItem(this,new TeilenAnzahlAction(selectionObserver,25));
 		addMenuItem(this,new TeilenAnzahlAction(selectionObserver,50));
 		addSeparator();
+		addMenuItem(this,new TeilenJeAnzahlAction(selectionObserver,2));
+		addMenuItem(this,new TeilenJeAnzahlAction(selectionObserver,3));
 		addMenuItem(this,new TeilenJeAnzahlAction(selectionObserver,5));
 		addMenuItem(this,new TeilenJeAnzahlAction(selectionObserver,6));
 		addMenuItem(this,new TeilenJeAnzahlAction(selectionObserver,10));
