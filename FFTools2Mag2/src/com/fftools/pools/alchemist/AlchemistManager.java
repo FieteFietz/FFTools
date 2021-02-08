@@ -25,7 +25,7 @@ public class AlchemistManager implements OverlordRun,OverlordInfo {
 	
 	// einfach nach dem ersten MP
 	// vor dem ersten MP sollte sich KrautDepot die Kräuter organisieren
-	private static final int Durchlauf = 345;
+	private static final int Durchlauf = 59;
 	
 	private int[] runners = {Durchlauf};
 	

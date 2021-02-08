@@ -220,9 +220,10 @@ public class AlchemistPool {
 			if (!alchi.isBrauend()){
 				alchi.addComment("unbeschäftigter Alchi");
 				// Lernen
-				alchi.addOrder("LERNEN Alchemie", true);
+				// alchi.addOrder("LERNEN Alchemie", true);
 				// Silber anfordern
-				alchi.getZubehoerDetail("Silber", 210);
+				// alchi.getZubehoerDetail("Silber", 210);
+				alchi.Lerne("Alchemie");
 			}
 		}
 	}

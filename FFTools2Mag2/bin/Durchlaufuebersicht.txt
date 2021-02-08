@@ -3,7 +3,7 @@ Befehle und Abhängigkeiten
 Abrunde				1
 ACK					1
 Akademieverwalter	2
-Alchemist			10	(meldet nur an)
+Alchemist			54	(meldet nur an, VOR Alchemiemanager)
 AuraMaxWarnung      1
 Bauen				8 Baumanager
 					10 (vor MP)
@@ -76,15 +76,17 @@ Vorrat				10 vor
 Werft				58  nach 1. MP (20)
 					855 ganz zum Schluss
 					
-Akkademiemanager	135 (nicht impl)
-					147 (nicht impl)
-AlchemieManager		40
-Ausbildungsmanager	7 Vorlauf, Lernsilber anfordern 
-					135 vorlaufRequest, maximal verf Silber ermitteln
-					145 eigentlicher PoolLauf
+Akkademiemanager	664
+					666
+AlchemieManager		59 (vor Lernfix, nach Matpool)
+Ausbildungsmanager	80 Vorlauf, Lernsilber anfordern 
+					550 vorlaufRequest, maximal verf Silber ermitteln
+					650 eigentlicher PoolLauf
 Baumanager			9 
 					105
-MatPoolManager		200
+MatPoolManager		27 nur für Rekrutieren
+					57
+					200
 					400
 					600
 					700

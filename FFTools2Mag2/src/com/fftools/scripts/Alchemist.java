@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import com.fftools.pools.matpool.relations.MatPoolRequest;
+import com.fftools.utils.FFToolsGameData;
+import com.fftools.utils.FFToolsOptionParser;
+
 import magellan.library.Item;
 import magellan.library.Potion;
 import magellan.library.Skill;
 import magellan.library.StringID;
 import magellan.library.rules.ItemType;
 import magellan.library.rules.SkillType;
-
-import com.fftools.pools.matpool.relations.MatPoolRequest;
-import com.fftools.utils.FFToolsGameData;
-import com.fftools.utils.FFToolsOptionParser;
 
 
 
@@ -27,7 +27,7 @@ import com.fftools.utils.FFToolsOptionParser;
 public class Alchemist extends MatPoolScript{
 	
 	
-	private static final int Durchlauf = 106;
+	private static final int Durchlauf = 54;
 	
 	private final int DEFAULT_KRAUT_PRIO=800;
 	private final int DEFAULT_MIN_AUSLASTUNG=70;
@@ -315,4 +315,17 @@ public class Alchemist extends MatPoolScript{
 		return krautPrio;
 	}
 	
+	public void Lerne(String LernfixOrder) {
+		this.scriptUnit.addComment("Lernfix wird initialisiert mit dem Parameter: " + LernfixOrder);
+		Script L = new Lernfix();
+		ArrayList<String> order = new ArrayList<String>();
+		order.add(LernfixOrder);
+		L.setArguments(order);
+		L.setScriptUnit(this.scriptUnit);
+		L.setGameData(this.scriptUnit.getScriptMain().gd_ScriptMain);
+		if (this.scriptUnit.getScriptMain().client!=null){
+			L.setClient(this.scriptUnit.getScriptMain().client);
+		}
+		this.scriptUnit.addAScript(L);
+	}
 }
