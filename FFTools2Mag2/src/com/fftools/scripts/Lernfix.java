@@ -156,6 +156,10 @@ public class Lernfix extends MatPoolScript{
 		if (this.LernplanName.length()>0){
 			AusbildungsRelation AR = super.getOverlord().getLernplanHandler().getAusbildungsrelation(this.scriptUnit, this.LernplanName);
 			if (AR!=null){
+				// Einschub Gratistalent
+				if (OP.getOptionString("Gratistalent").length()>2){
+					this.addGratisTalent(AR,OP.getOptionString("Gratistalent"));
+				}
 				AR.informScriptUnit();
 				ausbildungsPool.addAusbildungsRelation(AR);
 				if (AR.getActLernplanLevel()!=Lernplan.level_unset){

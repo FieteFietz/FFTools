@@ -693,10 +693,10 @@ public class TradeArea {
 		erg.addFirst("auf Lager " + lagerBestand + ":" + this.areaStorageAmountInfo);
 		
 		
-		int kaufTheo = this.suggestedBuyAmount(tR,true);
-		erg.addFirst("Vorgeschlagen: " + kaufTheo + "(max:" + this.calcMaxAvailableAmount(tR, buyItemType) + ") " + buyItemType.getName() + " bei Profit=" + this.getProfit() + " ( Run " + this.overlord.getMainDurchlauf() + ")");
-		if (this.isLagerVoll(tR, this.suggestedBuyAmount(tR))){
-			erg.addFirst("Lager voll! (Faktor:" + maxRundeEinkaufAufLager + ", theoMenge:" + this.suggestedBuyAmount(tR) + ")");
+		int kaufTheo = this.suggestedBuyAmount(tR,true,erg);
+		erg.addFirst("Vorgeschlagen: " + kaufTheo + "(max:" + this.calcMaxAvailableAmount(tR, buyItemType,null) + ") " + buyItemType.getName() + " bei Profit=" + this.getProfit() + " ( Run " + this.overlord.getMainDurchlauf() + ")");
+		if (this.isLagerVoll(tR, this.suggestedBuyAmount(tR,null))){
+			erg.addFirst("Lager voll! (Faktor:" + maxRundeEinkaufAufLager + ", theoMenge:" + this.suggestedBuyAmount(tR,erg) + ")");
 		}
 		return erg;
 	}
@@ -708,8 +708,8 @@ public class TradeArea {
 	 * @param r
 	 * @return
 	 */
-	public int suggestedBuyAmount(TradeRegion r){
-		return suggestedBuyAmount(r, false);
+	public int suggestedBuyAmount(TradeRegion r,LinkedList<String> erg){
+		return suggestedBuyAmount(r, false,erg);
 	}
 	
 	/**
@@ -719,24 +719,31 @@ public class TradeArea {
 	 * @param r
 	 * @return
 	 */
-	public int suggestedBuyAmount(TradeRegion r, boolean withLager){
+	public int suggestedBuyAmount(TradeRegion r, boolean withLager, LinkedList<String> erg){
 		if (!this.contains(r)){
 			return 0;
 		}
 		
+		if (erg==null) {
+			erg = new LinkedList<String>();
+		}
 	
 		
 		ItemType itemType = r.getBuyItemType();
 		int gesamtVerkauf = this.getAreaSellAmount(itemType);
 		int gesamtEinkauf = this.getAreaBuyAmount(itemType);
 		
+		
 		// Extras..z.B. Vorräte
 		int vorräte = this.getAreaVorratProRundeAmount(itemType);
+		
+		erg.addFirst("Kaufmengenberechnung: TA-Verkauf: " + gesamtVerkauf + ", TA-Einkauf: " + gesamtEinkauf + ", Vorräte: " + vorräte);
 		
 		
 		// Einschub...was ist, wenn wir nirgends verkaufen können
 		// dann scheitert die berechnung der theoretischen menge
 		if (gesamtVerkauf==0 && vorräte>0 && this.maxXfachÜberkauf>10){
+			erg.addFirst("Kaufmengenberechnung: Sonderfall - kein Verkauf hier");
 			// Sonderfall: reiner Vorratskauf
 			// soll heissen: eine insel mit NUR weihrauch (Mea, 10. Welt)
 			double relativeSollEinkauf = (double)vorräte/(double)gesamtEinkauf;
@@ -757,6 +764,7 @@ public class TradeArea {
 		if (gesamtVerkauf==0 && vorräte==0){
 			// Sonderfall: wir können hier nicht verkaufen und brauchen auch keine Vorräte
 			// dann tatsächlich nicht einkaufen..wird mit -1 signalisiert.
+			erg.addFirst("Kaufmengenberechnung: Sonderfall: wir können hier nicht verkaufen und brauchen auch keine Vorräte");
 			return -1;
 		}
 		
@@ -771,27 +779,28 @@ public class TradeArea {
 		
 		gesamtEinkauf += suggestedAreaStorage(itemType,r);
 		
+		erg.addFirst("vorgeschlagene TA-Lagermenge = " + suggestedAreaStorage(itemType,r) + ", neuer Gesamteinkauf: " + gesamtEinkauf);
+		double myRatio = (double)gesamtVerkauf / (double)gesamtEinkauf;
+		
+		
+		
 		// theoretische menge berechnen
-		double kaufTheoD = (double)r.getRegion().maxLuxuries()*(double)gesamtVerkauf / gesamtEinkauf;
+		double kaufTheoD = (double)r.getRegion().maxLuxuries() * myRatio;
 		int kaufTheo = (int)Math.ceil(kaufTheoD);
 		
-		// Hier einschieben berechnen der Lagerstände bei den Depots
-		// und entsprechend Verringerung von gesamtEinkauf und Neuberechnung
-		// Lagerbestand = ALLES - (kaufTheo * K Runden)
-		// K Optional: Beispiel: 3 (3 Einkaufsrunden auf Lager)
-		// Ausgabe bei "Auf Lager:" als Comment
-		// Vereinfachung: nur Betrachtung der aktuellen Region
+		erg.addFirst("KaufMenge: " + kaufTheo + ", ergibt sich aus Verhältnis von Ver- zu Einkauf: " + myRatio + ", wird auf Regionseinkauf (" + r.getRegion().maxLuxuries() + ") angewendet.");
 		
-		
-		
+				
 		if (kaufTheo>r.getRegion().maxLuxuries()){
 			// Überkaufen?
 			
-			int maxMengeProfit = this.calcMaxAvailableAmount( r, itemType);
+			int maxMengeProfit = this.calcMaxAvailableAmount( r, itemType,erg);
+			erg.addFirst("Überkauf geplant. MaxVerfügbar nach Profit: " + maxMengeProfit);
 			
 			// einfaches klassisches deckeln des einkaufes
 			if (kaufTheo>maxMengeProfit){kaufTheo = maxMengeProfit;}
 			if (withLager && isLagerVoll(r, kaufTheo)){
+				erg.addFirst("Überkauf gedeckelt auf normalen Einkauf, weil Lager sind gefüllt");
 				kaufTheo=r.getRegion().maxLuxuries();
 			}
 			return kaufTheo;
@@ -819,21 +828,30 @@ public class TradeArea {
 	}
 	
 	
-	private int calcMaxAvailableAmount(TradeRegion r, ItemType itemType){
+	private int calcMaxAvailableAmount(TradeRegion r, ItemType itemType,LinkedList<String> erg){
         // checken, ob es sich rechnet...dazu brauchen wir einen maximalen
 		// Einkaufspreis...der ergibt sich aus
 		// minimalen Verkaufspreis + Aufschlag
 		// oder durchschnittlichen Verkaufspreis? (später...)
 		// Aufschlag muss parameterisierbar gemacht werden
 		// wir gehen mal von mind. doppeltem Verkaufspreis aus
+		
+		if (erg==null) {
+			erg = new LinkedList<String>();
+		}
+		
 		double profit = this.getProfit();
 		// double maxEinkaufspreisD = (double)this.getAreaMinSellPrice(itemType) / profit;
-		double maxEinkaufspreisD = (double)this.getAreaWeightedMeanSellPrice(itemType) / profit;
+		double meanSellPrice = (double)this.getAreaWeightedMeanSellPrice(itemType);
+		double maxEinkaufspreisD =  meanSellPrice / profit;
+		erg.addFirst("MaxEinkaufsmenge nach Profit - TA-Durschnittsverkauspreis: " + meanSellPrice + ", mit Profit=" + profit + " -> maxEinkaufspreis=" + maxEinkaufspreisD);
 		if (maxEinkaufspreisD==0){
 			// kein Verkauf im TA...wir nehmen den reportweiten
 			maxEinkaufspreisD = (double)this.overlord.getTradeAreaHandler().getReportWeightedMeanSellPrice(itemType) / profit;
+			erg.addFirst("MaxEinkaufsmenge: kein Verkauf im TA, benutze reportweiten Verkaufspreis=" + maxEinkaufspreisD);
 		}
 		int maxEinkaufspreis = (int)Math.ceil(maxEinkaufspreisD);
+		erg.addFirst("Aus DurschschnittsEinkaufspreis<=" + maxEinkaufspreis + " ergibt sich die Einkaufsmenge hier zu " + this.calcMaxAvailableAmount(maxEinkaufspreis, r, itemType) + " Stück");
 		return this.calcMaxAvailableAmount(maxEinkaufspreis, r, itemType);
 	}
 	
@@ -991,7 +1009,7 @@ public class TradeArea {
 				if (r.getBuyItemType()!=null){
 					if (r.getBuyItemType().equals(itemType)){
 						// erg+=r.getRegion().maxLuxuries();
-						erg+=calcMaxAvailableAmount(r, itemType);
+						erg+=calcMaxAvailableAmount(r, itemType,null);
 					}
 				}
 			}

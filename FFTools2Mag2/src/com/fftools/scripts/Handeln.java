@@ -230,7 +230,7 @@ public class Handeln extends TradeAreaScript{
 			int kaufMenge = this.getTrader().getBuy().getAmount();
 			if (this.getTrader().getBuyPolicy() == Trader.trader_buy_setManager){
 				// soll suggested übernehmen, egal wieviel
-				int vorMenge = getTradeArea().suggestedBuyAmount(getTradeRegion(),true);
+				int vorMenge = getTradeArea().suggestedBuyAmount(getTradeRegion(),true,null);
 				if (vorMenge>0){
 					kaufMenge = vorMenge;
 				} else if (vorMenge==-1){
@@ -242,7 +242,7 @@ public class Handeln extends TradeAreaScript{
 			}
 			if (this.getTrader().getBuyPolicy() == Trader.trader_buy_Max){
 				// soll suggested übernehmen, mindestens aber r.max
-				int vorMenge = getTradeArea().suggestedBuyAmount(getTradeRegion(),true);
+				int vorMenge = getTradeArea().suggestedBuyAmount(getTradeRegion(),true,null);
 				if (vorMenge>0){
 					// nur wenn überkauf
 					// unterkauf nicht
