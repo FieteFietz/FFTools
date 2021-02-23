@@ -284,11 +284,17 @@ public class Depot extends TransportScript{
 				if (actPersonen>maxPersonen) {
 					int diffPersonen = actPersonen - maxPersonen;
 					this.addComment("Bauerncheck!!! " + diffPersonen + " Bauern zu viel in der Region! !!!");
-					if (actRekrutierungen<maxRekrutierungen && actRekrutierungen<diffPersonen) {
-						this.doNotConfirmOrders("Bauerncheck!!! Nur " + actRekrutierungen + " von " + maxRekrutierungen + " rekrutiert in dieser Runde!");
+					
+					if ((actRekrutierungen<maxRekrutierungen && actRekrutierungen<diffPersonen) || maxRekrutierungen==0) {
+						if (maxRekrutierungen>0) {
+							this.doNotConfirmOrders("Bauerncheck!!! Nur " + actRekrutierungen + " von " + maxRekrutierungen + " rekrutiert in dieser Runde!");
+						} else {
+							this.doNotConfirmOrders("Bauerncheck!!! Zu viele Bauern in der Region - aber es kann nicht rekrutiert werden!");
+						}
 					} else {
 						this.addComment("Bauerncheck!!! Es wird gut rekrutiert...(" + actRekrutierungen + ")");
 					}
+					
 				} else {
 					this.addComment("Bauerncheck: " + actPersonen + " von " + maxPersonen + " Bauern in der Region. OK");
 				}
