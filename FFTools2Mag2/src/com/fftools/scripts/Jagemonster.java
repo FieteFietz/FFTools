@@ -9,6 +9,7 @@ import com.fftools.trade.TradeArea;
 import com.fftools.trade.TradeRegion;
 import com.fftools.utils.FFToolsOptionParser;
 import com.fftools.utils.FFToolsRegions;
+import com.fftools.utils.FFToolsUnits;
 import com.fftools.utils.GotoInfo;
 
 import magellan.library.CoordinateID;
@@ -202,6 +203,9 @@ public class Jagemonster extends TradeAreaScript{
 		 * 		wenn nicht in HOME Region
 		 * 			bewegt sich zurück zur HOME-Region
 		 */
+		
+		this.addComment("Start JM: reitend GE=" + this.scriptUnit.getPayloadOnHorse());
+		
 		
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Jagemonster");
 		OP.addOptionList(this.getArguments());
@@ -427,7 +431,9 @@ public class Jagemonster extends TradeAreaScript{
 		this.AttackLerne();
 		if (MJM_setAttack) {
 			// Angreifen - ATTACKIERE und FOLGE sind schon gesetzt, BEWACHE kommt von BEWACHE ?! Nope, wir bewachen auch
-			this.addOrder("BEWACHEN ;Jagemonster - angreifende Einheiten bewachen.", true);
+			if (!this.isTactican && this.getRole()!=Jagemonster.role_Support && this.getRole()!=Jagemonster.role_Undef) {
+				this.addOrder("BEWACHEN ;Jagemonster - angreifende Einheiten bewachen.", true);
+			}
 		} else {
 			// ok, wir wollten angreifen, MJM hat aber kein GO gegeben, wir sind wohl zu wenige
 			// fürs erste: nicht bestätigen
@@ -477,9 +483,9 @@ public class Jagemonster extends TradeAreaScript{
 	}
 	
 	/**
-	 * Beim Angriff - nur dann
+	 * Beim Angriff - nur dann? Wenn unbeschäftigt und mode=auto
 	 */
-	private void AttackLerne() {
+	public void AttackLerne() {
 		
 		String LernFixOrder = "Talent=" + this.AttackLernTalent;
 		
@@ -516,6 +522,35 @@ public class Jagemonster extends TradeAreaScript{
 	public void setHC_weeks2target(int hC_weeks2target) {
 		HC_weeks2target = hC_weeks2target;
 	}
+
+	public CoordinateID getTargetDest() {
+		return targetDest;
+	}
+
+	public void setTargetDest(CoordinateID targetDest) {
+		this.targetDest = targetDest;
+	}
+	
+	public int getBattleValue() {
+		SkillType ST = FFToolsUnits.getBestSkillType(this.getUnit());
+		if (ST!=null) {
+			// wir gehen davon aus:
+			//   - Bewaffnung passt
+			// - bestes talent ist kampftalent
+			return this.getUnit().getModifiedSkill(ST).getLevel() * this.getUnit().getModifiedPersons();
+		}
+		return 0;
+	}
+	
+	public String toString() {
+		return this.scriptUnit.toString() + " [JM]";
+	}
+
+	public CoordinateID getHomeDest() {
+		return homeDest;
+	}
+	
+
 	
 	
 }

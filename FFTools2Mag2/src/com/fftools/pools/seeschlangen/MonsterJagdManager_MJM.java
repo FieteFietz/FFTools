@@ -110,6 +110,9 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
 	 */
 	public void run(int durchlauf){
 		if (durchlauf==Durchlauf) {
+			
+			this.run_HCs();
+			
 			this.makeDecisions();
 		}
 	}
@@ -421,7 +424,19 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
     }
     
     public boolean isMonsterTargetted(Unit monsterUnit) {
-    	return this.targettedMonsterUnits.contains(monsterUnit);
+    	if (this.targettedMonsterUnits.contains(monsterUnit)) {
+    		return true;
+    	}
+    	
+    	Region r = monsterUnit.getRegion();
+    	for (MJM_HighCommand myHC : this.MJM_HCs) {
+			if (myHC.isRegionMovedTo(r)) {
+				return true;
+			}
+		}
+    	
+    	
+    	return false;
     }
     
     
@@ -436,6 +451,12 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
     public void addMJM_HC(MJM_HighCommand MJM_HC) {
     	if (!this.MJM_HCs.contains(MJM_HC)) {
     		this.MJM_HCs.add(MJM_HC);
+    	}
+    }
+    
+    private void run_HCs() {
+    	for(MJM_HighCommand HC:this.MJM_HCs) {
+    		HC.run();
     	}
     }
 

@@ -28,6 +28,8 @@ public class MJM_HighCommand  {
 	private ArrayList<Region> NOattackRegions = new ArrayList<Region>(0);
 	private ArrayList<Region> needTacticRegions = new ArrayList<Region>(0);
 	
+	private ArrayList<Region> orderedMoveToRegions = new ArrayList<Region>(0);
+	
 	private HashMap<Region, MonsterRegion> monsterregions = new HashMap<Region, MonsterRegion>();
 	
 	private TradeArea TA = null;
@@ -98,9 +100,12 @@ public class MJM_HighCommand  {
     		
     		// Info zu Jägern
     		for (Jagemonster JM2:this.Jäger) {
-    			String text = JM.toString() + " in " + JM.getUnit().getRegion().toString() + ", " + JM.getUnit().getModifiedPersons() + " Pers";
+    			String text = JM.toString() + ", " + JM.getUnit().getModifiedPersons() + " Pers";
     			if (JM.isTactican()) {
     				text += " (Taktiker)";
+    			}
+    			if (JM.getRole()==Jagemonster.role_Support) {
+    				text += " (Support)";
     			}
     			JM.addComment(text);
     		}
@@ -302,64 +307,164 @@ public class MJM_HighCommand  {
     		
     		
     		// check Support?
-    		if (MR.needTactican() && !MR.hasTactican()) {
-	    		infoComments = new ArrayList<String>(0);
-	    		infoCommentsReceiver = new ArrayList<Jagemonster>(0);
-	    		neededPersons = 1;
-	    		countRequestMovers = 1;
-	    		if (countRequestMovers>0) {
-	    			String infoComment = "MJM_HC: Die Situation in " + r.toString() + " erfordert 1 Taktiker, dieser wird gesucht.";
-	    			infoComments.add(infoComment);
-	    			// ok, wir müssen mehr hinschicken, nur Taktiker, nur 1
-	    			// Liste der noch verfügbaren Jäger bauen
-	    			ArrayList<Jagemonster> availJM = new ArrayList<Jagemonster>(0);
-	    			for (Jagemonster JM:this.Jäger) {
-	    				if (!JM.isHC_ready() && JM.isTactican()  && JM.getUnit().getModifiedPersons()>0) {
-		    				GotoInfo GI = FFToolsRegions.makeOrderNACH(JM.scriptUnit, JM.getUnit().getRegion().getCoordinate(), r.getCoordinate(),false,"MJM_HC calc");
-		    				if (GI.getAnzRunden()>0) {
-			    				JM.setHC_weeks2target(GI.getAnzRunden());
-			    				availJM.add(JM);
-		    				}
-	    				}
-	    			}
-	    			Collections.sort(availJM, new MJ_Mover_Comparator());
-	    			for (Jagemonster JM:availJM) {
-	    				infoComment = "MJM_HC: Beauftrage " + JM.toString() + "  mit Verlegung nach " + r.toString() + ", ETA: " + JM.getHC_weeks2target() + " Wochen.";
-	    				infoComments.add(infoComment);
-	    				// wir sollen zum Ziel
-	    				JM.moveTo(r.getCoordinate(), MonsterJagdManager_MJM.MAPLINE_ATTACK_TAG);
-	    				// JM als bearbeitet setzen
-	    				JM.setHC_ready(true);
-	    				// benötigte Anzahl Reduzieren
-	    				countRequestMovers -= JM.getUnit().getModifiedPersons();
-	    				infoComment = "MJM_HC: noch ausstehender Bedarf: " + countRequestMovers;
-	    				infoComments.add(infoComment);
-	    				// zur Info ergänzen
-	    				if (!infoCommentsReceiver.contains(JM)) {
-	    					infoCommentsReceiver.add(JM);
-	    				}
-	    				// Abbrechen wenn benötigte Anzahl erreicht
-	    				if (countRequestMovers<=0) {
-	    					infoComment = "MJM_HC: Abbruch der Taktikersuche für " + r.toString();
-	    					break;
-	    				}
-	    			}
-	    		}
-	    		// Information an alle Verstärker...
-	    		if (infoCommentsReceiver.size()>0 && infoComments.size()>0) {
-	    			for (Jagemonster JM:infoCommentsReceiver) {
-	    				for (String s:infoComments) {
-	    					JM.addComment(s);
-	    				}
-	    			}
-	    		}
-    		}
+    		// woher weiß ich denn, ob support benötigt wird?
+    		// im Zweifel mitschicken
+    		// Standard ist Wahrnehmer - dabei wichtig: gleiche Partei wie 1. und 2. Reihe.
+    		// besser: einfach folgen lassen ;-)
     		
     		
-    		
+    		// warnung wenn nicht genug verstärkung im TA gefunden worden ist!!
     		
     		
     		
     	}
+    	
+    	// Phase 3 - Monsterregionen durchgehen, die noch nicht angegriffen werden, und dort Leute hinschicken
+    	boolean TA_with_to_much_Monsters = false;
+    	for (MonsterRegion MR:this.monsterregions.values()) {
+    		if (!MR.isScheduled4attack() && MR.getThreadLevel()>0) {
+    			work_on_MR(MR);
+    			if (MR.getThreadLevel()>MR.getAttackLevelReihe1() || (MR.needTactican() && !MR.hasTactican())) {
+    				// Problem, Monster können nicht bekämpft werden
+    				// alle Jäger hart informieren
+    				TA_with_to_much_Monsters=true;
+    			}
+    		}
+    	}
+    	
+    	if (TA_with_to_much_Monsters) {
+    		for (Jagemonster JM:this.Jäger) {
+    			JM.addComment("!!! Im TA können nicht alle Monster bekämpft weren!!! Liste:");
+    			for (MonsterRegion MR:this.monsterregions.values()) {
+	    			if (MR.getThreadLevel()>MR.getAttackLevelReihe1() || (MR.needTactican() && !MR.hasTactican())) {
+	    				JM.addComment("Problem in " + MR.toString());
+    	    		}
+    	    	}
+    			JM.doNotConfirmOrders("Im TA können nicht alle Monster bekämpft werden!");
+    		}
+    	}
+    	
+    	
+    	// Phase 4
+    	// JM, die nicht angreifen und nicht zu Hause sind, nach Hause schicken
+    	for(Jagemonster JM:this.Jäger) {
+    		if (!JM.isReady4AttackThisWeek() && JM.getTargetDest()==null) {
+    			// sind wir zu Hause?
+    			if (JM.getHomeDest()!=null && !JM.getHomeDest().equals(JM.scriptUnit.getUnit().getRegion().getCoordinate())) {
+    				// Nach Hause gehen
+    				JM.addComment("MJM_HC: RTB");
+    				JM.moveTo(JM.getHomeDest(), MonsterJagdManager_MJM.MAPLINE_MOVE_TAG);
+    			} else {
+    				// wir haben kein HOME oder sind da
+    				JM.addComment("MJM_HC: kein Einsatz - aber bereit (Lerne)");
+    				JM.AttackLerne();
+    			}
+    			// JM als bearbeitet setzen
+				JM.setHC_ready(true);
+    		}
+    	}
+    	
     }
+    
+    
+    private void work_on_MR(MonsterRegion MR) {
+    	// Monsterjäger nach Entfernung und Einheitengrösse sortieren und hinschicken
+    	// 1. Reihe - nur !
+    	String infoComment;
+    	ArrayList<String> infoComments = new ArrayList<String>(0);
+    	ArrayList<Jagemonster> availJM = new ArrayList<Jagemonster>(0);
+    	ArrayList<Jagemonster> infoCommentsReceiver = new ArrayList<Jagemonster>(0);
+    	Region r = MR.getRegion();
+		for (Jagemonster JM:this.Jäger) {
+			if (!JM.isHC_ready() && JM.getUnit().getModifiedPersons()>0 && JM.getRole()==Jagemonster.role_AttackFront && JM.getTargetDest()==null) {
+				GotoInfo GI = FFToolsRegions.makeOrderNACH(JM.scriptUnit, JM.getUnit().getRegion().getCoordinate(), r.getCoordinate(),false,"MJM_HC calc");
+				if (GI.getAnzRunden()>0) {
+    				JM.setHC_weeks2target(GI.getAnzRunden());
+    				availJM.add(JM);
+				}
+			}
+		}
+		Collections.sort(availJM, new MJ_Mover_Comparator());
+		for (Jagemonster JM:availJM) {
+			// Hinschicken
+			infoComment = "MJM_HC: Beauftrage " + JM.toString() + "  mit Verlegung nach " + r.toString() + ", ETA: " + JM.getHC_weeks2target() + " Wochen.";
+			infoComments.add(infoComment);
+			// wir sollen zum Ziel
+			JM.moveTo(r.getCoordinate(), MonsterJagdManager_MJM.MAPLINE_ATTACK_TAG);
+			// JM als bearbeitet setzen
+			JM.setHC_ready(true);
+			// benötigte Anzahl Reduzieren
+			MR.addAttackLevelReihe1(JM.getUnit().getModifiedPersons());
+			infoComment = "MJM_HC: noch ausstehender Bedarf: " + (MR.getThreadLevel() - MR.getAttackLevelReihe1());
+			infoComments.add(infoComment);
+			// zur Info ergänzen
+			if (!infoCommentsReceiver.contains(JM)) {
+				infoCommentsReceiver.add(JM);
+			}
+			
+			// Nachvollziehbarkeit
+			if (!orderedMoveToRegions.contains(r)) {
+				orderedMoveToRegions.add(r);
+			}
+			
+			// Abbrechen wenn benötigte Anzahl erreicht
+			if (MR.getThreadLevel()<=MR.getAttackLevelReihe1()) {
+				infoComment = "MJM_HC: Abbruch der Siche 1. Reihe für " + r.toString();
+				break;
+			}
+		}
+		
+		
+		// Taktiker?
+		if (MR.needTactican()) {
+			
+
+	    	availJM = new ArrayList<Jagemonster>(0);
+			for (Jagemonster JM:this.Jäger) {
+				if (!JM.isHC_ready() && JM.getUnit().getModifiedPersons()>0 && JM.isTactican() && JM.getTargetDest()==null) {
+					GotoInfo GI = FFToolsRegions.makeOrderNACH(JM.scriptUnit, JM.getUnit().getRegion().getCoordinate(), r.getCoordinate(),false,"MJM_HC calc");
+					if (GI.getAnzRunden()>0) {
+	    				JM.setHC_weeks2target(GI.getAnzRunden());
+	    				availJM.add(JM);
+					}
+				}
+			}
+			Collections.sort(availJM, new MJ_Mover_Comparator());
+			for (Jagemonster JM:availJM) {
+				// Hinschicken
+				infoComment = "MJM_HC (Taktik): Beauftrage " + JM.toString() + "  mit Verlegung nach " + r.toString() + ", ETA: " + JM.getHC_weeks2target() + " Wochen.";
+				infoComments.add(infoComment);
+				// wir sollen zum Ziel
+				JM.moveTo(r.getCoordinate(), MonsterJagdManager_MJM.MAPLINE_ATTACK_TAG);
+				// JM als bearbeitet setzen
+				JM.setHC_ready(true);
+				// benötigte Anzahl Reduzieren
+				MR.setHasTactican(true);
+				// zur Info ergänzen
+				if (!infoCommentsReceiver.contains(JM)) {
+					infoCommentsReceiver.add(JM);
+				}
+				break;
+			}
+		}
+		
+		
+		// Information an alle Verstärker...
+		if (infoCommentsReceiver.size()>0 && infoComments.size()>0) {
+			for (Jagemonster JM:infoCommentsReceiver) {
+				for (String s:infoComments) {
+					JM.addComment(s);
+				}
+			}
+		}
+		
+    }
+    
+    public boolean isRegionMovedTo(Region r) {
+    	if (this.orderedMoveToRegions.contains(r)) {
+    		return true;
+    	}
+    	return false;
+    }
+    
 }

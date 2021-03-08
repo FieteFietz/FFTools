@@ -26,7 +26,11 @@ public class MJ_Mover_Comparator implements Comparator<Jagemonster>{
 	 * @return
 	 */
 	public int compare(Jagemonster u1,Jagemonster u2){
-		return u1.getHC_weeks2target() - u2.getHC_weeks2target(); // kleinste Entfernung nach oben
+		if (u1.getHC_weeks2target() != u2.getHC_weeks2target()) {
+			return u1.getHC_weeks2target() - u2.getHC_weeks2target(); // kleinste Entfernung nach oben
+		} else {
+			return u2.getBattleValue() - u1.getBattleValue();  // grösste Stärke nach oben
+		}
 	}
 	
 	

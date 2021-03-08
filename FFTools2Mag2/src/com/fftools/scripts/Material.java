@@ -17,7 +17,7 @@ import com.fftools.utils.FFToolsOptionParser;
 public class Material extends MatPoolScript {
 	private static final ReportSettings reportSettings = ReportSettings.getInstance();
 	
-	private static final int Durchlauf = 30;
+	private static final int Durchlauf = 25;
 	
 	private final String[] talentNamen = {"Hiebwaffen","Stangenwaffen","Bogenschieﬂen","Armbrustschieﬂen","Katapultbedienung"};
 	

@@ -1340,10 +1340,20 @@ public class TradeArea {
 		// minus was an Vorräten extern definiert worden ist
 		erg -=(rundenVorrat);
 		
+		int Ta_VorratsRunden = 10;
+		
+		if (this.originRegion!=null) {
+			Ta_VorratsRunden = reportSettings.getOptionInt("ta-vorratsrunden", this.originRegion.getRegion());
+			if (Ta_VorratsRunden<1 || Ta_VorratsRunden>30) {
+				// ungültiog
+				Ta_VorratsRunden=10;
+			}
+		}
+		
 		
 		// Abkapselung bei Vorrat für XX Runden (XX=10)
 		int totalAmount = this.getAreaTotalAmount(itemType);
-		int neededRundenSumme = (rundenVerkauf + rundenVorrat) * 10; 
+		int neededRundenSumme = (rundenVerkauf + rundenVorrat) * Ta_VorratsRunden; 
 		if (totalAmount > neededRundenSumme ){
 			erg = totalAmount - neededRundenSumme;
 			erg = Math.max(erg, AreaBuyMaxAmount);
