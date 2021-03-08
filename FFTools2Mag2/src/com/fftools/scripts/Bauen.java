@@ -20,8 +20,10 @@ import magellan.library.Border;
 import magellan.library.Building;
 import magellan.library.CoordinateID;
 import magellan.library.Item;
+import magellan.library.Ship;
 import magellan.library.Skill;
 import magellan.library.Unit;
+import magellan.library.UnitContainer;
 import magellan.library.gamebinding.OrderChanger;
 import magellan.library.rules.BuildingType;
 import magellan.library.rules.ItemType;
@@ -43,8 +45,9 @@ public class Bauen extends MatPoolScript implements Cloneable{
 	private int Durchlauf_Baumanager = 56;
 	private int Durchlauf_vorMatPool = 102;
 	private int Durchlauf_nachMatPool = 440;   // und nach Gebäudeunterhalt bei 340!!
+	private static final int Durchlauf_last = 855;
 	
-	private int[] runners = {Durchlauf_Baumanager,Durchlauf_vorMatPool,Durchlauf_nachMatPool};
+	private int[] runners = {Durchlauf_Baumanager,Durchlauf_vorMatPool,Durchlauf_nachMatPool,Durchlauf_last};
 	
 	private boolean parseOK = false;
 	
@@ -261,6 +264,11 @@ public void runScript(int scriptDurchlauf){
 			// debug
 			// this.addComment("DEBUG: toString=" + this.scriptUnit.getUnit().toString(false));
 		}
+		
+		if (scriptDurchlauf==Durchlauf_last){
+			this.scriptSchluss();
+		}
+		
 		
 	}
 	
@@ -1937,6 +1945,18 @@ public void runScript(int scriptDurchlauf){
 		if (o!=null) {
 			Gebaeudeunterhalt g = (Gebaeudeunterhalt)o;
 			g.set_zero_unterhalt(" verlässt Gebäude (Bauen)");
+		}
+	}
+	
+	private void scriptSchluss(){
+		// waren wir am anfang der runde in einem Gebäude?
+		UnitContainer UC = this.scriptUnit.getUnit().getUnitContainer();
+		if (UC!=null && this.hasGotoOrder){
+			// sind am ende der runde noch andere im Container?
+			if (UC.modifiedUnits().size()==0){
+				// scheinbar nicht
+				this.doNotConfirmOrders("!!! Gebäude verbleibt unbesetzt !!!");
+			}
 		}
 	}
 	

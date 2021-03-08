@@ -81,8 +81,8 @@ public class Liefere extends Script{
 			outText.addOutLine("!!!Liefere: Ware nicht angegeben. " + this.unitDesc());
 			return;
 		}
-		nameGut = nameGut.replace("_", " ");
-		this.itemType = this.gd_Script.rules.getItemType(nameGut);
+		nameGut = FFToolsGameData.translateItemShortform(nameGut);
+		this.itemType = this.gd_Script.getRules().getItemType(nameGut);
 		boolean isCat = false;
 		if (itemType==null){
 			// Versuch der Kategorie
