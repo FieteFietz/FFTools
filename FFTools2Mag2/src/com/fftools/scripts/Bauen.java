@@ -26,6 +26,7 @@ import magellan.library.Unit;
 import magellan.library.UnitContainer;
 import magellan.library.gamebinding.OrderChanger;
 import magellan.library.rules.BuildingType;
+import magellan.library.rules.CastleType;
 import magellan.library.rules.ItemType;
 import magellan.library.rules.SkillType;
 import magellan.library.utils.Direction;
@@ -211,6 +212,13 @@ public class Bauen extends MatPoolScript implements Cloneable{
 
 	public void setHasGotoOrder(boolean hasGotoOrder) {
 		this.hasGotoOrder = hasGotoOrder;
+		// wenn am Anfang der Runde in einem Gebäude, verlasse setzen...
+		UnitContainer UC = this.scriptUnit.getUnit().getUnitContainer();
+		if (UC!=null && !this.scriptUnit.isLeavingBuilding){
+			this.addOrder("verlasse ; Bauen -> bewege mich", true);
+			this.remove_unterhalt();
+			this.scriptUnit.isLeavingBuilding=true;
+		}
 	}
 	
 
@@ -362,6 +370,20 @@ public void runScript(int scriptDurchlauf){
 		
 		this.pers_gewicht = OP.getOptionInt("pers_gewicht", this.pers_gewicht);
 		
+		// FF 20210308: Gebäude immer verlassen, es sei denn in einer Burg
+		if (this.isAutomode()) {
+			Building b = this.scriptUnit.getUnit().getBuilding();
+			if (b!=null) {
+				if (!(b.getBuildingType() instanceof CastleType)) {
+					// keine Burg - also verlassen
+					if (!this.scriptUnit.isLeavingBuilding) {
+						this.addOrder("VERLASSE ; -> Bauen verlässt im Auto-Mode immer das Gebäude, es sein denn, es ist eine Burg.", true);
+						this.scriptUnit.isLeavingBuilding=true;
+						this.remove_unterhalt();
+					}
+				}
+			}
+		}
 	}
 
 
@@ -1473,11 +1495,6 @@ public void runScript(int scriptDurchlauf){
 						this.addComment("Bauarbeiter unterwegs aber ohne Reittalent -> keine Pferde...");
 					}
 					this.finalStatusInfo="going HOME";
-					if (this.scriptUnit.getUnit().getModifiedBuilding()!=null) {
-						this.addOrder("VERLASSE ; -> HomeRegion", true);
-						this.scriptUnit.isLeavingBuilding=true;
-						this.remove_unterhalt();
-					}
 				} else {
 					this.doNotConfirmOrders("!!! ungültiger GOTO-Befehl?! ggf HOME-Region nicht im TradeArea?");
 				}
@@ -1520,7 +1537,7 @@ public void runScript(int scriptDurchlauf){
 			this.finalStatusInfo="ABM: LERNEN";
 			this.addComment("debug: autoLearn bestimmt Lerntalent");
 		}
-		if (this.scriptUnit.getUnit().getModifiedBuilding()!=null) {
+		if (this.scriptUnit.getUnit().getModifiedBuilding()!=null && !this.scriptUnit.isLeavingBuilding) {
 			this.addOrder("VERLASSE ; -> fertig mit der Arbeit", true);
 			this.scriptUnit.isLeavingBuilding=true;
 			this.remove_unterhalt();
@@ -1738,7 +1755,7 @@ public void runScript(int scriptDurchlauf){
 					b.addMatPoolRequest(MPR);
 				}
 				
-				if (b.scriptUnit.getUnit().getModifiedBuilding()!=null) {
+				if (b.scriptUnit.getUnit().getModifiedBuilding()!=null && !this.scriptUnit.isLeavingBuilding) {
 					b.addOrder("VERLASSE ; -> moving to work", true);
 					b.remove_unterhalt();
 					b.scriptUnit.isLeavingBuilding=true;
@@ -1777,7 +1794,7 @@ public void runScript(int scriptDurchlauf){
 			b.setFinalStatusInfo("Mindestreitlevel");
 			b.setAutomode_hasPlan(true);
 			b.setHasGotoOrder(false);
-			if (b.scriptUnit.getUnit().getModifiedBuilding()!=null) {
+			if (b.scriptUnit.getUnit().getModifiedBuilding()!=null && !this.scriptUnit.isLeavingBuilding) {
 				b.addOrder("VERLASSE ; -> lernen", true);
 				b.remove_unterhalt();
 				b.scriptUnit.isLeavingBuilding=true;
