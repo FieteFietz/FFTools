@@ -171,6 +171,11 @@ public void runScript(int scriptDurchlauf){
 				// tatsächlich
 				this.isMallornregion = true;
 				this.addComment("Forester: Mallornregion an Mallornschößlingen erkannt, fordere Mallorn statt Holz an");
+			} else {
+				if (this.region().isMallorn()) {
+					this.isMallornregion = true;
+					this.addComment("Forester: Mallornregion an CR-Info erkannt, fordere Mallorn statt Holz an");
+				}
 			}
 		}
 		

@@ -8,17 +8,18 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
+import com.fftools.demo.actions.MenuAction;
+import com.fftools.demo.actions.map.GoToAction;
+import com.fftools.demo.actions.map.RideAction;
+import com.fftools.demo.actions.map.SailToAction;
+import com.fftools.demo.actions.map.SailToAndBackAction;
+import com.fftools.utils.FFToolsArrayList;
+
 import magellan.client.Client;
 import magellan.client.event.SelectionEvent;
 import magellan.client.event.SelectionListener;
 import magellan.library.Region;
 import magellan.library.Unit;
-
-import com.fftools.demo.actions.MenuAction;
-import com.fftools.demo.actions.map.GoToAction;
-import com.fftools.demo.actions.map.RideAction;
-import com.fftools.demo.actions.map.SailToAction;
-import com.fftools.utils.FFToolsArrayList;
 
 public class MapContextMenu extends JMenu implements SelectionListener {
 	private static final long serialVersionUID = 1L;
@@ -29,6 +30,7 @@ public class MapContextMenu extends JMenu implements SelectionListener {
 	private GoToAction goToAction = null;
 	private SailToAction sailToAction = null;
 	private RideAction rideAction = null;
+	private SailToAndBackAction sailToAndBackAction = null;
 
 	public void setRegion(Region region) {
 		
@@ -42,6 +44,10 @@ public class MapContextMenu extends JMenu implements SelectionListener {
 		if (rideAction!=null) {
 			rideAction.setTargetRegion(region);
 		}
+		if (sailToAndBackAction!=null){
+			sailToAndBackAction.setTargetRegion(region);
+		}
+		
 		
 	}
 
@@ -63,10 +69,14 @@ public class MapContextMenu extends JMenu implements SelectionListener {
 		goToAction = new GoToAction(this.selectionObserver);
 		rideAction = new RideAction(this.selectionObserver);
 		sailToAction = new SailToAction(this.selectionObserver);
+		sailToAndBackAction = new SailToAndBackAction(this.selectionObserver);
+		
+		
 		
 		addMenuItem(this,goToAction);
 		addMenuItem(this,rideAction);
 		addMenuItem(this,sailToAction);
+		addMenuItem(this,sailToAndBackAction);
 
 		client.getDispatcher().addSelectionListener(this);
 		

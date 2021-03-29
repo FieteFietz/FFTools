@@ -41,7 +41,7 @@ import com.fftools.utils.MsgBox;
 
 
 /**
- * MenuAction zum Rekrutieren einer bestimmten Anzahl von Personen
+ * MenuAction zum Erzeugen eines SailTo 
  *
  * @author Fiete
  * @version
@@ -89,7 +89,7 @@ public class SailToAction extends MenuAction {
 	 */
 	public SailToAction(SelectionObserver selectionObserver) {
         super(selectionObserver.getClient());
-        setName("// script SailTo");
+        setName("// script SailTo (and back)");
         this.selectionObserver = selectionObserver; 
         this.data = this.selectionObserver.getClient().getData();
         log = Logger.getInstance(SailToAction.class);
@@ -112,17 +112,17 @@ public class SailToAction extends MenuAction {
 			}
 			this.selectionObserver.getClient().getDispatcher().fire(new OrderConfirmEvent(this, units2));
 		} else {
-			new MsgBox(this.selectionObserver.getClient(),"Kein Goton möglich.","Fehler",true);
+			new MsgBox(this.selectionObserver.getClient(),"Kein SailTo möglich.","Fehler",true);
 		}
 	}
 
 	/**
-	 * führt den set Goto für diese Unit durch
+	 * führt den set SailTo für diese Unit durch
 	 * @param u
 	 */
 	private void Goto(Unit u){
 		if (this.targetRegion==null){
-			new MsgBox(this.selectionObserver.getClient(),"Kein Goto möglich. (keine Region)","Fehler",true);
+			new MsgBox(this.selectionObserver.getClient(),"Kein SailTo möglich. (keine Region)","Fehler",true);
 			return;
 		}
 		
