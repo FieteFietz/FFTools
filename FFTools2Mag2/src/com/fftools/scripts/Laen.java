@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
+import com.fftools.utils.FFToolsUnits;
 
 import magellan.library.Building;
 import magellan.library.Item;
@@ -340,6 +341,7 @@ public class Laen extends MatPoolScript{
 		machbareMenge=mengeResult;
 		if (machbareMenge>0) {
 			this.addOrder("machen " + machbareMenge + " Eisen ;(script Eisen)", true);
+			FFToolsUnits.leaveAcademy(this.scriptUnit, " Bergbauer baut Laen ab und verlässt Aka");
 		} else {
 			this.addComment("daraus folgt -> ich Lerne, leider ohne Lernpool, dafür ist es jetzt zu spät..");
 			

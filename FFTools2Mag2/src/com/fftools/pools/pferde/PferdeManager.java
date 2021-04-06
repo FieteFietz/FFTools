@@ -17,6 +17,7 @@ import com.fftools.trade.TradeArea;
 import com.fftools.trade.TradeAreaHandler;
 import com.fftools.trade.TradeRegion;
 import com.fftools.utils.FFToolsRegions;
+import com.fftools.utils.FFToolsUnits;
 import com.fftools.utils.GotoInfo;
 
 /**
@@ -181,6 +182,7 @@ public class PferdeManager implements OverlordRun,OverlordInfo {
 				nochZuFangen -= actZuFangen;
 				// Erhöhen
 				rundenRegionFang += actZuFangen;
+				FFToolsUnits.leaveAcademy(actPferdMacher.scriptUnit, " Pferdemacher arbeitet und verlässt Aka");
 			} else {
 				// er kann nix tun..also Lernen
 				actPferdMacher.addComment("Einheit fängt hier nicht. Zu fangen: " + zuFangen);

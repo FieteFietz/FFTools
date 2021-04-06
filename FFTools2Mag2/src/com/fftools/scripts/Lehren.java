@@ -1,6 +1,10 @@
 package com.fftools.scripts;
 
 
+import java.util.ArrayList;
+
+import com.fftools.ScriptUnit;
+
 import magellan.library.Order;
 import magellan.library.Skill;
 import magellan.library.Unit;
@@ -10,15 +14,30 @@ import magellan.library.rules.SkillType;
 public class Lehren extends Script{
 	
 	private static final int Durchlauf = 82;
+	private static final int Nachlauf =850;
+	
+	private int[] runners = {Durchlauf,Nachlauf};
+	
+	private ArrayList<String> pupils = new ArrayList<String>(0);
+	private int countPupils = 0;
 	
 	// Parameterloser constructor
 	public Lehren() {
-		super.setRunAt(Durchlauf);
+		super.setRunAt(this.runners);
 	}
 	
 	public void runScript(int scriptDurchlauf){
-		if (scriptDurchlauf!=Durchlauf){return;}
-		int countPupils = 0;
+		if (scriptDurchlauf==Durchlauf) {
+			runDurchlauf();
+		}
+		if (scriptDurchlauf==Nachlauf) {
+			runNachlauf();;
+		}
+	}
+	
+	
+	public void runDurchlauf(){
+		countPupils = 0;
 		// hier code fuer Lehren
 		// addOutLine("....start Lehren mit " + super.getArgCount() + " Argumenten");
 		if (super.getArgCount()<1) {
@@ -38,14 +57,11 @@ public class Lehren extends Script{
 					break;
 				} else {
 					countPupils += actPupils;
+					this.pupils.add(actUnitNumber);
 				}
 			}
 			// zu viele Schööler ?
-			if (allPupilOK && countPupils>(super.scriptUnit.getUnit().getModifiedPersons()*10)){
-				super.scriptUnit.doNotConfirmOrders("Zu viele Schüler beim Aufruf von LEHREN!");
-				allPupilOK = false;
-				addOutLine("!!!.Zu viele Schüler beim Aufruf von LEHREN bei " + this.unitDesc());
-			}
+			
 			if (allPupilOK){
 				super.addComment("Lehren ok",true);
 			}
@@ -79,7 +95,7 @@ public class Lehren extends Script{
 			return -1;
 		}
 		lernTalent = lernTalent.substring(0, 1).toUpperCase() + lernTalent.substring(1).toLowerCase();
-		SkillType skillType = super.gd_Script.rules.getSkillType(lernTalent);
+		SkillType skillType = super.gd_Script.getRules().getSkillType(lernTalent);
 		if (skillType==null){
 			super.scriptUnit.doNotConfirmOrders("Ein Schüler hat kein erkanntes Lerntalent (" + unitNumber + "): " + lernTalent);
 			addOutLine("X....Ein Schüler hat kein erkanntes Lerntalent (" + unitNumber + ", " + lernTalent + ") bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
@@ -133,6 +149,57 @@ public class Lehren extends Script{
 	}
 	
 	
+	/**
+	 * wir prüfen, ob die Zahlen von Lehreren und Schülern zusammenpassen
+	 */
+	private void runNachlauf() {
+		if (countPupils>(super.scriptUnit.getUnit().getModifiedPersons()*10)){
+			int countTeacher = 0;
+			ArrayList<String> foundTeacher = new ArrayList<String>(0);
+			// wir haben mehr schüler als gedacht...mehr Lehrer suchen
+			// durch alle einheiten der Region gehen, nur scriptunits 
+			for (Unit u: this.scriptUnit.getUnit().getRegion().getUnits().values()){
+				ScriptUnit su = this.scriptUnit.getScriptMain().getScriptUnit(u);
+				if (su!=null) {
+					Object o = su.getScript(Lehren.class);
+					if (o!=null) {
+						Lehren L = (Lehren)o;
+						// wir haben einen Lehrer...lehrt der auch unsere Schüler?
+						boolean isOurTeacher = false;
+						for (String e : this.pupils) {
+							if (L.isAPupil(e)) {
+								isOurTeacher=true;
+								break;
+							}
+						}
+						if (isOurTeacher) {
+							countTeacher+=u.getModifiedPersons();
+							foundTeacher.add(u.toString(false));
+						}
+					}
+				}
+			}
+			
+			if (countPupils>(countTeacher*10)){
+				super.scriptUnit.doNotConfirmOrders("Zu viele Schüler beim Aufruf von LEHREN!");
+				super.scriptUnit.addComment(countTeacher + " Lehrers: " + foundTeacher.toString());
+				addOutLine("!!!.Zu viele Schüler beim Aufruf von LEHREN bei " + this.unitDesc());
+			} else {
+				super.scriptUnit.addComment("advanced teacher check: " + countTeacher + " teachers: " + foundTeacher.toString());
+			}
+		}
+	}
+	
+	
+	public boolean isAPupil(String e) {
+		boolean erg = false;
+		for (String s : this.pupils) {
+			if (s.equalsIgnoreCase(e)) {
+				return true;
+			}
+		}
+		return erg;
+	}
 	
 	
 }

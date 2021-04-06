@@ -14,6 +14,7 @@ import magellan.library.rules.SkillType;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.trade.TradeUtils;
 import com.fftools.trade.Trader;
+import com.fftools.utils.FFToolsUnits;
 
 
 
@@ -207,6 +208,7 @@ public class Handeln extends TradeAreaScript{
 						if (amount>r.maxLuxuries()){amount=r.maxLuxuries();}
 						overallSellAmount+=amount;
 						// neededTalent += (int)Math.ceil((double)amount/10);
+						FFToolsUnits.leaveAcademy(this.scriptUnit, " Händler verkauft und verlässt Aka");
 					}
 				}
 			}
@@ -390,6 +392,7 @@ public class Handeln extends TradeAreaScript{
 			if (this.getTrader().getBuy().getAmount()>0){
 				super.addOrder("KAUFEN " + this.getTrader().getBuy().getAmount() + " " + this.getTrader().getBuy().getItemType().getName(),true);
 				doSomething=true;
+				FFToolsUnits.leaveAcademy(this.scriptUnit, " Händler kauft und verlässt Aka");
 			}
 		}
 		

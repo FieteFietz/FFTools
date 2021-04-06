@@ -426,6 +426,7 @@ public void runScript(int scriptDurchlauf){
 		if (Auslastung>=this.minAuslastung){
 			// machen
 			this.addOrder("MACHEN " + actProduction + " " + this.itemType.getName(), true);
+			FFToolsUnits.leaveAcademy(this.scriptUnit, " Schmied arbeitet und verlässt Aka");
 		} else {
 			// lernen
 			this.lerneTalent(this.itemType.getMakeSkill().getSkillType().getName(), true);

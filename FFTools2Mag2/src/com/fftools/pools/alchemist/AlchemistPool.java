@@ -15,6 +15,7 @@ import com.fftools.OutTextClass;
 import com.fftools.ScriptUnit;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.scripts.Alchemist;
+import com.fftools.utils.FFToolsUnits;
 
 /**
  * 
@@ -397,6 +398,10 @@ public class AlchemistPool {
 
 		// verfügbare Ingedients reduzieren
 		this.decAvailableIngredientsOfPotion(trank.getPotion(), production);
+		
+		// Falls in Aka...
+		FFToolsUnits.leaveAcademy(alchi.scriptUnit, " brauender Alchemist verläßt Aka");
+		
 		return production;
 	}
 	

@@ -7,6 +7,7 @@ import java.util.Map;
 import com.fftools.pools.ausbildung.relations.AusbildungsRelation;
 import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
+import com.fftools.utils.FFToolsUnits;
 
 import magellan.library.Faction;
 import magellan.library.Message;
@@ -555,6 +556,7 @@ public class Zupfer extends MatPoolScript{
 						this.addOrder("mache " + menge + " Kräuter ;maximale ProdMenge", true);
 						this.addOrder("// Zupferinfo Runde=" + Runde + " Sollmenge=" + menge, true);
 					}
+					FFToolsUnits.leaveAcademy(this.scriptUnit, " Zupfer arbeitet und verlässt Aka");
 				}
 				if (regionsBestand>=0 && regionsBestand<MindestZupfBestandProzent) {
 					// Pausieren, Forschen oder Lernen
@@ -639,7 +641,7 @@ public class Zupfer extends MatPoolScript{
 						this.addComment("Region hat unbekannten Kräuterbestand, ich versuche testweise zu ernten.");
 						this.addOrder("mache " + testZupfmenge + " Kräuter ;Testmenge", true);
 						this.addOrder("// Zupferinfo Runde=" + Runde + " Sollmenge=" + testZupfmenge, true);
-						
+						FFToolsUnits.leaveAcademy(this.scriptUnit, " Zupfer testet und verlässt Aka");
 					}
 				}
 			}

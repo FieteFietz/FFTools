@@ -9,6 +9,7 @@ import magellan.library.rules.ItemType;
 
 import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
+import com.fftools.utils.FFToolsUnits;
 
 /**
  * 
@@ -128,6 +129,7 @@ public class Herbalist extends MatPoolScript{
 		if (makeMore==1) {
 			if (makeHerbAmount>0) {
 				this.scriptUnit.addOrder("MACHEN " + makeHerbAmount + " KRÄUTER", false);
+				FFToolsUnits.leaveAcademy(this.scriptUnit, " Herbalist zupft und verlässt Aka");
 			} else {
 				this.scriptUnit.findScriptClass("Lernfix", "Talent=Tarnung");
 			}

@@ -11,6 +11,7 @@ import com.fftools.pools.treiber.TreiberPool;
 import com.fftools.pools.treiber.TreiberPoolRelation;
 import com.fftools.utils.FFToolsOptionParser;
 import com.fftools.utils.FFToolsRegions;
+import com.fftools.utils.FFToolsUnits;
 import com.fftools.utils.GotoInfo;
 
 import magellan.library.Region;
@@ -559,6 +560,7 @@ public void runScript(int scriptDurchlauf){
 								
 								if (this.UnterBeschäftigung.equalsIgnoreCase("Treiben")) {
 									super.addOrder("TREIBEN " + treiberPoolRelation.getDoTreiben(), true);
+									FFToolsUnits.leaveAcademy(this.scriptUnit, " Treiber verlässt Aka");
 								}
 								if (this.UnterBeschäftigung.equalsIgnoreCase("Lernen")) {
 									this.addComment("vorgesehener Betrag zum Eintreiben für mich: " + treiberPoolRelation.getDoTreiben() + " Silber, da LERNE ich lieber....");
@@ -571,6 +573,7 @@ public void runScript(int scriptDurchlauf){
 							} else {
 								// nicht voll ausgelastet, aber oberhalb min Auslastung
 								super.addOrder("TREIBEN " + treiberPoolRelation.getDoTreiben(), true);
+								FFToolsUnits.leaveAcademy(this.scriptUnit, " Treiber verlässt Aka");
 							}
 							
 							// FF: unter 100% angabe
@@ -586,9 +589,11 @@ public void runScript(int scriptDurchlauf){
 							gotoInfo = FFToolsRegions.makeOrderNACH(this.scriptUnit, this.region().getCoordinate(),targetRegion.getCoordinate(), true,"Treiben");
 							addComment("dieser Region NEU als Treiber zugeordnet: " + targetRegion.toString());
 							addComment("ETA: " + gotoInfo.getAnzRunden() + " Runden.");
+							FFToolsUnits.leaveAcademy(this.scriptUnit, " Treiber en Route verlässt Aka");
 							// Pferde requesten...
 							MatPoolRequest MPR = new MatPoolRequest(this,this.scriptUnit.getUnit().getModifiedPersons(), "Pferd", 20, "Treiber unterwegs" );
 							this.addMatPoolRequest(MPR);
+							
 						} else {
 							// neu, wir lernen auf T1 Reiten
 							gotoInfo = FFToolsRegions.makeOrderNACH(this.scriptUnit, this.region().getCoordinate(),targetRegion.getCoordinate(), false,"Treiben");
@@ -601,6 +606,7 @@ public void runScript(int scriptDurchlauf){
 		
 				} else {
 				   super.addOrder("TREIBEN " + treiberPoolRelation.getDoTreiben(), true);
+				   FFToolsUnits.leaveAcademy(this.scriptUnit, " Treiber verlässt Aka");
 				}
 			}
 		}	

@@ -7,6 +7,7 @@ import com.fftools.ReportSettings;
 import com.fftools.ScriptUnit;
 import com.fftools.scripts.Script;
 
+import magellan.library.Building;
 import magellan.library.GameData;
 import magellan.library.Item;
 import magellan.library.Ship;
@@ -289,6 +290,22 @@ public class FFToolsUnits {
 			}
 		}
 		return erg;
+	}
+	
+	
+	/**
+	 * verlässt die Aka, wenn denn drinn
+	 * @param su
+	 */
+	public static void leaveAcademy(ScriptUnit su, String comment) {
+		Building b = su.getUnit().getBuilding();
+		if (b!=null) {
+			if (b.getBuildingType().getName().equalsIgnoreCase("akademie") && !su.isLeavingBuilding) {
+				// bingo
+				su.addOrder("verlasse ;" + comment, true);
+				su.isLeavingBuilding=true;
+			}
+		}
 	}
 
 }

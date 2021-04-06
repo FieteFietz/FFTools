@@ -53,6 +53,10 @@ public class Lernen extends MatPoolScript{
 	      	}
 		// hier code fuer Lernen
 		// addOutLine("....start Lernen mit " + super.getArgCount() + " Argumenten");
+	    if (reportSettings.getOptionBoolean("LerneAuto", this.region())) {
+	    	this.LerneAuto=true;
+	    	this.addComment("Lerne: AUTO in den scripter-optionen erkannt");
+	    }
 		
 		// erstmal ganz Einfach: Das erste Argument weiter lernen und bestaetigen
 		if (super.getArgCount()<1) {
@@ -63,6 +67,17 @@ public class Lernen extends MatPoolScript{
 			if (talent.equalsIgnoreCase("auto")){
 				this.LerneAuto=true;
 				this.addComment("Lerne: AUTO erkannt");
+				if (super.getArgCount()<2) {
+					super.scriptUnit.doNotConfirmOrders("Das Talent fehlt beim Aufruf von Auto Lernen!");
+					return;
+				}
+				talent = getArgAt(1);
+				this.addComment("Prüfe auf Talentangabe: " + talent);
+			}
+			
+			if (talent.equalsIgnoreCase("noauto")){
+				this.LerneAuto=false;
+				this.addComment("Lerne: NO-AUTO erkannt");
 				if (super.getArgCount()<2) {
 					super.scriptUnit.doNotConfirmOrders("Das Talent fehlt beim Aufruf von Auto Lernen!");
 					return;

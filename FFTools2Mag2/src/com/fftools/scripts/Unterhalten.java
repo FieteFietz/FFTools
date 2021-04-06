@@ -12,6 +12,7 @@ import com.fftools.pools.circus.CircusPoolRelation;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.utils.FFToolsOptionParser;
 import com.fftools.utils.FFToolsRegions;
+import com.fftools.utils.FFToolsUnits;
 import com.fftools.utils.GotoInfo;
 
 /**
@@ -240,7 +241,8 @@ public void runScript(int scriptDurchlauf){
 						if ( auslastung < 1){
 							this.addComment("(geplante Unterhaltung war hier: " + circusPoolRelation.getDoUnterhaltung());
 							this.addComment("Auslastung: " + (int)Math.floor(auslastung*100) + "%, unbestätigt unter " + this.mindestAuslastung + "%");	
-						}				
+						}	
+						FFToolsUnits.leaveAcademy(this.scriptUnit, " Unterhalter arbeitet und verlässt Aka");
 						
 					}
 				} else {
@@ -313,6 +315,7 @@ public void runScript(int scriptDurchlauf){
 			else {
 				super.addOrder("UNTERHALTEN " + circusPoolRelation.getDoUnterhaltung(), true);
 				this.setFinalOrderedUnterhaltung(circusPoolRelation.getDoUnterhaltung());
+				FFToolsUnits.leaveAcademy(this.scriptUnit, " Unterhalter arbeitet und verlässt Aka");
 			}
 		}
 	}

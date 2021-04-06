@@ -12,6 +12,7 @@ import com.fftools.ReportSettings;
 import com.fftools.ScriptUnit;
 import com.fftools.scripts.Lernfix;
 import com.fftools.scripts.Werft;
+import com.fftools.utils.FFToolsUnits;
 
 public class WerftPool{ 
 	
@@ -159,6 +160,7 @@ private boolean allShips = false;
 								oldRepairPunkte = RepairPunkte;
 								RepairPunkte = RepairPunkte - w.getBauPunkteMitHolz(s.getShipType());
 								w.addOrder("machen schiff " + s.getID() + "; Werft-Script: verbaue " + w.getBauPunkteMitHolz(s.getShipType()) + ", verbleibend " + RepairPunkte,true);
+								FFToolsUnits.leaveAcademy(w.scriptUnit, " Werft arbeitet und verlässt Aka");
 								workList.add(w);
 								if (su!=null){
 									su.addComment("An Schiff wird diese Runde gebaut: " + w.getBauPunkteMitHolz(s.getShipType()) + " von " + w.scriptUnit.toString() + "[" + oldRepairPunkte + "->" + RepairPunkte + "]");
@@ -196,6 +198,7 @@ private boolean allShips = false;
 					if (w.hasNeubauOrder()){
 						w.addComment("Keine Reparatur- oder Weiterbauaufträge, Neubau wird begonnen.");
 						w.addOrder("mache " + w.shipType.getName() + " ; Werft-Neubau",false);
+						FFToolsUnits.leaveAcademy(w.scriptUnit, " Werft arbeitet und verlässt Aka");
 					} else {
 						w.addComment("Leider keine Arbeit für mich diese Runde...(Werft)");
 						if (w.hasLernfixOrder){

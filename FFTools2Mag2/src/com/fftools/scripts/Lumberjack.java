@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
+import com.fftools.utils.FFToolsUnits;
 
 import magellan.library.Building;
 import magellan.library.Item;
@@ -359,6 +360,7 @@ public class Lumberjack extends MatPoolScript{
 		
 		if (Menge>0){
 			this.addOrder("MACHE " + Menge + " " + this.Gut, true);
+			FFToolsUnits.leaveAcademy(this.scriptUnit, " Holzfäller arbeitet und verlässt Aka");
 		} else {
 			if (notImportantChange) {
 				// zu spät für Lernfix

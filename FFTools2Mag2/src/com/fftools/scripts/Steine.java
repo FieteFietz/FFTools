@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
+import com.fftools.utils.FFToolsUnits;
 
 import magellan.library.Building;
 import magellan.library.Item;
@@ -251,6 +252,7 @@ public class Steine extends MatPoolScript{
 
 		if (machbareMenge>0) {
 			this.addOrder("machen " + machbareMenge + " Steine ;(script Steine)", true);
+			FFToolsUnits.leaveAcademy(this.scriptUnit, " Steinbauer arbeitet und verlässt Aka");
 		} else {
 			this.addComment("daraus folgt -> ich Lerne, leider ohne Lernpool, dafür ist es jetzt zu spät..");
 			this.makeStein=false;

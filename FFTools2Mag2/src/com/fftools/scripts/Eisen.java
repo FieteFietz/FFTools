@@ -12,6 +12,7 @@ import magellan.library.rules.SkillType;
 
 import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
+import com.fftools.utils.FFToolsUnits;
 
 public class Eisen extends MatPoolScript{
 	
@@ -214,6 +215,7 @@ public class Eisen extends MatPoolScript{
 							// weiter machen
 							this.addComment("Laen in der Region bei T" + RR.getSkillLevel() + ", wir bauen weiter ab, ich kann ja T" + skillLevel);
 							this.addOrder("machen Laen ;(script Eisen, mode Laen)", true);
+							FFToolsUnits.leaveAcademy(this.scriptUnit, " arbeitender Bergbauer verlässt Aka");
 							nextJob = "Laen";
 							
 						} 
@@ -330,6 +332,7 @@ public class Eisen extends MatPoolScript{
 		machbareMenge=mengeResult;
 		if (machbareMenge>0) {
 			this.addOrder("machen " + machbareMenge + " Eisen ;(script Eisen)", true);
+			FFToolsUnits.leaveAcademy(this.scriptUnit, " arbeitender Bergbauer verlässt Aka");
 		} else {
 			this.addComment("daraus folgt -> ich Lerne, leider ohne Lernpool, dafür ist es jetzt zu spät..");
 			this.makeEisen=false;
