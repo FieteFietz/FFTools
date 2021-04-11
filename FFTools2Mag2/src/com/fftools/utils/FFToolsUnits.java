@@ -78,8 +78,8 @@ public class FFToolsUnits {
 				terrainBonus = unit.getRace().getSkillBonus(skill.getSkillType(), unit.getRegion().getRegionType());
 			}
 
-			if(includeBuilding && (unit.getBuilding() != null)) {
-				buildingBonus = unit.getBuilding().getBuildingType().getSkillBonus(skill.getSkillType());
+			if(includeBuilding && (unit.getModifiedBuilding() != null)) {
+				buildingBonus = unit.getModifiedBuilding().getBuildingType().getSkillBonus(skill.getSkillType());
 			}
 
 			return Skill.getLevel(skill.getPoints() / unit.getModifiedPersons(), raceBonus, terrainBonus,
