@@ -100,7 +100,7 @@ public class Lernen extends MatPoolScript{
 				// Alles OK...Lerntalent erkannt
 				// checken..haben wir nen max Talentstufe ?
 				int maxTalent = 100;
-				if ((!this.LerneAuto && super.getArgCount()> 1) || (this.LerneAuto && super.getArgCount()>2) || (this.LerneNoAuto && super.getArgCount()>2)) {
+				if ((!this.LerneAuto && !this.LerneNoAuto && super.getArgCount()> 1) || (this.LerneAuto && super.getArgCount()>2) || (this.LerneNoAuto && super.getArgCount()>2)) {
 					String maxTalentS = getArgAt(1);
 					if (this.LerneAuto) {
 						maxTalentS = getArgAt(2);
