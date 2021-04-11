@@ -815,16 +815,59 @@ public class ScriptUnit {
 	 */
 	private void checkForLongOrder(){
 		boolean may_confirm = false;
+		int countLongOrders = 0;
+		int countPseudeLongOrders = 0;
+		int countFOLGEOrders = 0;
 		// alle order durchlaufen
+		ArrayList<String> addTexts = new ArrayList<String>(0);
 		for(Iterator<Order> iter = this.unit.getOrders2().iterator(); iter.hasNext();) {
 			Order actOrder = (Order)iter.next();
-			if (actOrder.isLong()){
+			
+			if (actOrder.isLong() || actOrder.getText().toUpperCase().startsWith("FOLGE")){
+				boolean realSingleLongOrder = true;
+				boolean isFolge = false;
+				// addTexts.add("checking order: " + actOrder.getText());
+				// pseudelongorders: ATTACK, KAUFE, VERKAUFE, FOLGE, ZAUBERE
+				if (actOrder.getText().toUpperCase().startsWith("ATTA")) {
+					realSingleLongOrder=false;
+					isFolge = true;
+				}
+				if (actOrder.getText().toUpperCase().startsWith("KAUF")) {
+					realSingleLongOrder=false;
+				}
+				if (actOrder.getText().toUpperCase().startsWith("VERKAUF")) {
+					realSingleLongOrder=false;
+				}
+				if (actOrder.getText().toUpperCase().startsWith("FOLGE")) {
+					realSingleLongOrder=false;
+					isFolge = true;
+				}
+				if (actOrder.getText().toUpperCase().startsWith("ZAUBER")) {
+					realSingleLongOrder=false;
+				}
+				
 				// jo..lange order
-				may_confirm = true;
+				if (!isFolge) {
+					may_confirm = true;
+				}
 				// schleife kann verlassen werden, ein treffer reicht
-				break;
+				// 20210411 - wir zählen, ob wir nicht zu viele lange order haben....
+				if (realSingleLongOrder) {
+					countLongOrders +=1 ;
+				} else {
+					if (isFolge) {
+						countFOLGEOrders += 1;
+						addTexts.add("FOLGE / ATTACKIERE erkannt.");
+					} else {
+						countPseudeLongOrders +=1 ;
+					}
+				}
 			}
 		}
+		for (String RR:addTexts) {
+			this.addComment(RR);
+		}
+		
 		
 		
 		// Ozeancheck
@@ -862,10 +905,23 @@ public class ScriptUnit {
 		
 		
 		if (may_confirm){
+			if (countLongOrders>1) {
+				this.doNotConfirmOrders("MEHR als ein langer Befehl erkannt! (" + countLongOrders + ")");
+				return;
+			} 
+			
+			if (countLongOrders==1 && countPseudeLongOrders>0) {
+				this.doNotConfirmOrders("Langer Befehl und Pseudo-Lange-Befehl(e) erkannt! (" + countPseudeLongOrders + " Pseudos)");
+				return;
+			}
+			
 			this.setUnitOrders_adjusted(true);
 		} else {
 			// im Zweifel hier abbrechen
 			this.doNotConfirmOrders("KEIN langer Befehl erkannt!");
+			if (countFOLGEOrders>0) {
+				this.addComment("Es wird empfohlen, parallel zum FOLGE/Attackiere einen langen Befehl zu geben, falls das FOLGE scheitert oder das Attackiere nicht LANG ist.");
+			}
 		}
 	}
 	

@@ -32,6 +32,7 @@ public class Lernen extends MatPoolScript{
 	int actLernTalent = 0;
 	
 	boolean LerneAuto=false;
+	boolean LerneNoAuto=false;
 	
 	// Parameterloser constructor
 	public Lernen() {
@@ -77,6 +78,7 @@ public class Lernen extends MatPoolScript{
 			
 			if (talent.equalsIgnoreCase("noauto")){
 				this.LerneAuto=false;
+				this.LerneNoAuto=true;
 				this.addComment("Lerne: NO-AUTO erkannt");
 				if (super.getArgCount()<2) {
 					super.scriptUnit.doNotConfirmOrders("Das Talent fehlt beim Aufruf von Auto Lernen!");
@@ -98,9 +100,12 @@ public class Lernen extends MatPoolScript{
 				// Alles OK...Lerntalent erkannt
 				// checken..haben wir nen max Talentstufe ?
 				int maxTalent = 100;
-				if ((!this.LerneAuto && super.getArgCount()> 1) || (this.LerneAuto && super.getArgCount()>2)) {
+				if ((!this.LerneAuto && super.getArgCount()> 1) || (this.LerneAuto && super.getArgCount()>2) || (this.LerneNoAuto && super.getArgCount()>2)) {
 					String maxTalentS = getArgAt(1);
 					if (this.LerneAuto) {
+						maxTalentS = getArgAt(2);
+					}
+					if (this.LerneNoAuto) {
 						maxTalentS = getArgAt(2);
 					}
 					int newMaxTalent = -1;
