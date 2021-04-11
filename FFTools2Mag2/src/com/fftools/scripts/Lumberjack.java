@@ -45,6 +45,9 @@ public class Lumberjack extends MatPoolScript{
 	private String sawMill=""; // Holzfällen nur in Sägewerk, betreten wenn machbar
 	private Building sawMillBuilding = null;
 	
+	private boolean nurBäume = false;
+	
+	
 	/**
 	 * ab welchem Talent gehts erst mal los?
 	 */
@@ -107,6 +110,10 @@ public class Lumberjack extends MatPoolScript{
 		if (unitMinTalent>this.minTalent){
 			this.minTalent = unitMinTalent;
 		}
+		unitMinTalent = OP.getOptionInt("minT", -1);
+		if (unitMinTalent>this.minTalent){
+			this.minTalent = unitMinTalent;
+		}
 		String sawMill_String = OP.getOptionString("sawMill");
 		if (sawMill_String.length()>0) {
 			// Holz fällen nur im Sägewerk
@@ -141,6 +148,13 @@ public class Lumberjack extends MatPoolScript{
 		} else {
 			this.addComment("!!! can not get SkillType Holzfällen!");
 		}
+		
+		
+		this.nurBäume = OP.getOptionBoolean("nurBäume", this.nurBäume);
+		if (this.nurBäume) {
+			this.addComment("NUR BÄUME erkannt - es werden keine Schösslinge zum Bestand gezählt.");
+		}
+		
 		if (skillLevel>=this.minTalent){
 			// Regionslevel beziehen
 			Region R = this.scriptUnit.getUnit().getRegion();
@@ -169,14 +183,16 @@ public class Lumberjack extends MatPoolScript{
 				}
 			}
 			// IT = this.gd_Script.rules.getItemType("Schößlinge");
-			IT = this.gd_Script.getRules().getItemType("Schößlinge");
-			RR = R.getResource(IT);
-			if (RR!=null){
-				actM=0;
-				actM = RR.getAmount();
-				if (actM>0){
-					this.addComment("Lumberjack: " + actM + " Schößlinge gefunden...");
-					Menge+=actM;
+			if (!this.nurBäume) {
+				IT = this.gd_Script.getRules().getItemType("Schößlinge");
+				RR = R.getResource(IT);
+				if (RR!=null){
+					actM=0;
+					actM = RR.getAmount();
+					if (actM>0){
+						this.addComment("Lumberjack: " + actM + " Schößlinge gefunden...");
+						Menge+=actM;
+					}
 				}
 			}
 			// IT = this.gd_Script.rules.getItemType("Mallorn");
@@ -192,15 +208,17 @@ public class Lumberjack extends MatPoolScript{
 				}
 			}
 			// IT = this.gd_Script.rules.getItemType("Mallornschößlinge");
-			IT = this.gd_Script.getRules().getItemType("Mallornschößlinge");
-			RR = R.getResource(IT);
-			if (RR!=null){
-				actM=0;
-				actM = RR.getAmount();
-				if (actM>0){
-					this.addComment("Lumberjack: " + actM + " Mallornschößlinge gefunden...");
-					Menge+=actM;
-					this.Gut="Mallorn";
+			if (!this.nurBäume) {
+				IT = this.gd_Script.getRules().getItemType("Mallornschößlinge");
+				RR = R.getResource(IT);
+				if (RR!=null){
+					actM=0;
+					actM = RR.getAmount();
+					if (actM>0){
+						this.addComment("Lumberjack: " + actM + " Mallornschößlinge gefunden...");
+						Menge+=actM;
+						this.Gut="Mallorn";
+					}
 				}
 			}
 			
