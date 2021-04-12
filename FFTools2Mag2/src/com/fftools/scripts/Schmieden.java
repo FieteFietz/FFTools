@@ -175,11 +175,24 @@ public void runScript(int scriptDurchlauf){
 		int actSkillLevel = 0;
 		int actSkillLevel_old = 0;
 		if (this.neededSkillType!=null){
+			// this.addComment("Talentfrage: " + this.neededSkillType.getName());
 			neededSkill = this.scriptUnit.getUnit().getModifiedSkill(this.neededSkillType);
 			if (neededSkill!=null){
 				actSkillLevel_old = neededSkill.getLevel(); 
-				actSkillLevel = FFToolsUnits.getModifiedSkillLevel(neededSkill,this.scriptUnit.getUnit(), true);
-				if (actSkillLevel==0 && actSkillLevel_old>0){
+				
+				boolean getSchmiedeBonus = false;
+				if (this.neededSkillType.getName().equalsIgnoreCase("Rüstungsbau")) {
+					getSchmiedeBonus = true;
+				}
+				if (this.neededSkillType.getName().equalsIgnoreCase("Waffenbau")) {
+					getSchmiedeBonus = true;
+				}
+				if (getSchmiedeBonus) {
+					actSkillLevel = FFToolsUnits.getModifiedSkillLevel(neededSkill,this.scriptUnit.getUnit(), true);
+					if (actSkillLevel==0 && actSkillLevel_old>0){
+						actSkillLevel = actSkillLevel_old;
+					}
+				} else {
 					actSkillLevel = actSkillLevel_old;
 				}
 				prodPoints = actSkillLevel *  this.scriptUnit.getUnit().getModifiedPersons();
@@ -189,6 +202,8 @@ public void runScript(int scriptDurchlauf){
 		if (prodPoints==0){
 			this.scriptUnit.doNotConfirmOrders("Keine Produktion möglich - keine Talentpunke.(modSkill:" + actSkillLevel +", modCount:" + this.scriptUnit.getUnit().getModifiedPersons() +",modSkill2:" + actSkillLevel_old + ")");
 			return;
+		} else {
+			this.addComment("Wirksamer Talentlevel: " + actSkillLevel + " " + this.neededSkillType.getName());
 		}
 		
 		// Schaffenstrunk oder RdF verdoppeln prodPoints 
