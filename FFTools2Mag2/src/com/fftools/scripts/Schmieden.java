@@ -92,6 +92,8 @@ public class Schmieden extends MatPoolScript{
 	
 	boolean isInSchmiede = false;
 	
+	private int setMenge = 0;
+	
 	// Konstruktor
 	public Schmieden() {
 		super.setRunAt(this.runners);
@@ -263,13 +265,13 @@ public void runScript(int scriptDurchlauf){
 		
 		this.maxProduction = maxMachenWare;
 		
-		int setMenge = OP.getOptionInt("menge", 0); 
+		this.setMenge = OP.getOptionInt("menge", 0); 
 		
-		if (setMenge>0) {
-			this.addComment("vorgegebene Menge erkannt: " + setMenge);
-			if (setMenge<=this.maxProduction) {
-				this.maxProduction = setMenge;
-				maxMachenWare= setMenge;
+		if (this.setMenge>0) {
+			this.addComment("vorgegebene Menge erkannt: " + this.setMenge);
+			if (this.setMenge<=this.maxProduction) {
+				this.maxProduction = this.setMenge;
+				maxMachenWare= this.setMenge;
 				this.addComment("Gewünschte Menge angepasst auf " + this.maxProduction);
 			} else {
 				this.addComment("Gewünschte Menge kann nicht umgesetzt werden, es bleibt bei " + this.maxProduction);
@@ -391,6 +393,7 @@ public void runScript(int scriptDurchlauf){
 		
 //		 benötigte Materialien erfassen
 		int actProduction = this.maxProduction;
+		boolean usingIron = false;
 		for (Iterator<Item> iter = this.itemType.getResources();iter.hasNext();){
 			Item actItem = (Item)iter.next();
 			int resAnzahl = 0;
@@ -404,6 +407,9 @@ public void runScript(int scriptDurchlauf){
 				if (detProd<actProduction){
 					this.addComment("Produktionsmenge reduziert von " + actProduction + " auf " + detProd + " wegen Menge Eisen");
 					actProduction = detProd;
+				}
+				if (resAnzahl>0){
+					usingIron=true;
 				}
 			}
 			
@@ -434,6 +440,20 @@ public void runScript(int scriptDurchlauf){
 				}
 			}
 		}
+		
+		if (usingIron && this.isInSchmiede && this.setMenge==0) {
+			// Menge soll durch 2 Teilbar sein
+			// checken, ob Menge durch 2 Teilbar ist.
+			int Teiler=2;
+			int mengeResult = (actProduction / Teiler) * Teiler;
+			if (mengeResult==actProduction){
+				addComment("Eisenarbeiten in der Schmiede erkannt, aber keine Anpassung auf gerade Produktionsmenge nötig, es bleibt bei " + mengeResult);
+			} else {
+				addComment("Eisenarbeiten in der Schmiede erkannt, Anpassung auf gerade Produktionsmenge erfolgt, Änderung von " + actProduction + " auf " + mengeResult);
+			}
+			actProduction=mengeResult;
+		}
+		
 		
 		// prozentsatz
 		int Auslastung = (int)Math.ceil(((double)actProduction/(double)this.maxProduction)*100);
