@@ -54,6 +54,7 @@ public class Lernen extends MatPoolScript{
 	      	}
 		// hier code fuer Lernen
 		// addOutLine("....start Lernen mit " + super.getArgCount() + " Argumenten");
+	    boolean unitHasAutoParameter=false;	
 	    if (reportSettings.getOptionBoolean("LerneAuto", this.region())) {
 	    	this.LerneAuto=true;
 	    	this.addComment("Lerne: AUTO in den scripter-optionen erkannt");
@@ -72,6 +73,7 @@ public class Lernen extends MatPoolScript{
 					super.scriptUnit.doNotConfirmOrders("Das Talent fehlt beim Aufruf von Auto Lernen!");
 					return;
 				}
+				unitHasAutoParameter=true;
 				talent = getArgAt(1);
 				this.addComment("Prüfe auf Talentangabe: " + talent);
 			}
@@ -84,6 +86,7 @@ public class Lernen extends MatPoolScript{
 					super.scriptUnit.doNotConfirmOrders("Das Talent fehlt beim Aufruf von Auto Lernen!");
 					return;
 				}
+				unitHasAutoParameter=true;
 				talent = getArgAt(1);
 				this.addComment("Prüfe auf Talentangabe: " + talent);
 			}
@@ -100,14 +103,12 @@ public class Lernen extends MatPoolScript{
 				// Alles OK...Lerntalent erkannt
 				// checken..haben wir nen max Talentstufe ?
 				int maxTalent = 100;
-				if ((!this.LerneAuto && !this.LerneNoAuto && super.getArgCount()> 1) || (this.LerneAuto && super.getArgCount()>2) || (this.LerneNoAuto && super.getArgCount()>2)) {
+				if ((!unitHasAutoParameter && super.getArgCount()> 1) || (this.LerneAuto && super.getArgCount()>2) || (this.LerneNoAuto && super.getArgCount()>2)) {
 					String maxTalentS = getArgAt(1);
-					if (this.LerneAuto) {
+					if (unitHasAutoParameter) {
 						maxTalentS = getArgAt(2);
 					}
-					if (this.LerneNoAuto) {
-						maxTalentS = getArgAt(2);
-					}
+					
 					int newMaxTalent = -1;
 					try {
 						newMaxTalent = Integer.parseInt(maxTalentS);
@@ -121,6 +122,8 @@ public class Lernen extends MatPoolScript{
 						mayConfirm = false;
 						super.scriptUnit.doNotConfirmOrders("Fehler bei maxTalentStufe");
 					}
+				} else {
+					this.addComment("Lernen: keine Prüfung auf max-Talentangabe. (Kein Parameter erkannt");
 				}
 				// int actLernTalent = super.scriptUnit.getUnit().getSkill(skillType).getLevel();
 				Unit actUnit = super.scriptUnit.getUnit();
