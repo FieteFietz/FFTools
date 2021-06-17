@@ -159,6 +159,12 @@ public class Pferde extends MatPoolScript{
 		
 		this.LernTalent = OP.getOptionString("LernTalent");
 		
+		if (this.LernTalent.length()==0) {
+			this.LernTalent = OP.getOptionString("Talent");
+		}
+		
+		
+		
 		if (this.LernTalent.length()>2 && this.LernPlanName.length()>2){
 			this.scriptUnit.doNotConfirmOrders("Lernplan und Lerntalent nicht möglich!");
 			outText.addOutLine("!!! Pferde: Lernplan und Lerntalent nicht möglich! " + this.unitDesc(), true);

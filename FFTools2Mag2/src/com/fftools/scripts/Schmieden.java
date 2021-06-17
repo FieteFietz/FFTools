@@ -441,15 +441,15 @@ public void runScript(int scriptDurchlauf){
 			}
 		}
 		
-		if (usingIron && this.isInSchmiede && this.setMenge==0 && this.itemType.getName().equalsIgnoreCase("Bihänder")) {
-			// Menge soll durch 2 Teilbar sein, laut Discord Chat nur bei Bihänder relevant
+		if (usingIron && this.isInSchmiede && this.setMenge==0 && !this.itemType.getName().equalsIgnoreCase("Bihänder")) {
+			// Menge soll durch 2 Teilbar sein, laut Discord Chat ausser bei Bihänder relevant
 			// checken, ob Menge durch 2 Teilbar ist.
 			int Teiler=2;
 			int mengeResult = (actProduction / Teiler) * Teiler;
 			if (mengeResult==actProduction){
-				addComment("Eisenarbeiten (Bihänder) in der Schmiede erkannt, aber keine Anpassung auf gerade Produktionsmenge nötig, es bleibt bei " + mengeResult);
+				addComment("Eisenarbeiten in der Schmiede erkannt, aber keine Anpassung auf gerade Produktionsmenge nötig, es bleibt bei " + mengeResult);
 			} else {
-				addComment("Eisenarbeiten (Bihänder) in der Schmiede erkannt, Anpassung auf gerade Produktionsmenge erfolgt, Änderung von " + actProduction + " auf " + mengeResult);
+				addComment("Eisenarbeiten in der Schmiede erkannt, Anpassung auf gerade Produktionsmenge erfolgt, Änderung von " + actProduction + " auf " + mengeResult);
 			}
 			actProduction=mengeResult;
 		}
