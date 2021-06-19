@@ -160,6 +160,22 @@ public class Lernfix extends MatPoolScript{
 				if (OP.getOptionString("Gratistalent").length()>2){
 					this.addGratisTalent(AR,OP.getOptionString("Gratistalent"));
 				}
+				
+				// 20210619: Prüfe auch bei LernPlan auf Lehrer=nein
+				boolean keinLehrer = false;
+				if (OP.getOptionBoolean("Lehrer", true)==false){
+					this.addComment("Lernfix: Biete keine Talente zum Lehren an.");
+					keinLehrer=true;
+				}
+				if (OP.getOptionBoolean("Teacher", true)==false){
+					this.addComment("Lernfix: Offer no skills for teaching.");
+					keinLehrer=true;
+				}
+				
+				if (keinLehrer) {
+					AR.setNoTeacher();
+				}
+				
 				AR.informScriptUnit();
 				ausbildungsPool.addAusbildungsRelation(AR);
 				if (AR.getActLernplanLevel()!=Lernplan.level_unset){

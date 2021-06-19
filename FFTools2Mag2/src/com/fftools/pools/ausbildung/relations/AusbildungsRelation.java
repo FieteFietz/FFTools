@@ -639,6 +639,14 @@ public class AusbildungsRelation {
 			this.avoidAka = avoidAka;
 		}
 		
+		/*
+		 * unit soll nicht Lehrer sein
+		 */
+		public void setNoTeacher() {
+			this.teachOffer=null;
+			this.isTeacher=false;
+		}
+		
 }
 
 
