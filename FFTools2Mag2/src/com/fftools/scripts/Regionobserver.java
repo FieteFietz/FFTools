@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.fftools.pools.ausbildung.Lernplan;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
+import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
 
 import magellan.library.Item;
@@ -108,6 +109,9 @@ public class Regionobserver extends MatPoolScript{
 		}
 		
 		WaffenName = OP.getOptionString("Waffe");
+		if (WaffenName.length()>0) {
+			WaffenName = FFToolsGameData.translateItemShortform(WaffenName);
+		}
 		
 		this.requestWeapon = OP.getOptionBoolean("Waffenanforderung", this.requestWeapon);
 		
