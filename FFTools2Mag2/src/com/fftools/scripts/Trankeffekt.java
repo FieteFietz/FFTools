@@ -78,7 +78,7 @@ public class Trankeffekt extends MatPoolScript{
 			outText.addOutLine("!!!Trankeffekt: Trank nicht angegeben. " + this.unitDesc());
 			return;
 		}
-		this.itemType = this.gd_Script.rules.getItemType(trankName);
+		this.itemType = this.gd_Script.getRules().getItemType(trankName);
 		if (this.itemType==null){
 			this.addComment("Trankeffekt: Trank nicht erkannt.");
 			outText.addOutLine("!!!Trankeffekt: Trank nicht erkannt. " + this.unitDesc());
@@ -107,6 +107,11 @@ public class Trankeffekt extends MatPoolScript{
 		
 		// wieviel Trank braucht die einheit pro runde?
 		double usagePerRound = (double)(persZahl)/ this.personenWirkung;
+		double peasants = 0;
+		if (this.trank.equalsIgnoreCase("Bauernlieb")){
+			peasants = this.region().getModifiedPeasants();
+			usagePerRound = (int)Math.floor(peasants/1000);
+		}
 		
 		int usageNeeded = (int)Math.ceil(usagePerRound * (double)this.vorratsRunden);
 
@@ -118,7 +123,11 @@ public class Trankeffekt extends MatPoolScript{
 		
 		
 		this.addComment("Vorrat " + this.trank + ": daher benötigt: " + usageNeeded + " Tränke (mit Prio=" + this.requestPrio + ")");
-		this.addComment("Vorrat: " + this.trank + " pro Runde benötigt:" + usagePerRound + " (bei " + persZahl + " berücksichtigten Personen)");
+		if (this.trank.equalsIgnoreCase("Bauernlieb")){
+			this.addComment("Vorrat: " + this.trank + " pro Runde benötigt:" + usagePerRound + " (bei " + peasants + " berücksichtigten Bauern)");
+		} else {
+			this.addComment("Vorrat: " + this.trank + " pro Runde benötigt:" + usagePerRound + " (bei " + persZahl + " berücksichtigten Personen)");
+		}
 		
 		
 		// priorität
@@ -136,19 +145,36 @@ public class Trankeffekt extends MatPoolScript{
 		this.myMPR = new MatPoolRequest(this,usageNeeded,this.trank,this.requestPrio,"TrankEffekt");
 		this.addMatPoolRequest(this.myMPR);
 		// Effekt feststellen.
-		int effects = this.scriptUnit.getEffekte(this.trank);
-		if (effects<persZahl){
-			//  Trank benutzen
-			// nur wenn in Region vorhanden
-			if (countPotionInRegion4Faction()>0){
-				this.addOrder("BENUTZEN " +  NF.format(Math.ceil((double)persZahl/this.personenWirkung)) + " " + this.trank,false);
-				this.useThisRound=true;
+		if (!this.trank.equalsIgnoreCase("Bauernlieb")){
+			int effects = this.scriptUnit.getEffekte(this.trank);
+			if (effects<persZahl){
+				//  Trank benutzen
+				// nur wenn in Region vorhanden
+				if (countPotionInRegion4Faction()>0){
+					this.addOrder("BENUTZEN " +  NF.format(Math.ceil((double)persZahl/this.personenWirkung)) + " " + this.trank,false);
+					this.useThisRound=true;
+				} else {
+					this.addComment("Trank " + this.trank + " nicht ausreichend, aber auch nicht für diese Partei in dieser Region verfügbar.");
+				}
+				
 			} else {
-				this.addComment("Trank " + this.trank + " nicht ausreichend, aber auch nicht für diese Partei in dieser Region verfügbar.");
+				this.addComment("Trank " + this.trank + " ausreichend.");
 			}
-			
 		} else {
-			this.addComment("Trank " + this.trank + " ausreichend.");
+			// Bauernblut
+			int availableBlood = countPotionInRegion4Faction();
+			if (availableBlood>0){
+				if (availableBlood>usagePerRound) {
+					availableBlood=(int) usagePerRound;
+				}
+				this.addOrder("BENUTZEN " + availableBlood  + " " + this.trank,false);
+				this.useThisRound=true;
+				if (availableBlood<usagePerRound) {
+					this.addComment("Trankeffekt: nicht ausreichend Tränke vorhanden, benötigt: " + usagePerRound + ", bei der Partei hier vorhanden: " + availableBlood); 
+				}
+			} else {
+				this.addComment("Trank " + this.trank + " aktuell nicht bei mir vorhanden, aber auch nicht für diese Partei in dieser Region verfügbar.");
+			}
 		}
 		
 	}
