@@ -828,21 +828,24 @@ public class ScriptUnit {
 				boolean isFolge = false;
 				// addTexts.add("checking order: " + actOrder.getText());
 				// pseudelongorders: ATTACK, KAUFE, VERKAUFE, FOLGE, ZAUBERE
-				if (actOrder.getText().toUpperCase().startsWith("ATTA")) {
+				String testOrder = actOrder.getText().toUpperCase();
+				testOrder = testOrder.replace("!", "");
+				testOrder = testOrder.replace("@", "");
+				if (testOrder.startsWith("ATTA")) {
 					realSingleLongOrder=false;
 					isFolge = true;
 				}
-				if (actOrder.getText().toUpperCase().startsWith("KAUF")) {
+				if (testOrder.startsWith("KAUF")) {
 					realSingleLongOrder=false;
 				}
-				if (actOrder.getText().toUpperCase().startsWith("VERKAUF")) {
+				if (testOrder.startsWith("VERKAUF")) {
 					realSingleLongOrder=false;
 				}
-				if (actOrder.getText().toUpperCase().startsWith("FOLGE")) {
+				if (testOrder.startsWith("FOLGE")) {
 					realSingleLongOrder=false;
 					isFolge = true;
 				}
-				if (actOrder.getText().toUpperCase().startsWith("ZAUBER")) {
+				if (testOrder.startsWith("ZAUBER")) {
 					realSingleLongOrder=false;
 				}
 				
