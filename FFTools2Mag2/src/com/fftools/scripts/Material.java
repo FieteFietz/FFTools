@@ -1,13 +1,16 @@
 package com.fftools.scripts;
 
+import java.util.HashMap;
 import java.util.Iterator;
-
-import magellan.library.Skill;
-import magellan.library.rules.SkillType;
 
 import com.fftools.ReportSettings;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.utils.FFToolsOptionParser;
+import com.fftools.utils.FFToolsUnits;
+import com.sun.org.apache.xerces.internal.parsers.AbstractXMLDocumentParser;
+
+import magellan.library.Skill;
+import magellan.library.rules.SkillType;
 
 /**
  * Requestet für Militäreinheiten benötigte Ausrüstung
@@ -457,18 +460,71 @@ public class Material extends MatPoolScript {
 			// 1 Halbling 18 TP, ein Mensch 20 TP...Zwerg 24 TP, Troll 30 TP
 			// 20 MM -> 400 TP, 50% wundsalbendurchsatz-> 50 Mann 1 Wundsalbe
 			// hier das entscheidende Setting
-			int personenProWundsalbe = 10;
-			// wieviel Wundsalbe sollte diese Einheit also haben?
-			int wishWS = persons / personenProWundsalbe ;
+			String raceName = this.getUnit().getSimpleRealRaceName();
+			int TP = 20; // Standard Menschen + MMs
+			HashMap<String, Integer> RaceTPs = new HashMap<String, Integer>();
+			RaceTPs.put("Menschen", 20);
+			RaceTPs.put("Zwerge", 24);
+			RaceTPs.put("Orks", 24);
+			RaceTPs.put("Elfen", 18);
+			RaceTPs.put("Katzen", 20);
+			RaceTPs.put("Dämonen", 50);
+			RaceTPs.put("Halblinge", 18);
+			RaceTPs.put("Goblins", 16);
+			RaceTPs.put("Insekten", 24);
+			RaceTPs.put("Trolle", 30);
+			RaceTPs.put("Meermenschen", 20);
+
+			Integer actTP = RaceTPs.get(raceName);
+			if (actTP!=null) {
+				TP = actTP.intValue();
+				this.addComment("Material: " + raceName + " haben " + TP + " Trefferpunkte (TP)");
+			} else {
+				this.addComment("!!! Material Rasse nicht erkannt: " + raceName + ", keine spezifischen TP ermittelt. Nutze default=20");
+			}
+			
+			// Ausdauereinfluss berechnen
+			if (ausdauerSkill!=null && ausdauerSkill.getLevel()>0){
+				int proz = (int)Math.round((Math.pow(((double)ausdauerSkill.getLevel()/2),1.5)*20));
+				int newTP = (int)(TP * (1 + (double)proz/100));
+				this.addComment("Durch Ausdauer T" + ausdauerSkill.getLevel() + " neue TP: " + newTP + " (+" + proz + "%)");
+				TP = newTP;
+			} else {
+				this.addComment("Material: kein Ausdauertalent entdeckt, keine Anpassung der TP");
+			}
+			
+			int TPUnit = TP * persons;
+			int wishWS = TPUnit / 400; // 400 TP pro Wundsalbe
+			this.addComment("Für resultierende " + TPUnit + " TP werden " + wishWS + " Wundsalbe in max 5 Chargen angefordert.");
+			int wsProCharge = wishWS / 5;
+			if (wsProCharge==0) {
+				wsProCharge=1;
+			}
+			
+			
 			if (wishWS>0){
+				int wishWSleft = wishWS;
 				super.setPrioParameter(prio,-0.5,0,2);
-				for (int i = 1;i<=wishWS;i++){
+				for (int i = 1;i<=5;i++){
 					int actPrio = super.getPrio(i-1);
-					mpr = new MatPoolRequest(this,1,"Wundsalbe",actPrio,comment + "(WS:" + i + ")",kapa_policy,kapa_benutzer);
+					int actCharge = wsProCharge;
+					
+					// wenn wir mit den restlichen chargen *nicht* wishWS erreichen, Anzahl um 1 erhöhen
+					if (actCharge * (6-i)<wishWSleft) {
+						actCharge +=1;
+					}
+					mpr = new MatPoolRequest(this,actCharge,"Wundsalbe",actPrio,comment + "(WS:" + i + ")",kapa_policy,kapa_benutzer);
 					if (this.inRegion){
 						mpr.setOnlyRegion(true);
 					}
 					this.addMatPoolRequest(mpr);
+					wishWSleft -= actCharge;
+					
+					// this.addComment("debug material: actCharge=" + actCharge + ", wishWSleft=" + wishWSleft);
+					
+					if (wishWSleft<=0) {
+						break;
+					}
 				}
 			}
 		} else {

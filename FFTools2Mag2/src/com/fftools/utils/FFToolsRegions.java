@@ -18,7 +18,6 @@ import com.fftools.OutTextClass;
 import com.fftools.ReportSettings;
 import com.fftools.ScriptMain;
 import com.fftools.ScriptUnit;
-import com.fftools.trade.TradeAreaHandler;
 
 import magellan.library.Border;
 import magellan.library.Building;

@@ -64,10 +64,20 @@ public class Forester extends MatPoolScript{
 	 */
 	private int minBestand=0;
 	
+	
+	/**
+	 * Wenn der Förster aktiv wird, wird er nur so viel WdL benutzen, dass der geplante Holzbestand den sollBestand nicht überschreitet.
+	 * Dabei werden "mache Holz"-Befehle nicht berücksichtigt.
+	 */
+	private int sollBestand=0;
+	
 	// Konstruktor
 	public Forester() {
 		super.setRunAt(this.runners);
 	}
+	
+	
+	
 	
 	
 public void runScript(int scriptDurchlauf){
@@ -141,6 +151,14 @@ public void runScript(int scriptDurchlauf){
 			infoText += "minBestand=" + this.minBestand;
 		}
 		
+		this.sollBestand = OP.getOptionInt("sollBestand", 0);
+		if (this.sollBestand>0) {
+			if (infoText.length()>1){
+				infoText += ", ";
+			}
+			infoText += "sollBestand=" + this.minBestand;
+		}
+
 		
 		if (infoText.length()>0){
 			infoText = "Forester diese Runde (" + infoText + ")";
@@ -225,10 +243,11 @@ public void runScript(int scriptDurchlauf){
 			this.addComment("Forester: mögliche Produktion (" + Produktion + ") unter Minimalmenge!");
 		}
 		
-		if (mayProduce && this.minBestand>0) {
+		int Staemme = 0;
+		if (mayProduce && (this.minBestand>0 || this.sollBestand>0)) {
 			// checke, ob minBestand gesetzt und unterschritten
 			this.addComment("prüfe auf Unterschreitung des MindestBestands (" + this.minBestand + " Stämme)");
-			int Staemme = 0;
+			
 			ItemType IT = this.gd_Script.getRules().getItemType("Mallorn");
 			RegionResource RR = this.region().getResource(IT);
 			if (RR!=null){
@@ -250,13 +269,36 @@ public void runScript(int scriptDurchlauf){
 			if (RR!=null){
 				Staemme += RR.getAmount();
 			}
-			if (Staemme>this.minBestand) {
-				this.addComment(Staemme + " Stämme gefunden -> kein Aufforsten diese Runde");
-				mayProduce=false;
-			} else {
-				this.addComment(Staemme + " Stämme gefunden -> Mindestbestand unterschritten.");
+			
+			if (this.minBestand>0) {
+				if (Staemme>this.minBestand) {
+					this.addComment(Staemme + " Stämme gefunden -> kein Aufforsten diese Runde");
+					mayProduce=false;
+				} else {
+					this.addComment(Staemme + " Stämme gefunden -> Mindestbestand unterschritten.");
+				}
+			}
+			
+			if (mayProduce && this.sollBestand>0) {
+				// wir wollen den Sollbestand nicht überschreiten!
+				int maxNeueStaemme = this.sollBestand - Staemme;
+				int maxProduktion = maxNeueStaemme/10;
+				if (maxProduktion>Produktion) {
+					// keine Einschränkungen
+					this.addComment("Durch das Benutzen von " + Produktion + " WdL wird der sollBestand von " + this.sollBestand + " nicht überschritten");
+				} else {
+					Produktion = maxProduktion;
+					this.addComment("Um den Soll-Bestand von " + this.sollBestand + " nicht zu überschreiten, wird die Menge von WdL auf " + Produktion + " reduziert.");
+					if (Produktion==0) {
+						mayProduce=false;
+						this.addComment("Klartext in diesem Fall: es wird kein WdL benutzt.");
+					}
+				}
+				
 			}
 		}
+		
+		
 		
 		
 		if (mayProduce){

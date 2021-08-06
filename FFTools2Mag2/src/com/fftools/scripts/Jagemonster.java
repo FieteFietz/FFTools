@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import com.fftools.pools.ausbildung.Lernplan;
 import com.fftools.pools.seeschlangen.MonsterJagdManager_MJM;
-import com.fftools.pools.seeschlangen.SeeschlangenJagdManager_SJM;
 import com.fftools.trade.TradeArea;
 import com.fftools.trade.TradeRegion;
 import com.fftools.utils.FFToolsOptionParser;
@@ -12,6 +11,7 @@ import com.fftools.utils.FFToolsRegions;
 import com.fftools.utils.FFToolsUnits;
 import com.fftools.utils.GotoInfo;
 
+import magellan.library.Building;
 import magellan.library.CoordinateID;
 import magellan.library.ID;
 import magellan.library.Region;
@@ -505,6 +505,13 @@ public class Jagemonster extends TradeAreaScript{
 			L.setClient(this.scriptUnit.getScriptMain().client);
 		}
 		this.scriptUnit.addAScript(L);
+		
+		// 20210627: betrete die grösste Burg
+		Building b = FFToolsRegions.getBiggestCastle(this.region());
+		if (b!=null && this.automode && !b.equals(this.getUnit().getModifiedBuilding())) {
+			// Betreten
+			this.addOrder("Betrete BURG " + b.getID().toString() + " ; Jagemonster (auto)", true);
+		} 
 	}
 
 	public boolean isHC_ready() {

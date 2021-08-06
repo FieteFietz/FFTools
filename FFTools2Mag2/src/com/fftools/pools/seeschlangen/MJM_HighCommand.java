@@ -100,11 +100,11 @@ public class MJM_HighCommand  {
     		
     		// Info zu Jägern
     		for (Jagemonster JM2:this.Jäger) {
-    			String text = JM.toString() + ", " + JM.getUnit().getModifiedPersons() + " Pers";
-    			if (JM.isTactican()) {
+    			String text = JM2.toString() + ", " + JM2.getUnit().getModifiedPersons() + " Pers";
+    			if (JM2.isTactican()) {
     				text += " (Taktiker)";
     			}
-    			if (JM.getRole()==Jagemonster.role_Support) {
+    			if (JM2.getRole()==Jagemonster.role_Support) {
     				text += " (Support)";
     			}
     			JM.addComment(text);
@@ -117,6 +117,7 @@ public class MJM_HighCommand  {
     		Region r = JM.getUnit().getRegion();
     		if (this.monsterregions.keySet().contains(r)) {
     			// Bingo
+    			
     			MonsterRegion MR = this.monsterregions.get(r);
     			// in der Region wird angegriffen werden
     			MR.setScheduled4attack(true);
@@ -132,6 +133,7 @@ public class MJM_HighCommand  {
     				MR.setHasTactican(true);
     			}
     			// den rest soll der MJM machen
+    			JM.addComment("MJM_HC: Region zur Liste der umkämpften Regionen hinzugefügt.");
     		}
     	}
     	
@@ -145,11 +147,12 @@ public class MJM_HighCommand  {
     		int MonsterCount = this.MJM.countMonster(r);
     		int neededPersons = (int)(MonsterCount / 3);
     		ArrayList<String> infoComments = new ArrayList<String>(0);
+    		String infoComment = "";
     		ArrayList<Jagemonster> infoCommentsReceiver = new ArrayList<Jagemonster>(0);
     		int countAttacker = MR.getAttackLevelReihe1();
     		int countRequestMovers = neededPersons - MR.getAttackLevelReihe1();
     		if (countRequestMovers>0) {
-    			String infoComment = "MJM_HC: Die Situation in " + r.toString() + " erfordert " + neededPersons + " 1. Reihe, es sind aber derzeit nur " + MR.getAttackLevelReihe1() + " vor Ort.";
+    			infoComment = "MJM_HC OVERRUN: Die Situation in " + r.toString() + " erfordert " + neededPersons + " 1. Reihe, es sind aber derzeit nur " + MR.getAttackLevelReihe1() + " vor Ort, es fehlen " + countRequestMovers;
     			infoComments.add(infoComment);
     			// ok, wir könnten überrannt werden, wir müssen mehr erste Reihe aus der Nähe dazuziehen - oberste Prio - Lebensgefahr
     			// Liste der noch verfügbaren Jäger bauen
@@ -183,18 +186,23 @@ public class MJM_HighCommand  {
     				// Abbrechen wenn benötigte Anzahl erreicht
     				if (countRequestMovers<=0) {
     					infoComment = "MJM_HC: Abbruch der Verstärkungssuche 1. Reihe für " + r.toString();
+    					infoComments.add(infoComment);
     					break;
     				}
     			}
+    		} else {
+    			// es gibt kein Problem in der Region?
+    			infoComment = "MJM_HC: kein OVERRUN in " + r.toString() + ", keine Verstärkung notwendig";
+				infoComments.add(infoComment);
     		}
     		// Information an alle Verstärker...
-    		if (infoCommentsReceiver.size()>0 && infoComments.size()>0) {
-    			for (Jagemonster JM:infoCommentsReceiver) {
-    				for (String s:infoComments) {
-    					JM.addComment(s);
-    				}
-    			}
-    		}
+    		// neu: an alle
+			for (Jagemonster JM:this.Jäger) {
+				for (String s:infoComments) {
+					JM.addComment(s);
+				}
+			}
+    		
     		
     		
     		// check Gesamtanzahl...wieviel brauchen wir mindestens?
@@ -202,9 +210,9 @@ public class MJM_HighCommand  {
     		infoComments = new ArrayList<String>(0);
     		infoCommentsReceiver = new ArrayList<Jagemonster>(0);
     		neededPersons = MR.getThreadLevel();
-    		countRequestMovers = neededPersons - (MR.getAttackLevelReihe1() + MR.getAttackLevelReihe2() + countAttacker);
+    		countRequestMovers = neededPersons - (MR.getAttackLevelReihe2() + countAttacker);
     		if (countRequestMovers>0) {
-    			String infoComment = "MJM_HC: Die Situation in " + r.toString() + " erfordert " + neededPersons + " Kämpfer, es fehlen " + countRequestMovers + " vor Ort.";
+    			infoComment = "MJM_HC: Die Situation in " + r.toString() + " erfordert " + neededPersons + " Kämpfer, es fehlen " + countRequestMovers + " vor Ort.";
     			infoComments.add(infoComment);
     			// ok, wir müssen mehr hinschicken, egal welche Reihe
     			// Liste der noch verfügbaren Jäger bauen
@@ -237,18 +245,23 @@ public class MJM_HighCommand  {
     				// Abbrechen wenn benötigte Anzahl erreicht
     				if (countRequestMovers<=0) {
     					infoComment = "MJM_HC: Abbruch der Verstärkungssuche für " + r.toString();
+    					infoComments.add(infoComment);
     					break;
     				}
     			}
+    		} else {
+    			infoComment = "MJM_HC: Die Gesamtanzahl der Kämpfer ist ausreichend in " + r.toString();
+    			infoComments.add(infoComment);
     		}
     		// Information an alle Verstärker...
-    		if (infoCommentsReceiver.size()>0 && infoComments.size()>0) {
-    			for (Jagemonster JM:infoCommentsReceiver) {
-    				for (String s:infoComments) {
-    					JM.addComment(s);
-    				}
-    			}
-    		}
+    		// neu: an alle
+    		
+			for (Jagemonster JM:this.Jäger) {
+				for (String s:infoComments) {
+					JM.addComment(s);
+				}
+			}
+    		
     		
     		
     	    // check Taktiker?
@@ -258,7 +271,7 @@ public class MJM_HighCommand  {
 	    		neededPersons = 1;
 	    		countRequestMovers = 1;
 	    		if (countRequestMovers>0) {
-	    			String infoComment = "MJM_HC: Die Situation in " + r.toString() + " erfordert 1 Taktiker, dieser wird gesucht.";
+	    			infoComment = "MJM_HC: Die Situation in " + r.toString() + " erfordert 1 Taktiker, dieser wird gesucht.";
 	    			infoComments.add(infoComment);
 	    			// ok, wir müssen mehr hinschicken, nur Taktiker, nur 1
 	    			// Liste der noch verfügbaren Jäger bauen
@@ -296,13 +309,14 @@ public class MJM_HighCommand  {
 	    			}
 	    		}
 	    		// Information an alle Verstärker...
-	    		if (infoCommentsReceiver.size()>0 && infoComments.size()>0) {
-	    			for (Jagemonster JM:infoCommentsReceiver) {
-	    				for (String s:infoComments) {
-	    					JM.addComment(s);
-	    				}
-	    			}
-	    		}
+	    		// neu, jetzt alle
+	    		
+    			for (Jagemonster JM:this.Jäger) {
+    				for (String s:infoComments) {
+    					JM.addComment(s);
+    				}
+    			}
+	    		
     		}
     		
     		
