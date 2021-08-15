@@ -282,6 +282,7 @@ public class Jagemonster extends TradeAreaScript{
 		if (!this.automode) {
 			for (TradeRegion TR:TA.getTradeRegions()) {
 				Region actRegion = TR.getRegion();
+				// this.addComment("debug: checking region " + actRegion.toString());
 				for (Unit actU : actRegion.getUnits().values()) {
 					String test = actU.getName();
 					if (test==null){
@@ -291,6 +292,7 @@ public class Jagemonster extends TradeAreaScript{
 					if (test != null && test2 != null){
 						if (test.equalsIgnoreCase(targetUnitName) || actU.toString(false).equalsIgnoreCase(targetUnitName)){
 							this.targetUnit = actU;
+							// this.addComment("Zielunit wurde im TA gefunden!");
 						} 
 					}
 				}
@@ -468,7 +470,7 @@ public class Jagemonster extends TradeAreaScript{
 	private void orderMove() {
 		if (this.targetDest!=null) {
 			this.gotoInfo = new GotoInfo();
-			this.gotoInfo = FFToolsRegions.makeOrderNACH(this.scriptUnit, super.region().getCoordinate(), this.targetDest,true,"JageMonster");
+			this.gotoInfo = FFToolsRegions.makeOrderNACH(this.scriptUnit, super.region().getCoordinate(), this.targetDest,true,"JageMonster", false);
 		}
 	}
 	

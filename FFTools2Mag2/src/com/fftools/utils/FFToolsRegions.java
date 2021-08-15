@@ -343,8 +343,21 @@ public class FFToolsRegions {
 		return retVal;
 	}
 	
-	
+	/**
+	 * Standard call - mit Berücksichtigung von excludeRegions
+	 * @param u
+	 * @param act
+	 * @param dest
+	 * @param writeOrders
+	 * @param originInfo
+	 * @return GotoInfo
+	 */
 	public static GotoInfo makeOrderNACH(ScriptUnit u,CoordinateID act,CoordinateID dest,boolean writeOrders,String originInfo){
+		return makeOrderNACH(u,act,dest,writeOrders,originInfo,true);
+	}
+	
+	
+	public static GotoInfo makeOrderNACH(ScriptUnit u,CoordinateID act,CoordinateID dest,boolean writeOrders,String originInfo, boolean avoidRegions){
 		
 		//	FF 20070103: eingebauter check, ob es actDest auch gibt?!
 		if (!isInRegions(u.getScriptMain().gd_ScriptMain.getRegions(), dest)){
@@ -369,7 +382,24 @@ public class FFToolsRegions {
 			}
 		}
 		excludeMap.put(Feuerwand.getID(), Feuerwand);
+		
+		Collection<Region> saveExcludedRegions = new ArrayList<Region>();
+		if (!avoidRegions) {
+			// exludedRegions sichern und auf null setzen
+			if (Regions.excludedRegions!=null) {
+				saveExcludedRegions.addAll(Regions.excludedRegions);
+				Regions.setExcludedRegions(null);
+			}
+		}
 		String path =  Regions.getDirections(Regions.getLandPath(u.getScriptMain().gd_ScriptMain, act, dest, excludeMap,2, 3));
+		if (!avoidRegions) {
+			// resave excluded Regions
+			if (saveExcludedRegions.size()>0) {
+				Regions.setExcludedRegions(saveExcludedRegions);
+			} else {
+				Regions.setExcludedRegions(null);
+			}
+		}
 		if (path!=null && path.length()>0) {
 			// path gefunden
 			if (writeOrders){

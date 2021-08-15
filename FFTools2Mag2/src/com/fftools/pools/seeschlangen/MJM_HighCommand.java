@@ -159,7 +159,7 @@ public class MJM_HighCommand  {
     			ArrayList<Jagemonster> availJM = new ArrayList<Jagemonster>(0);
     			for (Jagemonster JM:this.Jäger) {
     				if (!JM.isHC_ready() && JM.getRole()==Jagemonster.role_AttackFront && JM.getUnit().getModifiedPersons()>0) {
-	    				GotoInfo GI = FFToolsRegions.makeOrderNACH(JM.scriptUnit, JM.getUnit().getRegion().getCoordinate(), r.getCoordinate(),false,"MJM_HC calc");
+	    				GotoInfo GI = FFToolsRegions.makeOrderNACH(JM.scriptUnit, JM.getUnit().getRegion().getCoordinate(), r.getCoordinate(),false,"MJM_HC calc",false);
 	    				if (GI.getAnzRunden()>0) {
 		    				JM.setHC_weeks2target(GI.getAnzRunden());
 		    				availJM.add(JM);
@@ -219,7 +219,7 @@ public class MJM_HighCommand  {
     			ArrayList<Jagemonster> availJM = new ArrayList<Jagemonster>(0);
     			for (Jagemonster JM:this.Jäger) {
     				if (!JM.isHC_ready() && (JM.getRole()==Jagemonster.role_AttackFront || JM.getRole()==Jagemonster.role_AttackBack )  && JM.getUnit().getModifiedPersons()>0) {
-	    				GotoInfo GI = FFToolsRegions.makeOrderNACH(JM.scriptUnit, JM.getUnit().getRegion().getCoordinate(), r.getCoordinate(),false,"MJM_HC calc");
+	    				GotoInfo GI = FFToolsRegions.makeOrderNACH(JM.scriptUnit, JM.getUnit().getRegion().getCoordinate(), r.getCoordinate(),false,"MJM_HC calc", false);
 	    				if (GI.getAnzRunden()>0) {
 		    				JM.setHC_weeks2target(GI.getAnzRunden());
 		    				availJM.add(JM);
@@ -278,7 +278,7 @@ public class MJM_HighCommand  {
 	    			ArrayList<Jagemonster> availJM = new ArrayList<Jagemonster>(0);
 	    			for (Jagemonster JM:this.Jäger) {
 	    				if (!JM.isHC_ready() && JM.isTactican()  && JM.getUnit().getModifiedPersons()>0) {
-		    				GotoInfo GI = FFToolsRegions.makeOrderNACH(JM.scriptUnit, JM.getUnit().getRegion().getCoordinate(), r.getCoordinate(),false,"MJM_HC calc");
+		    				GotoInfo GI = FFToolsRegions.makeOrderNACH(JM.scriptUnit, JM.getUnit().getRegion().getCoordinate(), r.getCoordinate(),false,"MJM_HC calc", false);
 		    				if (GI.getAnzRunden()>0) {
 			    				JM.setHC_weeks2target(GI.getAnzRunden());
 			    				availJM.add(JM);
@@ -391,7 +391,7 @@ public class MJM_HighCommand  {
     	Region r = MR.getRegion();
 		for (Jagemonster JM:this.Jäger) {
 			if (!JM.isHC_ready() && JM.getUnit().getModifiedPersons()>0 && JM.getRole()==Jagemonster.role_AttackFront && JM.getTargetDest()==null) {
-				GotoInfo GI = FFToolsRegions.makeOrderNACH(JM.scriptUnit, JM.getUnit().getRegion().getCoordinate(), r.getCoordinate(),false,"MJM_HC calc");
+				GotoInfo GI = FFToolsRegions.makeOrderNACH(JM.scriptUnit, JM.getUnit().getRegion().getCoordinate(), r.getCoordinate(),false,"MJM_HC calc",false);
 				if (GI.getAnzRunden()>0) {
     				JM.setHC_weeks2target(GI.getAnzRunden());
     				availJM.add(JM);
@@ -436,7 +436,7 @@ public class MJM_HighCommand  {
 	    	availJM = new ArrayList<Jagemonster>(0);
 			for (Jagemonster JM:this.Jäger) {
 				if (!JM.isHC_ready() && JM.getUnit().getModifiedPersons()>0 && JM.isTactican() && JM.getTargetDest()==null) {
-					GotoInfo GI = FFToolsRegions.makeOrderNACH(JM.scriptUnit, JM.getUnit().getRegion().getCoordinate(), r.getCoordinate(),false,"MJM_HC calc");
+					GotoInfo GI = FFToolsRegions.makeOrderNACH(JM.scriptUnit, JM.getUnit().getRegion().getCoordinate(), r.getCoordinate(),false,"MJM_HC calc",false);
 					if (GI.getAnzRunden()>0) {
 	    				JM.setHC_weeks2target(GI.getAnzRunden());
 	    				availJM.add(JM);

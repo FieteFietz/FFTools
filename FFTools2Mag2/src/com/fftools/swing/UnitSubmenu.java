@@ -25,6 +25,7 @@ import com.fftools.demo.actions.unit.KräuterAction;
 import com.fftools.demo.actions.unit.MaterialAction;
 import com.fftools.demo.actions.unit.PferdeAction;
 import com.fftools.demo.actions.unit.RohstoffAction;
+import com.fftools.demo.actions.unit.SetAvoidRegionAction;
 import com.fftools.demo.actions.unit.SetOKAction;
 import com.fftools.demo.actions.unit.TransporterAction;
 import com.fftools.demo.actions.unit.UnterhaltenAction;
@@ -73,6 +74,7 @@ public class UnitSubmenu extends JMenu implements SelectionListener {
 		addMenuItem(this,new RohstoffAction(this.selectionObserver));
 		addMenuItem(this,new BauarbeiterAction(this.selectionObserver));
 		addSeparator();
+		addMenuItem(this,new SetAvoidRegionAction(this.selectionObserver));
 		addMenuItem(this,new ClearOrdersAction(this.selectionObserver));
 		addMenuItem(this,new SetOKAction(this.selectionObserver));
 		client.getDispatcher().addSelectionListener(this);
