@@ -6,6 +6,7 @@ import java.util.List;
 import magellan.library.CoordinateID;
 import magellan.library.Region;
 import magellan.library.Unit;
+import magellan.library.rules.ShipType;
 import magellan.library.utils.Direction;
 import magellan.library.utils.Regions;
 import magellan.library.utils.logging.Logger;
@@ -13,6 +14,8 @@ import magellan.library.utils.logging.Logger;
 import com.fftools.magellan2.ConnectorPlugin;
 import com.fftools.utils.FFToolsRegions;
 import com.fftools.utils.FFToolsUnits;
+
+import jdk.internal.org.jline.reader.LineReader.RegionType;
 
 public class Sailto extends Script{
 	private static final int Durchlauf = 42;
@@ -88,8 +91,6 @@ public class Sailto extends Script{
 					} else {
 						// nope, da müssen wir noch hin
 						makeOrderNACH(actRegCoordID,actDest);
-						
-						
 					}
 				} else {
 					// fehler beim parsen des Ziels
@@ -155,7 +156,44 @@ public class Sailto extends Script{
 			}
 			// NACH-Order	
 			super.addOrder("NACH " + path, true);
-			super.addComment("Einheit durch SAILTO bestätigt.",true);
+			
+			// 20210816: Prüfe das Ziel, wenn wir nicht ein Boot steuern
+			boolean destRegionOK=true;
+			ShipType T = this.scriptUnit.getUnit().getModifiedShip().getShipType();
+			if (T!=null) {
+				if (!T.getName().equalsIgnoreCase("Boot")) {
+					// ok, wir haben kein Boot - also brauchen wir entweder eine Ebene oder Wald - oder ein Hafen
+					Region r = this.gd_Script.getRegion(dest);
+					if (r!=null) {
+						magellan.library.rules.RegionType RT = r.getRegionType();
+						if (RT!=null) {
+							if (!RT.getName().equalsIgnoreCase("Ebene") && !RT.getName().equalsIgnoreCase("Wald") && !RT.getName().equalsIgnoreCase("Ozean")) {
+								// OK...wir visieren irgendein Landregion an - wir brauchen dann einen Hafen!
+								// this.addComment("SailTo: Zielregion benötigt einen Hafen.");
+								if (FFToolsRegions.hasSupportedRegionSpecificBuilding(r, "Hafen")) {
+									this.addComment("SailTo: Zielregion hat einen Hafen, keine Infos über Unterhaltsproblem bekannt.");
+								} else {
+									this.doNotConfirmOrders("!!!Sailto: Zielregion hat keinen Hafen! (Oder Hafen mit Unterhaltsproblem)");
+								}
+							} else {
+								// this.addComment("SailTo: Zielregion benötigt keinen Hafen.");
+							}
+						} else {
+							this.addComment("!!!SailTo: unbekannter Regionstyp");
+						}
+					} else {
+						this.addComment("!!!SailTo: unbekannte Zielregion");
+					}
+				} else {
+					// this.addComment("SailTo: Boot erkannt - keine Zielprüfung");
+				}
+			} else {
+				this.addComment("!!!SailTo: unbekannten Schiffstyp");
+			}
+			
+			if (destRegionOK) {
+				super.addComment("Einheit durch SAILTO bestätigt.",true);
+			}
 		} else {
 			// path nicht gefunden
 			super.scriptUnit.doNotConfirmOrders("Es konnte kein Weg gefunden werden. (SailTo)");
