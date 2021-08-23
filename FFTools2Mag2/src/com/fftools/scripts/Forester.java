@@ -156,7 +156,7 @@ public void runScript(int scriptDurchlauf){
 			if (infoText.length()>1){
 				infoText += ", ";
 			}
-			infoText += "sollBestand=" + this.minBestand;
+			infoText += "sollBestand=" + this.sollBestand;
 		}
 
 		
