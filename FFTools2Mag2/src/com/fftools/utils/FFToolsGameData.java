@@ -108,7 +108,7 @@ public class FFToolsGameData {
 		// ok, nix active oder zu wenig
 		if (allowUse){
 			// checken, ob die unit was am Mann hat...
-			ItemType itemType = scriptUnit.getScriptMain().gd_ScriptMain.rules.getItemType(StringID.create("Schaffenstrunk"));
+			ItemType itemType = scriptUnit.getScriptMain().gd_ScriptMain.getRules().getItemType(StringID.create("Schaffenstrunk"));
 			int anzahlSchaffenstrunk = 0;
 			Item item = u.getItem(itemType);
 			if (item!=null){
@@ -127,6 +127,57 @@ public class FFToolsGameData {
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * ermittelt anzahl Schaffenstrunk-Effekte
+	 * berücksichtigt aktuelle Effekte und script Trankeffekt
+	 * 
+	 * @param scriptUnit
+	 * @return
+	 */
+	public static int countSchaffenstrunkEffekt(ScriptUnit scriptUnit){
+		Unit u = scriptUnit.getUnit();
+		int actEffekte = 0;
+		if (u.getEffects()!=null && u.getEffects().size()>0){
+			for (Iterator<String> iter = u.getEffects().iterator();iter.hasNext();){
+				String effect = (String)iter.next();
+				String[] pairs = effect.split(" ");
+				if (pairs.length>0 &&  pairs[1].equalsIgnoreCase("Schaffenstrunk")){
+					// Untersuchen, ob anzahl der effekte>=Personenanzahl
+					Integer I = Integer.parseInt(pairs[0]);
+					actEffekte=I.intValue();
+					scriptUnit.addComment("Schaffenstrunk-Effekte aktuell: " + actEffekte);
+				}
+			}
+		}
+		
+		// FF 20200911: auf Trankeffekt prüfen
+		for (Script s:scriptUnit.getFoundScriptList()) {
+			// scriptUnit.addComment("Debug-ST-Eff: Teste script " + s.toString());
+			if (Trankeffekt.class.isInstance(s)) {
+				// scriptUnit.addComment("Debug-ST-Eff: class OK");
+				Trankeffekt T = (Trankeffekt)s;
+				if (T.getTrank().equalsIgnoreCase("Schaffenstrunk")) {
+					if (T.countUseThisRound()>0) {
+						actEffekte += T.countUseThisRound();
+						scriptUnit.addComment("Script Schaffenstrunk erhöht geplant die Effekte um " + T.countUseThisRound() + " auf " + actEffekte);
+					} else {
+						scriptUnit.addComment("Test auf Schaffenstrunk: script TrankEffekt gefunden, aber keine Benutzung erkannt.");
+					}
+				}
+			}
+		}
+		
+		if (actEffekte<u.getModifiedPersons() && actEffekte>0){
+			scriptUnit.addComment("Anzahl der erwarteten Effekte bei Schaffenstrunk reicht nicht für alle Personen. (" + actEffekte + " < " + u.getModifiedPersons() + ")");
+		}
+		if (actEffekte==0) {
+			scriptUnit.addComment("keine Schaffenstrunk-Effekte festgestellt");
+		}
+		
+	
+		return actEffekte;
 	}
 	
 	

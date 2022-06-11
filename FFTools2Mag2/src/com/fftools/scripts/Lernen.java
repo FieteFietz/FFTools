@@ -136,7 +136,8 @@ public class Lernen extends MatPoolScript{
 				}
 				if (actSkill!=null){
 					// actLernTalent = actSkill.getModifiedLevel(actUnit,true);
-					actLernTalent = FFToolsUnits.getModifiedSkillLevel(actSkill, actUnit, false);
+					// actLernTalent = FFToolsUnits.getModifiedSkillLevel(actSkill, actUnit, false);
+					actLernTalent = actSkill.getLevel();
 				}
 				this.scriptUnit.putTag(CRParser.TAGGABLE_STRING3, "Schüler - Skript");
 				this.scriptUnit.putTag(CRParser.TAGGABLE_STRING4, talent);

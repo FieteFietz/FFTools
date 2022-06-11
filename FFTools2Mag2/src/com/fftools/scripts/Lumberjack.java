@@ -2,12 +2,10 @@ package com.fftools.scripts;
 
 import java.util.ArrayList;
 
-import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
 import com.fftools.utils.FFToolsUnits;
 
 import magellan.library.Building;
-import magellan.library.Item;
 import magellan.library.Region;
 import magellan.library.RegionResource;
 import magellan.library.Skill;
@@ -309,46 +307,15 @@ public class Lumberjack extends MatPoolScript{
 			this.addComment("Lumberjack: da ich im Sägewerk arbeite, verdoppelt sich die Ressourcenanzahl auf " + Menge);
 		}
 		
-		int machbareMenge = relevantLevel * this.scriptUnit.getUnit().getModifiedPersons();
+		int Peff = 0; // effektive Personenanzahl
+		Peff = FFToolsUnits.getPersonenEffektiv(this.scriptUnit);
+		int machbareMenge = relevantLevel *Peff;
 		
 		// wenn es sich um Mallorn handelt, das braucht minTalent=2 !! halbierte Produktionsmenge
 		if (this.Gut=="Mallorn"){
 			machbareMenge /= 2;
 			this.addComment("Lumberjack: Mallorn soll geschlagen werden. Mögliche Produktion halbiert auf: " + machbareMenge);
 		}
-		
-		// Schaffenstrunk verdoppelt prodPoints 
-		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,false)){
-			machbareMenge *= 2;
-			this.addComment("Lumberjack: Einheit nutzt Schaffenstrunk. Produktion verdoppelt auf: " + machbareMenge);
-		} 
-		
-		
-		// 20170708: berücksichtigung von RdfF
-		ItemType rdfType=this.gd_Script.getRules().getItemType("Ring der flinken Finger",false);
-		if (rdfType!=null){
-			Item rdfItem = this.scriptUnit.getModifiedItem(rdfType);
-			if (rdfItem!=null && rdfItem.getAmount()>0){
-				// Aufteilung der Personen in mit und ohne Ring
-				int PersonenMitRing = Math.min(rdfItem.getAmount(),this.scriptUnit.getUnit().getModifiedPersons());
-				int PersonenOhneRing = this.scriptUnit.getUnit().getModifiedPersons() - PersonenMitRing;
-				int RingLevel = relevantLevel;
-				if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,false)){
-					RingLevel *= 2;
-				}
-				int RingMenge = PersonenOhneRing * RingLevel;
-				RingMenge += PersonenMitRing * RingLevel * 10;
-				addComment("RdfF berücksichtigt, max Produktion geändert von " + machbareMenge + " auf " + RingMenge + " (" + PersonenMitRing + " Personen mit Ring erkannt.)");
-				machbareMenge = RingMenge;
-			} else {
-				this.addComment("(debug-lumberjack: keine RdfF erkannt)");
-				
-			}
-		} else {
-			this.addComment("Lumberjack: RdfF ist noch völlig unbekannt.");
-		}
-		
-		
 		
 		
 		if (machbareMenge<Menge){

@@ -14,20 +14,19 @@ import com.fftools.trade.TradeArea;
 import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
 import com.fftools.utils.FFToolsRegions;
+import com.fftools.utils.FFToolsUnits;
 import com.fftools.utils.GotoInfo;
 
 import magellan.library.Border;
 import magellan.library.Building;
 import magellan.library.CoordinateID;
 import magellan.library.Item;
-import magellan.library.Ship;
 import magellan.library.Skill;
 import magellan.library.Unit;
 import magellan.library.UnitContainer;
 import magellan.library.gamebinding.OrderChanger;
 import magellan.library.rules.BuildingType;
 import magellan.library.rules.CastleType;
-import magellan.library.rules.ItemType;
 import magellan.library.rules.SkillType;
 import magellan.library.utils.Direction;
 import magellan.library.utils.Locales;
@@ -948,57 +947,20 @@ public void runScript(int scriptDurchlauf){
 		// Step 2 was könnten wir maximal nach Talentstand der Einheit bauen?
 		SkillType bauType = this.gd_Script.getRules().getSkillType("Burgenbau",false);
 		int anzTalPoints = 0;
+		int Peff = 0; // effektive Personenanzahl
+		Peff = FFToolsUnits.getPersonenEffektiv(this.scriptUnit);
 		if (bauType!=null){
 			Skill bauSkill = this.scriptUnit.getUnit().getModifiedSkill(bauType);
 			if (bauSkill!=null){
-				anzTalPoints = bauSkill.getLevel() * this.scriptUnit.getUnit().getModifiedPersons();
+				anzTalPoints = bauSkill.getLevel() * Peff;
 			}
 		}
-		
-		// Schaffenstrunk?
-		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,false)){
-			anzTalPoints *= 2;
-			scriptUnit.addComment("Trankeffekt berücksichtigt");
-		}
-		
-		
-		
-		
-		
 		
 		int anzTal=0;
 		if (this.buildingType.getBuildSkillLevel()>0){
 			anzTal = (int)Math.floor((double)anzTalPoints/(double)this.buildingType.getBuildSkillLevel());
 		}
 		this.addComment("Bauen: Einheit ist fähig für " + anzTal + " Stufen bei " + this.buildingType.getName());
-		
-		// Jetzt erst RdF!
-		ItemType rdfType=this.gd_Script.getRules().getItemType("Ring der flinken Finger",false);
-		if (rdfType!=null){
-			Item rdfItem = this.scriptUnit.getModifiedItem(rdfType);
-			if (rdfItem!=null && rdfItem.getAmount()>0){
-				
-				// RDF vorhanden...
-				// produktion pro mann ausrechnen
-				int prodProMann = (int)Math.floor((double)anzTal/(double)this.scriptUnit.getUnit().getModifiedPersons());
-				int oldanzTal = anzTal;
-				for (int i = 1;i<=rdfItem.getAmount();i++){
-					if (i<=this.scriptUnit.getUnit().getModifiedPersons()){
-						anzTal -= prodProMann;
-						anzTal += (prodProMann * 10);
-					} else {
-						// überzähliger ring
-						this.addComment("Bauen: zu viele RdF!",false);
-					}
-				}
-				this.addComment("Bauen: " + rdfItem.getAmount() + " RdF. Prod von " + oldanzTal + " auf " + anzTal + " erhöht.");
-			} else  {
-				this.addComment("Bauen: kein RdF erkannt.");
-			}
-		} else {
-			this.addComment("Bauen: RdF ist noch völlig unbekannt.");
-		}
-		
 		
 		int actAnz = Math.min(anzTal,anzRes);
 		
@@ -1134,50 +1096,18 @@ public void runScript(int scriptDurchlauf){
 		// Step 2 was könnten wir maximal nach Talentstand der Einheit bauen?
 		SkillType bauType = this.gd_Script.getRules().getSkillType("Strassenbau",false);
 		int anzTalPoints = 0;
+		int Peff = 0; // effektive Personenanzahl
+		Peff = FFToolsUnits.getPersonenEffektiv(this.scriptUnit);
 		if (bauType!=null){
 			Skill bauSkill = this.scriptUnit.getUnit().getModifiedSkill(bauType);
 			if (bauSkill!=null){
-				anzTalPoints = bauSkill.getLevel() * this.scriptUnit.getUnit().getModifiedPersons();
+				anzTalPoints = bauSkill.getLevel() * Peff;
 			}
 		}
 		int anzTal=anzTalPoints;
 		
-		// Schaffenstrunk?
-		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,false)){
-			anzTalPoints *= 2;
-			scriptUnit.addComment("Trankeffekt berücksichtigt");
-		}
-		
 		this.addComment("Bauen: Einheit ist fähig für " + anzTal + " Stufen bei der Strasse");
-		
-		// Jetzt erst RdF!
-		ItemType rdfType=this.gd_Script.getRules().getItemType("Ring der flinken Finger",false);
-		if (rdfType!=null){
-			Item rdfItem = this.scriptUnit.getModifiedItem(rdfType);
-			if (rdfItem!=null && rdfItem.getAmount()>0){
-				
-				// RDF vorhanden...
-				// produktion pro mann ausrechnen
-				int prodProMann = (int)Math.floor((double)anzTal/(double)this.scriptUnit.getUnit().getModifiedPersons());
-				int oldanzTal = anzTal;
-				for (int i = 1;i<=rdfItem.getAmount();i++){
-					if (i<=this.scriptUnit.getUnit().getModifiedPersons()){
-						anzTal -= prodProMann;
-						anzTal += (prodProMann * 10);
-					} else {
-						// überzähliger ring
-						this.addComment("Bauen: zu viele RdF!",false);
-					}
-				}
-				this.addComment("Bauen: " + rdfItem.getAmount() + " RdF. Prod von " + oldanzTal + " auf " + anzTal + " erhöht.");
-			} else  {
-				this.addComment("Bauen: kein RdF erkannt.");
-			}
-		} else {
-			this.addComment("Bauen: RdF ist noch völlig unbekannt.");
-		}
-		
-		
+
 		int actAnz = Math.min(anzTal,anzRes);
 		
 		// wird Strasse fertig?
@@ -1814,55 +1744,21 @@ public void runScript(int scriptDurchlauf){
 		// Step 2 was könnten wir maximal nach Talentstand der Einheit bauen?
 		SkillType bauType = this.gd_Script.getRules().getSkillType("Burgenbau",false);
 		int anzTalPoints = 0;
+		int Peff = 0; // effektive Personenanzahl
+		Peff = FFToolsUnits.getPersonenEffektiv(this.scriptUnit);
 		if (bauType!=null){
 			Skill bauSkill = this.scriptUnit.getUnit().getModifiedSkill(bauType);
 			if (bauSkill!=null){
-				anzTalPoints = bauSkill.getLevel() * this.scriptUnit.getUnit().getModifiedPersons();
+				anzTalPoints = bauSkill.getLevel() * Peff;
 			}
 		}
-		
-		
-		// Schaffenstrunk?
-		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,false)){
-			anzTalPoints *= 2;
-			this.scriptUnit.addComment("Trankeffekt berücksichtigt");
-		}
-		
-		
-		
+
 		int anzTal=0;
 		
 		anzTal = (int)Math.floor((double)anzTalPoints/(double)buildingNeededLevel);
 		
 		this.addComment("Bauen: Einheit ist fähig für " + anzTal + " Stufen bei der Burg");
-		
-		// Jetzt erst RdF!
-		ItemType rdfType=this.gd_Script.getRules().getItemType("Ring der flinken Finger",false);
-		if (rdfType!=null){
-			Item rdfItem = this.scriptUnit.getModifiedItem(rdfType);
-			if (rdfItem!=null && rdfItem.getAmount()>0){
-				
-				// RDF vorhanden...
-				// produktion pro mann ausrechnen
-				int prodProMann = (int)Math.floor((double)anzTal/(double)this.scriptUnit.getUnit().getModifiedPersons());
-				int oldanzTal = anzTal;
-				for (int i = 1;i<=rdfItem.getAmount();i++){
-					if (i<=this.scriptUnit.getUnit().getModifiedPersons()){
-						anzTal -= prodProMann;
-						anzTal += (prodProMann * 10);
-					} else {
-						// überzähliger ring
-						this.addComment("Bauen: zu viele RdF!",false);
-					}
-				}
-				this.addComment("Bauen: " + rdfItem.getAmount() + " RdF. Prod von " + oldanzTal + " auf " + anzTal + " erhöht.");
-			} else  {
-				this.addComment("Bauen: kein RdF erkannt.");
-			}
-		} else {
-			this.addComment("Bauen: RdF ist noch völlig unbekannt.");
-		}
-		
+
 		return anzTal;
 	}
 	

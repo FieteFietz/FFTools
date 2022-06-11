@@ -2,16 +2,15 @@ package com.fftools.scripts;
 
 import java.util.Iterator;
 
+import com.fftools.pools.matpool.relations.MatPoolRequest;
+import com.fftools.utils.FFToolsOptionParser;
+import com.fftools.utils.FFToolsUnits;
+
 import magellan.library.Building;
 import magellan.library.Item;
 import magellan.library.Skill;
 import magellan.library.rules.ItemType;
 import magellan.library.rules.SkillType;
-
-import com.fftools.pools.matpool.relations.MatPoolRequest;
-import com.fftools.utils.FFToolsGameData;
-import com.fftools.utils.FFToolsOptionParser;
-import com.fftools.utils.FFToolsUnits;
 
 /**
  * 
@@ -176,6 +175,7 @@ public void runScript(int scriptDurchlauf){
 		Skill neededSkill=null;
 		int actSkillLevel = 0;
 		int actSkillLevel_old = 0;
+		int Peff = 0; // effektive Personenanzahl
 		if (this.neededSkillType!=null){
 			// this.addComment("Talentfrage: " + this.neededSkillType.getName());
 			neededSkill = this.scriptUnit.getUnit().getModifiedSkill(this.neededSkillType);
@@ -190,30 +190,33 @@ public void runScript(int scriptDurchlauf){
 					getSchmiedeBonus = true;
 				}
 				if (getSchmiedeBonus) {
-					actSkillLevel = FFToolsUnits.getModifiedSkillLevel(neededSkill,this.scriptUnit.getUnit(), true);
+					this.addComment("Schmiedebonus möglich, prüfe auf Arbeit in einer Schmiede");
+					// actSkillLevel = FFToolsUnits.getModifiedSkillLevel(neededSkill,this.scriptUnit.getUnit(), true);
+					actSkillLevel = neededSkill.getLevel();
+					Building b = this.scriptUnit.getUnit().getModifiedBuilding();
+					if (b!=null){
+						if (b.getType().getName().equalsIgnoreCase("Schmiede")){
+							actSkillLevel+=1;
+							this.addComment("Schmiede erkannt, Talentlevel um 1 erhöht.");
+						}
+					}
 					if (actSkillLevel==0 && actSkillLevel_old>0){
 						actSkillLevel = actSkillLevel_old;
 					}
 				} else {
 					actSkillLevel = actSkillLevel_old;
 				}
-				prodPoints = actSkillLevel *  this.scriptUnit.getUnit().getModifiedPersons();
+				Peff = FFToolsUnits.getPersonenEffektiv(this.scriptUnit);
+				prodPoints = actSkillLevel *  Peff;
 			}
 		}
 		
 		if (prodPoints==0){
-			this.scriptUnit.doNotConfirmOrders("Keine Produktion möglich - keine Talentpunke.(modSkill:" + actSkillLevel +", modCount:" + this.scriptUnit.getUnit().getModifiedPersons() +",modSkill2:" + actSkillLevel_old + ")");
+			this.scriptUnit.doNotConfirmOrders("Keine Produktion möglich - keine Talentpunke.(modSkill:" + actSkillLevel +", modCount:" + Peff +",modSkill2:" + actSkillLevel_old + ")");
 			return;
 		} else {
 			this.addComment("Wirksamer Talentlevel: " + actSkillLevel + " " + this.neededSkillType.getName());
 		}
-		
-		// Schaffenstrunk oder RdF verdoppeln prodPoints 
-		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,false)){
-			prodPoints *= 2;
-			this.addComment("Schmieden: Einheit nutzt Schaffenstrunk. Produktion verdoppelt.");
-		} 
-		
 		
 		// Maximale Anzahl an Ware ermitteln
 		int maxMachenWare = 0;
@@ -227,35 +230,7 @@ public void runScript(int scriptDurchlauf){
 			this.scriptUnit.doNotConfirmOrders("Keine Produktion möglich - kann benötigten Level nicht finden.");
 			return;
 		}
-	
 
-		// RdF
-		ItemType rdfType=this.gd_Script.getRules().getItemType("Ring der flinken Finger",false);
-		if (rdfType!=null){
-			Item rdfItem = this.scriptUnit.getModifiedItem(rdfType);
-			if (rdfItem!=null && rdfItem.getAmount()>0){
-				
-				// RDF vorhanden...
-				// produktion pro mann ausrechnen
-				int prodProMann = (int)Math.floor((double)maxMachenWare/(double)this.scriptUnit.getUnit().getModifiedPersons());
-				int oldMaxMachenWare = maxMachenWare;
-				for (int i = 1;i<=rdfItem.getAmount();i++){
-					if (i<=this.scriptUnit.getUnit().getModifiedPersons()){
-						maxMachenWare -= prodProMann;
-						maxMachenWare += (prodProMann * 10);
-					} else {
-						// überzähliger ring
-						this.addComment("Schmieden: zu viele RdF!",false);
-					}
-				}
-				this.addComment("Schmieden: " + rdfItem.getAmount() + " RdF. Prod von " + oldMaxMachenWare + " auf " + maxMachenWare + " erhöht.");
-			} 
-		} else {
-			this.addComment("Schmieden: RdF ist noch völlig unbekannt.");
-		}
-		
-		
-		
 		if (maxMachenWare<=0){
 			this.scriptUnit.doNotConfirmOrders("Schmieden: Keine Produktion möglich - ungenügendes Talent.");
 			return;

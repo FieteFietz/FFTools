@@ -192,8 +192,8 @@ public class FFToolsUnits {
 			return false;
 		}
 		
-		if (getModifiedSkillLevel(SegelSkill, aScript.getUnit(), false)<ST.getCaptainSkillLevel()) {
-			aScript.addComment("Problem: Talentcheck gescheitert, Kapitänstalent nicht hoch genug.");
+		if (SegelSkill.getLevel()<ST.getCaptainSkillLevel()) {
+			aScript.addComment("Problem: Talentcheck gescheitert, Kapitänstalent nicht hoch genug. (" + SegelSkill.getLevel() + " < " + ST.getCaptainSkillLevel() + ")");
 			return false;
 		}
 		
@@ -257,7 +257,7 @@ public class FFToolsUnits {
 			if (isCat){
 				requestesTypes.addAll(reportSettings.getItemTypes(Ware));
 			} else {
-				su.doNotConfirmOrders("!!! Ware war keine Gegenstand und keine Kategorie!!! (" + Ware + ")");
+				su.doNotConfirmOrders("!!! Ware war kein Gegenstand und keine Kategorie!!! (" + Ware + ")");
 			}
 		}
 		
@@ -307,5 +307,59 @@ public class FFToolsUnits {
 			}
 		}
 	}
+	
+	/**
+	 * berechnet effektive Personenanzahl mit Berücksichtigung von RdfF und Schaffenstrunk
+	 * nach Regeländerung zum 04.06.2022 
+	 * @param su
+	 * @return
+	 */
+	public static int getPersonenEffektiv(ScriptUnit su) {
+		int erg=0;
+		// Anzahl RdfF ermitteln
+		int AnzahlRdfF = 0;
+		ItemType rdfType=su.getUnit().getData().getRules().getItemType("Ring der flinken Finger",false);
+		if (rdfType!=null){
+			Item rdfItem = su.getModifiedItem(rdfType);
+			if (rdfItem!=null) {
+				AnzahlRdfF = rdfItem.getAmount();
+			}
+		}
+		
+		if (AnzahlRdfF>su.getUnit().getModifiedPersons()) {
+			su.addComment("!!! Einheit hat zu viele RdfF !");
+			AnzahlRdfF = su.getUnit().getModifiedPersons();
+		}
+		
+		
+		// Anzahl Schaffenstrunk effekte ermitteln und dabei auf TrankEffekt und Benutze prüfen
+		int actEffekte = FFToolsGameData.countSchaffenstrunkEffekt(su);
+		if (actEffekte>su.getUnit().getModifiedPersons()) {
+			actEffekte = su.getUnit().getModifiedPersons();
+		}
+		
+		int Po = su.getUnit().getModifiedPersons();  // Gesamtanzahl aller Personen 
+		// Wieviel haben R und E ? => das Minimum der beiden Anzahlen
+		
+		int PRE = Math.min(AnzahlRdfF, actEffekte);  // Anzahl Personen mit R und E
+		Po -= PRE;  // Rest hat *nicht* beide Effekte
+		
+		// Jetzt schauen, ob noch welche übrig bleiben, die nur eines von beiden haben
+		int PR = Math.max(0, AnzahlRdfF - PRE); // Wieviele haben nur einen RdfF
+		int PE = Math.max(0, actEffekte - PRE); // Wieviele haben nur einen Effekt
+		
+		// Gesamtanzahl um diese Personen reduzieren, und sicherstellen, dass sie nicht negativ wird... ,-)
+		Po = Math.max(0, Po - (PR + PE));
+		
+		// lass uns Reden:
+		su.addComment("effPers: RdfF und Trank: " + PRE + " (x11), nur RdfF: " + PR + " (x10), nur Trank: " + PE + " (x2), normale: " + Po);
+		
+		// finale Berechnung:
+		erg = PRE*11 + PR*10 + PE *2 + Po;
+		su.addComment("effPers: " + erg);
+
+		return erg;
+	}
+	
 
 }

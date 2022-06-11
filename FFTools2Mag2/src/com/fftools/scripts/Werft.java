@@ -1,16 +1,14 @@
 package com.fftools.scripts;
 
-import magellan.library.Item;
-import magellan.library.Ship;
-import magellan.library.rules.ItemType;
-import magellan.library.rules.ShipType;
-
 import java.util.ArrayList;
 
 import com.fftools.pools.bau.WerftManager;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
-import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
+import com.fftools.utils.FFToolsUnits;
+
+import magellan.library.Ship;
+import magellan.library.rules.ShipType;
 
 
 
@@ -124,44 +122,9 @@ public class Werft extends MatPoolScript{
 		
 		// Berechnen, wieviel Baupunkte wir an einer Trireme bauen *könnten*
 		// warum Trireme, der kann doch auch Langboot bauen wollen... 
-		
-		int AnzahlPersonen = this.getUnit().getModifiedPersons();
-		this.BauPunkte = this.TalentLevel * AnzahlPersonen ;
-		
-		if (FFToolsGameData.hasSchaffenstrunkEffekt(this.scriptUnit,false)){
-			this.BauPunkte *= 2;
-			this.addComment("Werft: Einheit nutzt Schaffenstrunk. Produktion verdoppelt auf: " + this.BauPunkte);
-		} 
-		
-		
-		ItemType rdfType=this.gd_Script.getRules().getItemType("Ring der flinken Finger",false);
-		if (rdfType!=null){
-			Item rdfItem = this.scriptUnit.getModifiedItem(rdfType);
-			if (rdfItem!=null && rdfItem.getAmount()>0){
-				
-				// RDF vorhanden...
-				// produktion pro mann ausrechnen
-				int prodProMann = (int)Math.floor((double)BauPunkte/(double)this.scriptUnit.getUnit().getModifiedPersons());
-				int oldanzTal = BauPunkte;
-				for (int i = 1;i<=rdfItem.getAmount();i++){
-					if (i<=this.scriptUnit.getUnit().getModifiedPersons()){
-						BauPunkte -= prodProMann;
-						BauPunkte += (prodProMann * 10);
-					} else {
-						// überzähliger ring
-						this.addComment("Werft: zu viele RdF!",false);
-					}
-				}
-				this.addComment("Werft: " + rdfItem.getAmount() + " RdF. Prod von " + oldanzTal + " auf " + BauPunkte + " erhöht.");
-			} else  {
-				this.addComment("Werft: kein RdF erkannt.");
-			}
-		} else {
-			this.addComment("Werft: RdF ist noch völlig unbekannt.");
-		}
-		
-		
-		
+		int Peff = 0; // effektive Personenanzahl
+		Peff = FFToolsUnits.getPersonenEffektiv(this.scriptUnit);
+		this.BauPunkte = this.TalentLevel * Peff ;
 		
 		int HolzBedarf = (int) (Math.ceil(BauPunkte));
 		
