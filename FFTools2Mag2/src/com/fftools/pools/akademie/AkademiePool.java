@@ -113,7 +113,7 @@ public class AkademiePool {
 					AR.getScriptUnit().doNotConfirmOrders("!!!Unbekanntes Talent!!!");
 				} else {
 					if (AR.getAkademieFromAM()==null && AR.getOrderedSkillType().equals(AT.getSkillType())){
-						if (!AR.isSchueler() && !AR.isAvoidAka()){
+						if (!AR.isAvoidAka() && !AR.isTeacher()){
 							actRel.add(AR);
 						}
 						
@@ -138,19 +138,7 @@ public class AkademiePool {
 				// passen wir hier noch rein?
 				if (AR.getScriptUnit().getUnit().getModifiedPersons()<=verfPlätze && AR.getScriptUnit().getUnit().getModifiedPersons()<=übergabePlätze){
 					// richtiger Type und passige Einheit
-					// kein Lehrer, dessen Schüler nicht auch reinpassen...
 					passtNoch = true;
-					int checkInt=0; 
-					if (AR.isTeacher() ){
-						checkInt = AR.getOrdererdSchüleranzahl();
-						// Einen Schüler holen
-						AusbildungsRelation einSchueler = AR.getPooledRelation().get(0);
-						// Anzahl der Lehrer feststellen
-						checkInt += einSchueler.getAnzahlPooledPersons();
-						if (checkInt>verfPlätze || checkInt>übergabePlätze){
-							passtNoch=false;
-						}
-					}
 				}
 				if (passtNoch){
 					// Gebäude setzen
@@ -162,35 +150,6 @@ public class AkademiePool {
 					// info
 					this.verwalterScript.addComment("AkaPool " + this.akademieBuilding.getID().toString() + ": IN für " + AT.getSkillType().toString() + ": " + AR.getScriptUnit().getUnit().toString(true) + " (" + verfPlätze + " verbleibend)" );
 					AR.getScriptUnit().addComment("(AkaPool definiert bei: " + this.verwalterScript.scriptUnit.toString() + ")(1)");
-					// wenn Lehrer, auch die Schüler mit rein
-					if (AR.isTeacher()){
-						for (AusbildungsRelation schueler : AR.getPooledRelation()){
-							schueler.setAkademieFromAM(this.akademieBuilding);
-							schueler.getScriptUnit().addComment("(AkaPool definiert bei: " + this.verwalterScript.scriptUnit.toString() + ")(4)");
-							verfPlätze -= schueler.getSchuelerPlaetze();
-							übergabePlätze -= schueler.getSchuelerPlaetze();
-							this.verwalterScript.addComment("AkaPool " + this.akademieBuilding.getID().toString() + ": mit Schüler für " + AT.getSkillType().toString() + ": " + schueler.getScriptUnit().getUnit().toString(true) + " (" + verfPlätze + " verbleibend)");
-						}
-						// die weiteren Lehrer auch noch mitnehmen
-						// einen Schüler holen
-						AusbildungsRelation einSchueler = AR.getPooledRelation().get(0);
-						if (einSchueler.getPooledRelation().isEmpty()){
-							this.verwalterScript.addComment("Debug: schüler liefert keine Lehrer-Liste",false);
-						}
-						// alle Lehrer setzen
-						for (AusbildungsRelation einLehrer : einSchueler.getPooledRelation()){
-							if (!AR.equals(einLehrer)){
-								einLehrer.setAkademieFromAM(this.akademieBuilding);
-								einLehrer.getScriptUnit().addComment("(AkaPool definiert bei: " + this.verwalterScript.scriptUnit.toString() + ")(3)");
-								verfPlätze -= einLehrer.getSchuelerPlaetze();
-								übergabePlätze -= einLehrer.getSchuelerPlaetze();
-								this.verwalterScript.addComment("AkaPool " + this.akademieBuilding.getID().toString() + ": weiterer Lehrer für " + AT.getSkillType().toString() + ": " + einLehrer.getScriptUnit().getUnit().toString(true) + " (" + verfPlätze + " verbleibend)");
-							} else {
-								this.verwalterScript.addComment("Debug: (bereits eingezählter Lehrer ignoriert)",false);
-							}
-						}
-						
-					}
 				}
 				// was passiert, wenn verfPl = 0 ?!
 				if (übergabePlätze<=0){
