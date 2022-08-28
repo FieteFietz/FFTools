@@ -260,7 +260,14 @@ public class Regionobserver extends MatPoolScript{
 					this.doNotConfirmOrders("!!!Lernplan nicht bekannt: " + LP_Name);
 				} else {
 					// alles schön
-					this.scriptUnit.findScriptClass("Lernfix", "Lernplan=" + LP_Name);
+					String LernfixBefehl = "Lernplan=" + LP_Name;
+					
+					if (!OP.getOptionBoolean("aka", true) ) {
+						LernfixBefehl = "Lernplan=" + LP_Name + " aka=nein";
+						this.addComment("Ergänze Parameter für Lernfix aka=nein");
+					}
+					
+					this.scriptUnit.findScriptClass("Lernfix", LernfixBefehl);
 					hasLearnOrder = true;
 				}
 			}
@@ -274,7 +281,15 @@ public class Regionobserver extends MatPoolScript{
 					this.doNotConfirmOrders("!!!Lerntalent nicht bekannt: " + talent);
 				} else {
 					// alles schön
-					this.scriptUnit.findScriptClass("Lernfix", "Talent=" + talent);
+					
+					String LernfixBefehl2 = "Talent=" + talent;
+					
+					if (!OP.getOptionBoolean("aka", true) ) {
+						LernfixBefehl2 = "Talent=" + talent + " aka=nein";
+						this.addComment("Ergänze Parameter für Lernfix aka=nein");
+					}
+
+					this.scriptUnit.findScriptClass("Lernfix", LernfixBefehl2);
 					hasLearnOrder = true;
 				}
 			}
@@ -287,7 +302,15 @@ public class Regionobserver extends MatPoolScript{
 					this.doNotConfirmOrders("!!!Lernplan nicht bekannt: RegionObserver");
 				} else {
 					// alles schön
-					this.scriptUnit.findScriptClass("Lernfix", "Lernplan=RegionObserver");
+					
+					String LernfixBefehl3 = "Lernplan=RegionObserver";
+					
+					if (!OP.getOptionBoolean("aka", true) ) {
+						LernfixBefehl3 = "Lernplan=RegionObserver aka=nein";
+						this.addComment("Ergänze Parameter für Lernfix aka=nein");
+					}
+					
+					this.scriptUnit.findScriptClass("Lernfix", LernfixBefehl3);
 					hasLearnOrder = true;
 				}
 			}

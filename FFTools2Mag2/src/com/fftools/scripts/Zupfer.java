@@ -361,6 +361,12 @@ public class Zupfer extends MatPoolScript{
 				order.add("Gratistalent=" + GratisTalentSkillType.toString());
 				this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
 			}
+			
+			if (!OP.getOptionBoolean("aka", true) ) {
+				order.add("aka=nein");
+				this.addComment("Ergänze Parameter für Lernfix aka=nein");
+			}
+			
 			L.setArguments(order);
 			L.setScriptUnit(this.scriptUnit);
 			L.setGameData(this.gd_Script);
@@ -389,6 +395,10 @@ public class Zupfer extends MatPoolScript{
 						if (GratisTalentSkillType!=null) {
 							order.add("Gratistalent=" + GratisTalentSkillType.toString());
 							this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
+						}
+						if (!OP.getOptionBoolean("aka", true) ) {
+							order.add("aka=nein");
+							this.addComment("Ergänze Parameter für Lernfix aka=nein");
 						}
 						L.setArguments(order);
 						L.setScriptUnit(this.scriptUnit);
@@ -424,6 +434,10 @@ public class Zupfer extends MatPoolScript{
 							order.add("Gratistalent=" + GratisTalentSkillType.toString());
 							this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
 						}
+						if (!OP.getOptionBoolean("aka", true) ) {
+							order.add("aka=nein");
+							this.addComment("Ergänze Parameter für Lernfix aka=nein");
+						}
 						L.setArguments(order);
 						L.setScriptUnit(this.scriptUnit);
 						L.setGameData(this.gd_Script);
@@ -441,6 +455,10 @@ public class Zupfer extends MatPoolScript{
 						if (GratisTalentSkillType!=null) {
 							order.add("Gratistalent=" + GratisTalentSkillType.toString());
 							this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
+						}
+						if (!OP.getOptionBoolean("aka", true) ) {
+							order.add("aka=nein");
+							this.addComment("Ergänze Parameter für Lernfix aka=nein");
 						}
 						L.setArguments(order);
 						L.setScriptUnit(this.scriptUnit);
@@ -476,6 +494,10 @@ public class Zupfer extends MatPoolScript{
 								order.add("Gratistalent=" + GratisTalentSkillType.toString());
 								this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
 							}
+							if (!OP.getOptionBoolean("aka", true) ) {
+								order.add("aka=nein");
+								this.addComment("Ergänze Parameter für Lernfix aka=nein");
+							}
 							L.setArguments(order);
 							L.setScriptUnit(this.scriptUnit);
 							L.setGameData(this.gd_Script);
@@ -498,6 +520,10 @@ public class Zupfer extends MatPoolScript{
 									order.add("Gratistalent=" + GratisTalentSkillType.toString());
 									this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
 								}
+								if (!OP.getOptionBoolean("aka", true) ) {
+									order.add("aka=nein");
+									this.addComment("Ergänze Parameter für Lernfix aka=nein");
+								}
 								L.setArguments(order);
 								L.setScriptUnit(this.scriptUnit);
 								L.setGameData(this.gd_Script);
@@ -515,6 +541,10 @@ public class Zupfer extends MatPoolScript{
 								if (GratisTalentSkillType!=null) {
 									order.add("Gratistalent=" + GratisTalentSkillType.toString());
 									this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
+								}
+								if (!OP.getOptionBoolean("aka", true) ) {
+									order.add("aka=nein");
+									this.addComment("Ergänze Parameter für Lernfix aka=nein");
 								}
 								L.setArguments(order);
 								L.setScriptUnit(this.scriptUnit);
@@ -573,6 +603,10 @@ public class Zupfer extends MatPoolScript{
 								order.add("Gratistalent=" + GratisTalentSkillType.toString());
 								this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
 							}
+							if (!OP.getOptionBoolean("aka", true) ) {
+								order.add("aka=nein");
+								this.addComment("Ergänze Parameter für Lernfix aka=nein");
+							}
 							L.setArguments(order);
 							L.setScriptUnit(this.scriptUnit);
 							L.setGameData(this.gd_Script);
@@ -589,6 +623,10 @@ public class Zupfer extends MatPoolScript{
 							if (GratisTalentSkillType!=null) {
 								order.add("Gratistalent=" + GratisTalentSkillType.toString());
 								this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
+							}
+							if (!OP.getOptionBoolean("aka", true) ) {
+								order.add("aka=nein");
+								this.addComment("Ergänze Parameter für Lernfix aka=nein");
 							}
 							L.setArguments(order);
 							L.setScriptUnit(this.scriptUnit);
@@ -612,6 +650,10 @@ public class Zupfer extends MatPoolScript{
 						if (GratisTalentSkillType!=null) {
 							order.add("Gratistalent=" + GratisTalentSkillType.toString());
 							this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
+						}
+						if (!OP.getOptionBoolean("aka", true) ) {
+							order.add("aka=nein");
+							this.addComment("Ergänze Parameter für Lernfix aka=nein");
 						}
 						L.setArguments(order);
 						L.setScriptUnit(this.scriptUnit);
