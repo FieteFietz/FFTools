@@ -282,14 +282,14 @@ public void runScript(int scriptDurchlauf){
 			if (mayProduce && this.sollBestand>0) {
 				// wir wollen den Sollbestand nicht überschreiten!
 				int maxNeueStaemme = this.sollBestand - Staemme;
-				int maxProduktion = maxNeueStaemme/10;
+				int maxProduktion = Math.max(maxNeueStaemme/10,0);
 				if (maxProduktion>Produktion) {
 					// keine Einschränkungen
 					this.addComment("Durch das Benutzen von " + Produktion + " WdL wird der sollBestand von " + this.sollBestand + " nicht überschritten");
 				} else {
 					Produktion = maxProduktion;
 					this.addComment("Um den Soll-Bestand von " + this.sollBestand + " nicht zu überschreiten, wird die Menge von WdL auf " + Produktion + " reduziert.");
-					if (Produktion==0) {
+					if (Produktion<=0) {
 						mayProduce=false;
 						this.addComment("Klartext in diesem Fall: es wird kein WdL benutzt.");
 					}
