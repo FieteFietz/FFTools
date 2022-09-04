@@ -220,10 +220,16 @@ public class ScriptUnit {
 			} else if (s.toUpperCase().startsWith("ATTACKIERE") && s.toLowerCase().indexOf(";mjm checked")<0 && s.toLowerCase().indexOf("; sj von")<0){
 				// Attackiere befehle..., die nicht vom MJM oder SJM kommen
 				newOrders.add(this.getUnit().createOrder(s));
-			} else if (s.toUpperCase().startsWith("BETRETE") && s.toLowerCase().indexOf("; akapool->")<0 && s.toLowerCase().indexOf(";enterbuilding")<0 && s.toLowerCase().indexOf(";script auramaxwarning")<0){
+			} else if (s.toUpperCase().startsWith("BETRETE") 
+						&& s.toLowerCase().indexOf("; akapool->")<0 
+						&& s.toLowerCase().indexOf(";enterbuilding")<0 
+						&& s.toLowerCase().indexOf(";script auramaxwarning")<0
+						&& s.toLowerCase().indexOf("; werftsegler")<0
+			){
 				// Betrete ausser ; AkaPool->
 				// ausser ;EnterBuilding
 				// ausser ;script Auramaxwarning
+				// ausser ; Werftsegler
 				newOrders.add(this.getUnit().createOrder(s));
 			} else if (s.toUpperCase().startsWith("BESCHREIBE")){
 				// Beschreibe

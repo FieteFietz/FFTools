@@ -3,13 +3,15 @@ package com.fftools.pools.bau;
 
 import java.util.Hashtable;
 
-import magellan.library.Region;
-
 import com.fftools.OutTextClass;
 import com.fftools.ScriptMain;
 import com.fftools.overlord.OverlordInfo;
 import com.fftools.overlord.OverlordRun;
 import com.fftools.scripts.Werft;
+import com.fftools.scripts.Werftsegler;
+
+import magellan.library.Region;
+import magellan.library.Ship;
 
 
 
@@ -20,11 +22,14 @@ import com.fftools.scripts.Werft;
 public class WerftManager implements OverlordRun,OverlordInfo{
 	private static final OutTextClass outText = OutTextClass.getInstance();
 	
+	// 212 läuft Werftsegler
 	public static final int Durchlauf0 = 220;
+	public static final int Durchlauf0_2 = 225;
 	public static final int Durchlauf1 = 650;
+	public static final int Durchlauf2 = 730;  // nach letztem MatPool
 	
 	
-	private int[] runners = {Durchlauf0,Durchlauf1};
+	private int[] runners = {Durchlauf0,Durchlauf0_2,Durchlauf1,Durchlauf2};
 	
 	public ScriptMain scriptMain = null;
 	
@@ -59,6 +64,34 @@ public class WerftManager implements OverlordRun,OverlordInfo{
 			WerftPoolMap.put(actRegion, actWerftPool);
 		}
 		actWerftPool.addWerft(_w);	
+	}
+	
+	public void addWerftseglerUnit(Werftsegler _w, boolean as_Flottenkapitän){
+		Region actRegion = _w.scriptUnit.getUnit().getRegion();
+		WerftPool actWerftPool;
+		if (WerftPoolMap.containsKey(actRegion)){
+			actWerftPool = WerftPoolMap.get(actRegion);
+		} else {
+			actWerftPool = new WerftPool(this, actRegion);
+			WerftPoolMap.put(actRegion, actWerftPool);
+		}
+		if (as_Flottenkapitän) {
+			actWerftPool.addWerftseglerAsFlottenkapitän(_w);
+		} else {
+			actWerftPool.addWerftseglerAsHafenkapitän(_w);
+		}
+	}
+	
+	public void addFreiWerdendesSchiff(Werft _w, Ship _s){
+		Region actRegion = _w.scriptUnit.getUnit().getRegion();
+		WerftPool actWerftPool;
+		if (WerftPoolMap.containsKey(actRegion)){
+			actWerftPool = WerftPoolMap.get(actRegion);
+		} else {
+			actWerftPool = new WerftPool(this, actRegion);
+			WerftPoolMap.put(actRegion, actWerftPool);
+		}
+		actWerftPool.addFreiWerdendesSchiff(_s);
 	}
 	
 	/*

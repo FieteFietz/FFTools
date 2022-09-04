@@ -158,7 +158,8 @@ public class Werft extends MatPoolScript{
 		
 		// wenn auf einem Schiff, dieses verlassen
 		if (this.scriptUnit.getUnit().getShip()!=null){
-			this.addOrder("verlasse ; Werftarbeiter verlässt das Schiff",true);
+			this.addOrder("verlasse ; Werftarbeiter verlässt das Schiff (Notiz an Werftsegler überstellt)",true);
+			this.getOverlord().getWerftManager().addFreiWerdendesSchiff(this, this.scriptUnit.getUnit().getShip());
 		}
 		
 		this.showInfos = OP.getOptionBoolean("info", true);

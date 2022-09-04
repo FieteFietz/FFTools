@@ -3,16 +3,17 @@ package com.fftools.pools.bau;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import magellan.library.Region;
-import magellan.library.Ship;
-import magellan.library.Unit;
-
 import com.fftools.OutTextClass;
 import com.fftools.ReportSettings;
 import com.fftools.ScriptUnit;
 import com.fftools.scripts.Lernfix;
 import com.fftools.scripts.Werft;
+import com.fftools.scripts.Werftsegler;
 import com.fftools.utils.FFToolsUnits;
+
+import magellan.library.Region;
+import magellan.library.Ship;
+import magellan.library.Unit;
 
 public class WerftPool{ 
 	
@@ -25,7 +26,14 @@ private WerftManager myWerftManager = null;
 private ArrayList<Werft> WerftListe= new ArrayList<Werft>();
 private ArrayList<Ship> SchiffListe = new ArrayList<Ship>();
 
+
+private ArrayList<Werftsegler> Flottenkapitäne = new ArrayList<Werftsegler>(); // sammeln schiffe
+private ArrayList<Werftsegler> Hafenkapitäne = new ArrayList<Werftsegler>(); // besetzen neue Schiffe, übergeben an Flottenkapitäne
+private ArrayList<Ship> ListeFreiWerdendeSchiffe = new ArrayList<Ship>();
+
 private boolean allShips = false;
+
+private int Durchlauf=0;
 
 
 
@@ -50,7 +58,7 @@ private boolean allShips = false;
      */
 	
 	public void runPool(int Durchlauf){
-
+		this.Durchlauf = Durchlauf;
 		switch (Durchlauf){
 			case WerftManager.Durchlauf0:
 				this.runPoolLauf1();
@@ -58,7 +66,14 @@ private boolean allShips = false;
 			case WerftManager.Durchlauf1:
 				this.runPoolLauf2();
 				break;
-			
+			case WerftManager.Durchlauf0_2:
+				this.GibFertigeSchiffeAnFlottenkapitän();
+				this.betreteFreiWerdendeSchiffe();
+				this.DoNotConfirmFullFleets();
+				break;
+			case WerftManager.Durchlauf2:
+				this.setGIBOrders();
+				break;
 		}
 	}
 	
@@ -133,8 +148,7 @@ private boolean allShips = false;
 			for (Ship s:this.SchiffListe){
 				
 				int RepairPunkte = neededBaupunkte(s);
-				int TalentStufe = s.getShipType().getBuildSkillLevel();
-				
+
 				// outText.addOutLine("Werft: bearbeite Schiff " + s.toString() + ", RP: " + RepairPunkte, true);
 				Unit u = s.getOwnerUnit();
 				if (u!=null){
@@ -222,6 +236,28 @@ private boolean allShips = false;
 		}
 	}
 	
+	
+	public void addWerftseglerAsFlottenkapitän(Werftsegler _w){
+		if (!this.Flottenkapitäne.contains(_w)){
+			this.Flottenkapitäne.add(_w);
+		}
+	}
+	
+	public void addWerftseglerAsHafenkapitän(Werftsegler _w){
+		if (!this.Hafenkapitäne.contains(_w)){
+			this.Hafenkapitäne.add(_w);
+		}
+	}
+	
+	
+	public void addFreiWerdendesSchiff(Ship _w){
+		if (!this.ListeFreiWerdendeSchiffe.contains(_w)){
+			this.ListeFreiWerdendeSchiffe.add(_w);
+		}
+	}
+	
+	
+	
 	public void builtSchiffListe(){
 		this.SchiffListe.clear();
 		for (Ship s:this.region.ships()){
@@ -298,7 +334,6 @@ private boolean allShips = false;
 	}
 	
 	private void informScriptsScriptListe(){
-		ArrayList<Werft> newList = new ArrayList<Werft>(this.WerftListe);
 		for (Werft w:this.WerftListe){
 			if (w.showInfos){
 				int counter=0;
@@ -339,6 +374,122 @@ private boolean allShips = false;
 	public void setAllShips(boolean allShips) {
 		this.allShips = allShips;
 	}
+	
+	
+	
+	/*** Bereich Werftsegler ****/
+	
+	
+	private void GibFertigeSchiffeAnFlottenkapitän() {
+		if (this.Flottenkapitäne.isEmpty()) {
+			// Info an alle Übergabewilligen
+			for (Werftsegler w: this.Hafenkapitäne) {
+				if (w.getUnit().getShip()!=null && w.getMaxSchiffe()==0) {
+					// Bingo
+					w.doNotConfirmOrders("!!! Keine Flottensammelstelle (Werftsegler Schiffe=X) in der Region !!!");
+				}
+			}
+			
+			
+			return;
+		}
+		
+		// die am "fertigsten" zuerst
+		this.Flottenkapitäne.sort(new WerftseglerComparator());
+		for (Werftsegler werftsegler : Flottenkapitäne) {
+			for (Werftsegler HafenK : this.Hafenkapitäne) {
+				// werftsegler.addComment("Debug: prüfe " + HafenK.scriptUnit.toString(),false);
+				if (HafenK.getGIB_AN_Werftsegler()==null && HafenK.getUnit().getShip()!=null && HafenK.getUnit().getShip().getAmount()==1) {
+					// werftsegler.addComment("Debug: check(1)",false);
+					if (werftsegler.getActSchiffe_nach_GIB()<werftsegler.getMaxSchiffe() && werftsegler.getUnit().getShip().getShipType().equals(HafenK.getUnit().getShip().getShipType())) {
+						if (werftsegler.getUnit().getShip().getShoreId() == HafenK.getUnit().getShip().getShoreId()) {
+						// Passt
+						// werftsegler.addComment("Debug: check(2)",false);
+						HafenK.setGIB_AN_Werftsegler(werftsegler);
+						werftsegler.addNewShip(HafenK, HafenK.getUnit().getShip());
+						// werftsegler.addComment("Debug: OK von " + HafenK.scriptUnit.toString(), false);
+						} else {
+							// falsche Küste
+						}
+					} else {
+						// werftsegler.addComment("Debug: nicht geeignet (2)",false);
+					}
+				} else {
+					// werftsegler.addComment("Debug: nicht geeignet (1)", false);
+				}
+			}
+		}
+		
+		// wenn jetzt noch welche übergeben wollen, aber nicht können, diese unbestätigt lassen
+		for (Werftsegler HafenK : this.Hafenkapitäne) {
+			if (HafenK.getGIB_AN_Werftsegler()==null && HafenK.getUnit().getShip()!=null && HafenK.getUnit().getShip().getAmount()==1) {
+				HafenK.doNotConfirmOrders("Werftsegler findet keine verfügbare Flottensammelstelle.");
+			}
+		}
+		
+	}
+	
+	
+	
+	private void betreteFreiWerdendeSchiffe() {
+		if (this.ListeFreiWerdendeSchiffe.isEmpty()) {
+			for (Werftsegler werftsegler : this.Hafenkapitäne) {
+				if (werftsegler.getUnit().getShip()==null) {
+					werftsegler.addComment("Keine Frei werdenden Schiffe in der Region verfügbar.");
+				}
+			}
+			return;
+		}
+		for (Ship s : this.ListeFreiWerdendeSchiffe) {
+			for (Werftsegler w: this.Hafenkapitäne) {
+				if (!w.hasBetreteOrder && w.getUnit().getShip()==null) {
+					// Bingo
+					w.addOrder("BETRETE SCHIFF " + s.getID() + " ; Werftsegler, Schiff wird von Werft verlassen (" + this.Durchlauf + ")", true);
+					w.hasBetreteOrder=true;
+					break;
+				}
+				
+				if (!w.hasBetreteOrder && w.getUnit().getShip()!=null && w.getUnit().getShip().getAmount()>1) {
+					// Bingo
+					w.addOrder("BETRETE SCHIFF " + s.getID() + " ; Werftsegler, Schiff wird von Werft verlassen, ich verlasse damit die Flotte. (" + this.Durchlauf + ")", true);
+					w.hasBetreteOrder=true;
+					break;
+				}
+			}
+		}
+		
+		for (Werftsegler w: this.Hafenkapitäne) {
+			if (!w.hasBetreteOrder && w.getUnit().getShip()==null) {
+				// Bingo
+				w.addComment("Werftsegler: keine weiteren Schiffe verfügbar, " + this.ListeFreiWerdendeSchiffe.size() + " Schiffe wurden anderweitig berücksichtigt.");
+			}
+			if (!w.hasBetreteOrder && w.getUnit().getShip()!=null && w.getUnit().getShip().getAmount()>1) {
+				// bin auf einer Flotte, betrete kein neues Schiff, möchte hier runter...
+				w.addOrder("VERLASSE ; Werftsegler - Schiff wurde übergeben, ich warte weiter an Land", false);
+			}
+		}
+		
+	}
+	
+	private void setGIBOrders() {
+		for (Werftsegler w: this.Hafenkapitäne) {
+			if (w.getUnit().getShip()!=null && w.getGIB_AN_Werftsegler()!=null) {
+				// Bingo
+				w.addOrder("GIB " + w.getGIB_AN_Werftsegler().getUnit().getID() + " 1 Schiff ; Werftsegler", true);
+			}
+		}
+	}
+	
+	private void DoNotConfirmFullFleets() {
+		for (Werftsegler w: this.Flottenkapitäne) {
+			if (w.getActSchiffe_nach_GIB()==w.getMaxSchiffe()) {
+				// Bingo
+				w.doNotConfirmOrders("Flotte ist vollständig gefüllt (" + w.getMaxSchiffe() + " Schiffe)");
+			}
+		}
+	}
+	
+	
 	
    
 }// ende class
