@@ -136,6 +136,17 @@ public class Zupfer extends MatPoolScript{
 		
 		
 		String LernPlan = OP.getOptionString("Lernplan");
+		
+		if (LernPlan.length()==0) {
+			String LernPlan_settings = reportSettings.getOptionString("ZupferLernplan", this.scriptUnit.getUnit().getRegion());
+			if (LernPlan_settings.length()>1) {
+				this.addComment("Übernehme den Lernplan aus den ReportSettings: " + LernPlan_settings);
+				LernPlan = LernPlan_settings;
+			}
+		}
+		
+		
+		
 		if (LernPlan.length()>1) {
 			AusbildungsRelation AR = super.getOverlord().getLernplanHandler().getAusbildungsrelation(this.scriptUnit, LernPlan);
 			if (AR==null) {
@@ -375,6 +386,7 @@ public class Zupfer extends MatPoolScript{
 			}
 			this.scriptUnit.addAScript(L);
 		} else {
+			// skilllevel >= unitMinLevel
 			// Wintercheck
 			boolean hasWinterpausenOrder = false;
 			String LernTalentName = "Kräuterkunde";
@@ -384,6 +396,9 @@ public class Zupfer extends MatPoolScript{
 					// defaultwert
 					ZupferWinterOption="LernenForschen";
 				}
+				
+				// wir haben Winter vor uns!
+				
 				if (ZupferWinterOption.equalsIgnoreCase("Forschen")) {
 					if (skillLevel<7) {
 						this.addComment("ZupferWinterOption *Forschen* bewirkt Lernen von Kräuterkunde, da noch nicht T7");
@@ -418,33 +433,48 @@ public class Zupfer extends MatPoolScript{
 
 					
 					if (LernPlan.length()==0) {
-					
+						boolean requiredLernvorgabe = false;
+						int sollMenge = 18;
 						if (LernTalentSkillType!=null) {
 							LernTalentName = LernTalentSkillType.toString();
+						} else {
+							// wir haben keine Lernvorgaben, wenn wir schon jetzt die maximale Menge zupfen könnten
+							// dann soll ein LP gesetzt werden, den stur Kräuterkunde macht eigentlich keinen Sinn
+							int maxSkillMenge = skillLevel * this.getUnit().getModifiedPersons();
+							
+							if (menge>0) {
+								sollMenge = menge;
+							}
+							if (maxSkillMenge>sollMenge) {
+								requiredLernvorgabe=true;
+							}
 						}
 						
-						
-						this.addComment("ZupferWinterOption *Lernen* bewirkt Lernen von " + LernTalentName + ", da in Winterpause");
-						// Lernen
-						this.addComment("Ergänze Lernfix Eintrag mit Talent=" + LernTalentName);
-						Script L = new Lernfix();
-						ArrayList<String> order = new ArrayList<String>();
-						order.add("Talent=" + LernTalentName);
-						if (GratisTalentSkillType!=null) {
-							order.add("Gratistalent=" + GratisTalentSkillType.toString());
-							this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
+						if (requiredLernvorgabe) {
+							this.doNotConfirmOrders("Zupfer soll Standard-Kräuterkunde lernen, kann aber die Sollmenge (" + sollMenge + ") bereits zupfen. Bitte Lerntalent oder Lernplan angeben");
+						} else {
+							this.addComment("ZupferWinterOption *Lernen* bewirkt Lernen von " + LernTalentName + ", da in Winterpause");
+							// Lernen
+							this.addComment("Ergänze Lernfix Eintrag mit Talent=" + LernTalentName);
+							Script L = new Lernfix();
+							ArrayList<String> order = new ArrayList<String>();
+							order.add("Talent=" + LernTalentName);
+							if (GratisTalentSkillType!=null) {
+								order.add("Gratistalent=" + GratisTalentSkillType.toString());
+								this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
+							}
+							if (!OP.getOptionBoolean("aka", true) ) {
+								order.add("aka=nein");
+								this.addComment("Ergänze Parameter für Lernfix aka=nein");
+							}
+							L.setArguments(order);
+							L.setScriptUnit(this.scriptUnit);
+							L.setGameData(this.gd_Script);
+							if (this.scriptUnit.getScriptMain().client!=null){
+								L.setClient(this.scriptUnit.getScriptMain().client);
+							}
+							this.scriptUnit.addAScript(L);
 						}
-						if (!OP.getOptionBoolean("aka", true) ) {
-							order.add("aka=nein");
-							this.addComment("Ergänze Parameter für Lernfix aka=nein");
-						}
-						L.setArguments(order);
-						L.setScriptUnit(this.scriptUnit);
-						L.setGameData(this.gd_Script);
-						if (this.scriptUnit.getScriptMain().client!=null){
-							L.setClient(this.scriptUnit.getScriptMain().client);
-						}
-						this.scriptUnit.addAScript(L);
 					} else {
 						this.addComment("ZupferWinterOption *Lernen* bewirkt Lernplan " + LernPlan + ", da in Winterpause");
 						// Lernen
@@ -507,30 +537,48 @@ public class Zupfer extends MatPoolScript{
 							this.scriptUnit.addAScript(L);
 						} else {
 							if (LernPlan.length()==0) {
+								boolean requiredLernvorgabe = false;
+								int sollMenge = 18;
 								if (LernTalentSkillType!=null) {
 									LernTalentName = LernTalentSkillType.toString();
+								} else {
+									// wir haben keine Lernvorgaben, wenn wir schon jetzt die maximale Menge zupfen könnten
+									// dann soll ein LP gesetzt werden, den stur Kräuterkunde macht eigentlich keinen Sinn
+									int maxSkillMenge = skillLevel * this.getUnit().getModifiedPersons();
+									
+									if (menge>0) {
+										sollMenge = menge;
+									}
+									if (maxSkillMenge>sollMenge) {
+										requiredLernvorgabe=true;
+									}
 								}
-								this.addComment("ZupferWinterOption *LernenForschen* bewirkt Lernen von " + LernTalentName + ", da in Winterpause");
-								// Lernen
-								this.addComment("Ergänze Lernfix Eintrag mit Talent=" + LernTalentName);
-								Script L = new Lernfix();
-								ArrayList<String> order = new ArrayList<String>();
-								order.add("Talent=" + LernTalentName);
-								if (GratisTalentSkillType!=null) {
-									order.add("Gratistalent=" + GratisTalentSkillType.toString());
-									this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
+								
+								if (requiredLernvorgabe) {
+									this.doNotConfirmOrders("Zupfer soll Standard-Kräuterkunde lernen, kann aber die Sollmenge (" + sollMenge + ") bereits zupfen. Bitte Lerntalent oder Lernplan angeben");
+								} else {
+									this.addComment("ZupferWinterOption *LernenForschen* bewirkt Lernen von " + LernTalentName + ", da in Winterpause");
+									// Lernen
+									this.addComment("Ergänze Lernfix Eintrag mit Talent=" + LernTalentName);
+									Script L = new Lernfix();
+									ArrayList<String> order = new ArrayList<String>();
+									order.add("Talent=" + LernTalentName);
+									if (GratisTalentSkillType!=null) {
+										order.add("Gratistalent=" + GratisTalentSkillType.toString());
+										this.addComment("Ergänze Lernfix mit Parameter Gratistalent=" + GratisTalentSkillType.toString());
+									}
+									if (!OP.getOptionBoolean("aka", true) ) {
+										order.add("aka=nein");
+										this.addComment("Ergänze Parameter für Lernfix aka=nein");
+									}
+									L.setArguments(order);
+									L.setScriptUnit(this.scriptUnit);
+									L.setGameData(this.gd_Script);
+									if (this.scriptUnit.getScriptMain().client!=null){
+										L.setClient(this.scriptUnit.getScriptMain().client);
+									}
+									this.scriptUnit.addAScript(L);
 								}
-								if (!OP.getOptionBoolean("aka", true) ) {
-									order.add("aka=nein");
-									this.addComment("Ergänze Parameter für Lernfix aka=nein");
-								}
-								L.setArguments(order);
-								L.setScriptUnit(this.scriptUnit);
-								L.setGameData(this.gd_Script);
-								if (this.scriptUnit.getScriptMain().client!=null){
-									L.setClient(this.scriptUnit.getScriptMain().client);
-								}
-								this.scriptUnit.addAScript(L);
 							} else {
 								this.addComment("ZupferWinterOption *LernenForschen* bewirkt Lernplan " + LernPlan + ", da in Winterpause");
 								// Lernen
