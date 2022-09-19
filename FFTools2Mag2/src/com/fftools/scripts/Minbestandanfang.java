@@ -47,18 +47,29 @@ public class Minbestandanfang extends Script{
 		if (ware.length()>0) {
 			this.addComment("minBestandAnfang - Ware erkannt: " + ware);
 		} else {
-			this.addComment("!minBestandAnfang - keine Ware erkannt!");
 			doNotConfirmOrders("!minBestandAnfang - keine Ware erkannt!");
 			OK=false;
 		}
 		Integer menge = OP.getOptionInt("Menge", -1);
 		if (menge>=0) {
 			this.addComment("minBestandAnfang - Minimalmenge erkannt: " + menge);
-		} else {
-			this.addComment("!minBestandAnfang - keine Menge erkannt!");
-			doNotConfirmOrders("!minBestandAnfang - keine Menge erkannt!");
+		}
+		
+		Integer mengeJe = OP.getOptionInt("MengeJe", -1);
+		if (mengeJe>=0) {
+			this.addComment("minBestandAnfang - Minimalmenge pro Person erkannt: " + mengeJe);
+		}
+		
+		if (menge<=0 && mengeJe<=0) {
+			this.doNotConfirmOrders("!!! minBestandAnfang: weder Menge noch MengeJe angegeben - Abbruch!");
 			OK=false;
 		}
+		
+		if (menge>0 && mengeJe>0) {
+			this.doNotConfirmOrders("!!! minBestandAnfang: Menge UND MengeJe angegeben - nur ein Wert zulässig. Abbruch!");
+			OK=false;
+		}
+		
 		
 		if (!OK) {
 			return;
@@ -93,24 +104,69 @@ public class Minbestandanfang extends Script{
 				}
 			}
 			addComment("minBestandAnfang - Summe gefunden für " + ware + ": " + vorhanden);
-			if (vorhanden < menge) {
-				addComment("minBestandAnfang - " + menge + " (" + ware + ") unterschritten.");
-				
-			} else {
-				addComment("minBestandAnfang - " + menge + " (" + ware + ") ist erreicht, Befehl wird ausgeführt.");
-				runMyScript=true;
+			Integer vorhandenJe=0;
+			if (mengeJe>0) {
+				if (this.getUnit().getModifiedPersons()>0) {
+					vorhandenJe = Math.floorDiv(vorhanden,this.getUnit().getModifiedPersons());
+					addComment("minBestandAnfang - Summe " + ware + " pro Person: " + vorhandenJe);
+				} else {
+					this.doNotConfirmOrders("minBestandAnfang pro Person ohne Personen ?!? (keine Personen mehr in der Einheit)");
+				}
+			}
+			
+			if (menge>0) {
+				if (vorhanden < menge) {
+					addComment("minBestandAnfang - " + menge + " (" + ware + ") unterschritten.");
+					
+				} else {
+					addComment("minBestandAnfang - " + menge + " (" + ware + ") ist erreicht, Befehl wird ausgeführt.");
+					runMyScript=true;
+				}
+			}
+			
+			if (mengeJe>0) {
+				if (vorhandenJe < mengeJe) {
+					addComment("minBestandAnfang - " + mengeJe + " (" + ware + ") pro Person unterschritten.");
+					
+				} else {
+					addComment("minBestandAnfang - " + mengeJe + " (" + ware + ") pro Person ist erreicht, Befehl wird ausgeführt.");
+					runMyScript=true;
+				}
 			}
 		} else {
 			// item
 			Item i = this.scriptUnit.getUnit().getModifiedItem(itemType);
 			if (i!=null) {
-				addComment("minBestandAnfang - " + ware + " " + i.getAmount() + " vorhanden.");
-				if (i.getAmount() >= menge) {
-					addComment("minBestandAnfang - " + menge + " (" + ware + ") ist erreicht, Befehl wird ausgeführt.");
-					runMyScript=true;
-				} else {
-					addComment("minBestandAnfang - " + menge + " (" + ware + ") unterschritten.");
+				Integer vorhanden = i.getAmount();
+				addComment("minBestandAnfang - " + ware + " " + vorhanden + " vorhanden.");
+				Integer vorhandenJe=0;
+				if (mengeJe>0) {
+					if (this.getUnit().getModifiedPersons()>0) {
+						vorhandenJe = Math.floorDiv(vorhanden,this.getUnit().getModifiedPersons());
+						addComment("minBestandAnfang - Summe " + ware + " pro Person: " + vorhandenJe);
+					} else {
+						this.doNotConfirmOrders("minBestandAnfang pro Person ohne Personen ?!? (keine Personen mehr in der Einheit)");
+					}
 				}
+				
+				if (menge>0) {
+					if (vorhanden >= menge) {
+						addComment("minBestandAnfang - " + menge + " (" + ware + ") ist erreicht, Befehl wird ausgeführt.");
+						runMyScript=true;
+					} else {
+						addComment("minBestandAnfang - " + menge + " (" + ware + ") unterschritten.");
+					}
+				}
+				
+				if (mengeJe>0) {
+					if (vorhandenJe >= mengeJe) {
+						addComment("minBestandAnfang - " + mengeJe + " (" + ware + ") pro Person ist erreicht, Befehl wird ausgeführt.");
+						runMyScript=true;
+					} else {
+						addComment("minBestandAnfang - " + mengeJe + " (" + ware + ") pro Person unterschritten.");
+					}
+				}
+
 			} else {
 				addComment("minBestandAnfang - keine Information zu " + ware + " vorhanden.");
 				

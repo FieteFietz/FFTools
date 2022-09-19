@@ -14,6 +14,8 @@ public class Auramaxwarning extends Script{
 	
 	
 	private static final int Durchlauf = 14;
+	
+	private int manualAuraMax = -1;
 
 	
 	/**
@@ -52,12 +54,23 @@ public class Auramaxwarning extends Script{
 		boolean automode = OP.isOptionString("mode", "auto");
 		if (automode){
 			this.addComment("Auramaxwarning - AutoMode erkannt.");
+			getManualAuraMax();
 		}
 		Unit u = this.scriptUnit.getUnit();
-		if (u.getAuraMax()>0) {
-			if (u.getAura()==u.getAuraMax() && !zaubert()){
+		int maxAura = u.getAuraMax();
+		if (maxAura>0) {
+			if (this.manualAuraMax>=0 & automode) {
+				maxAura = this.manualAuraMax;
+			}
+			if (u.getAura()>=maxAura && !zaubert()){
 				/* Maximum erreicht */
-				this.addComment("AuraMaxWarning: Einheit hat Maximum an Aura!");
+				if (u.getAura()==maxAura) {
+					this.addComment("AuraMaxWarning: Einheit hat Maximum an Aura!");
+				} 
+				if (u.getAura()>maxAura) {
+					this.addComment("AuraMaxWarning: Einheit hat AuraMaximum überschritten!");
+				}
+				
 				if (automode){
 					automode_AuraMax();
 				} else {
@@ -151,6 +164,46 @@ public class Auramaxwarning extends Script{
 			}
 		}
 		return anzahl;
+	}
+	
+	/**
+	 * 20220919
+	 * Optional kann der Schwellwert für AuraMax gesetzt werden mit dem Befehl
+	 * // AuraMax: {Zahl}
+	 * 
+	 * @return
+	 */
+	private void getManualAuraMax() {
+		int anzahl = -1;
+		String searchPhrase = "// AuraMax:";
+		ArrayList<Order> L = new ArrayList<Order>(); 
+		L.addAll(this.scriptUnit.getUnit().getOrders2());
+		for (Order o:L){
+			String s = o.getText();
+			if (s.toLowerCase().startsWith(searchPhrase.toLowerCase())){
+				s = s.substring(searchPhrase.length() + 1);
+				if (s.length()>0) {
+					s = s.trim();
+					try {
+						anzahl = Integer.parseInt(s);
+						if (anzahl<0) {
+							this.doNotConfirmOrders("!!! Fehler bei der Erkennung von AuraMax: !!!");
+							anzahl = -1;
+						}
+					}
+					catch (NumberFormatException  e) {
+						anzahl=-1;
+						this.doNotConfirmOrders("!!! Fehler bei der Erkennung von AuraMax: !!!");
+					}
+				}
+			}
+		}
+		if (anzahl>-1) {
+			this.manualAuraMax = anzahl;
+			this.addComment("AuraMax: manuell gesetzt auf " + this.manualAuraMax);
+		} else {
+			this.addComment("AuraMax: keine manuelle Vorgabe gefunden, nutze meine eigene AuraMax.");
+		}
 	}
 	
 	
