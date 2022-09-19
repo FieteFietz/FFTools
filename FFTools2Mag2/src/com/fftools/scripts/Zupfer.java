@@ -139,7 +139,7 @@ public class Zupfer extends MatPoolScript{
 		
 		if (LernPlan.length()==0) {
 			String LernPlan_settings = reportSettings.getOptionString("ZupferLernplan", this.scriptUnit.getUnit().getRegion());
-			if (LernPlan_settings.length()>1) {
+			if (LernPlan_settings!=null && LernPlan_settings.length()>1) {
 				this.addComment("Übernehme den Lernplan aus den ReportSettings: " + LernPlan_settings);
 				LernPlan = LernPlan_settings;
 			}
