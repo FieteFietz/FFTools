@@ -54,9 +54,15 @@ public class Maxbestandanfang extends Script{
 		Integer menge = OP.getOptionInt("Menge", -1);
 		if (menge>=0) {
 			this.addComment("maxBestandAnfang - Maximalmenge erkannt: " + menge);
-		} else {
-			this.addComment("!maxBestandAnfang - keine Menge erkannt!");
-			doNotConfirmOrders("!maxBestandAnfang - keine Menge erkannt!");
+		} 
+		
+		Integer mengeJe = OP.getOptionInt("MengeJe", -1);
+		if (mengeJe>=0) {
+			this.addComment("maxBestandAnfang - Maximallmenge pro Person erkannt: " + mengeJe);
+		}
+		
+		if (menge<=0 && mengeJe<=0) {
+			this.doNotConfirmOrders("!!! maxBestandAnfang: weder Menge noch MengeJe angegeben - Abbruch!");
 			OK=false;
 		}
 		
@@ -93,24 +99,72 @@ public class Maxbestandanfang extends Script{
 				}
 			}
 			addComment("maxBestandAnfang - Summe gefunden für " + ware + ": " + vorhanden);
-			if (vorhanden <=menge) {
-				addComment("maxBestandAnfang - " + menge + " (" + ware + ") unterschritten, Befehl wird ausgeführt.");
-				runMyScript=true;
-			} else {
-				addComment("maxBestandAnfang - " + menge + " (" + ware + ") ist erreicht/überschritten.");
-				
+			
+			Integer vorhandenJe=0;
+			if (mengeJe>0) {
+				if (this.getUnit().getModifiedPersons()>0) {
+					vorhandenJe = Math.floorDiv(vorhanden,this.getUnit().getModifiedPersons());
+					addComment("maxBestandAnfang - Summe " + ware + " pro Person: " + vorhandenJe);
+				} else {
+					this.doNotConfirmOrders("maxBestandAnfang pro Person ohne Personen ?!? (keine Personen mehr in der Einheit)");
+				}
 			}
-		} else {
-			// item
-			Item i = this.scriptUnit.getUnit().getModifiedItem(itemType);
-			if (i!=null) {
-				addComment("maxBestandAnfang - " + ware + " " + i.getAmount() + " vorhanden.");
-				if (i.getAmount()<=menge) {
+			
+			
+			if (menge>0) {
+				if (vorhanden <=menge) {
 					addComment("maxBestandAnfang - " + menge + " (" + ware + ") unterschritten, Befehl wird ausgeführt.");
 					runMyScript=true;
 				} else {
 					addComment("maxBestandAnfang - " + menge + " (" + ware + ") ist erreicht/überschritten.");
 				}
+			}
+			
+			if (mengeJe>0) {
+				if (vorhandenJe <=mengeJe) {
+					addComment("maxBestandAnfang - " + mengeJe + " (" + ware + ") pro Person unterschritten, Befehl wird ausgeführt.");
+					runMyScript=true;
+				} else {
+					addComment("maxBestandAnfang - " + mengeJe + " (" + ware + ") pro Person ist erreicht/überschritten.");
+				}
+			}
+		} else {
+			// item
+			Item i = this.scriptUnit.getUnit().getModifiedItem(itemType);
+			if (i!=null) {
+				Integer vorhanden = i.getAmount();
+				addComment("maxBestandAnfang - " + ware + " " +vorhanden + " vorhanden.");
+				
+				Integer vorhandenJe=0;
+				if (mengeJe>0) {
+					if (this.getUnit().getModifiedPersons()>0) {
+						vorhandenJe = Math.floorDiv(vorhanden,this.getUnit().getModifiedPersons());
+						addComment("maxBestandAnfang - Summe " + ware + " pro Person: " + vorhandenJe);
+					} else {
+						this.doNotConfirmOrders("maxBestandAnfang pro Person ohne Personen ?!? (keine Personen mehr in der Einheit)");
+					}
+				}
+				
+				if (menge>=0) {
+					if (vorhanden<=menge) {
+						addComment("maxBestandAnfang - " + menge + " (" + ware + ") unterschritten, Befehl wird ausgeführt.");
+						runMyScript=true;
+					} else {
+						addComment("maxBestandAnfang - " + menge + " (" + ware + ") ist erreicht/überschritten.");
+					}
+				}
+				
+				if (mengeJe>=0) {
+					if (vorhandenJe<=mengeJe) {
+						addComment("maxBestandAnfang - " + mengeJe + " (" + ware + ") pro Person unterschritten, Befehl wird ausgeführt.");
+						runMyScript=true;
+					} else {
+						addComment("maxBestandAnfang - " + mengeJe + " (" + ware + ") pro Person ist erreicht/überschritten.");
+					}
+				}
+				
+				
+				
 			} else {
 				addComment("maxBestandAnfang - keine Information zu " + ware + " vorhanden, Befehl wird ausgeführt.");
 				runMyScript=true;

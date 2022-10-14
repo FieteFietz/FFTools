@@ -164,23 +164,29 @@ public class Trankeffekt extends MatPoolScript{
 				this.addComment("Trank " + this.trank + " ausreichend.");
 			}
 		} else {
-			// Bauernblut
+			// Bauernblut <- falsch
+			// Bauernlieb !
 			int availableBlood = countPotionInRegion4Faction();
-			if (availableBlood>0){
-				if (availableBlood>usagePerRound) {
-					availableBlood=(int) usagePerRound;
-				}
-				this.addOrder("BENUTZEN " + availableBlood  + " " + this.trank,false);
-				this.useThisRound=true;
-				this.addEffekteThisRound += availableBlood * 100;
-				if (availableBlood<usagePerRound) {
-					this.addComment("Trankeffekt: nicht ausreichend Tränke vorhanden, benötigt: " + usagePerRound + ", bei der Partei hier vorhanden: " + availableBlood); 
+			int usagePerRound_Int = (int)usagePerRound;
+			this.addComment("Debug Trankeffekt Bauernlieb: verfügbar=" + availableBlood + ", pro Runde notw.=" + usagePerRound_Int);
+			if (usagePerRound_Int>0) {
+				if (availableBlood>0){
+					if (availableBlood>usagePerRound_Int) {
+						availableBlood=(int) usagePerRound_Int;
+					}
+					this.addOrder("BENUTZEN " + availableBlood  + " " + this.trank,false);
+					this.useThisRound=true;
+					this.addEffekteThisRound += availableBlood * 100;
+					if (availableBlood<usagePerRound_Int) {
+						this.addComment("Trankeffekt: nicht ausreichend Tränke vorhanden, benötigt: " + usagePerRound_Int + ", bei der Partei hier vorhanden: " + availableBlood); 
+					}
+				} else {
+					this.addComment("Trank " + this.trank + " aktuell nicht bei mir vorhanden, aber auch nicht für diese Partei in dieser Region verfügbar.");
 				}
 			} else {
-				this.addComment("Trank " + this.trank + " aktuell nicht bei mir vorhanden, aber auch nicht für diese Partei in dieser Region verfügbar.");
+				this.addComment("Unter den gegebenen Umständen wird der Trank " + this.trank + " nicht benutzt. (errechnet pro Runde: " + usagePerRound_Int + " )");
 			}
 		}
-		
 	}
 	
 	public void nachMatPool(int scriptDurchlauf){

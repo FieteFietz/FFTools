@@ -111,7 +111,7 @@ public class Material extends MatPoolScript {
 		// Besonderheiten
 		// Taktiker
 		int actTaktikLevel = 0;
-		SkillType actSkillType = this.gd_Script.rules.getSkillType("Taktik");
+		SkillType actSkillType = this.gd_Script.getRules().getSkillType("Taktik");
 		if (actSkillType.equals(bestSkillType)){
 			    actTaktikLevel = this.scriptUnit.getUnit().getModifiedSkill(bestSkillType).getLevel();
 				this.isTactics = true;
@@ -119,7 +119,7 @@ public class Material extends MatPoolScript {
 		
 		// Magier
 		int magieLevel=0;
-		actSkillType = this.gd_Script.rules.getSkillType("Magie");
+		actSkillType = this.gd_Script.getRules().getSkillType("Magie");
 		if (actSkillType!=null){
 			Skill actSkill = this.scriptUnit.getUnit().getModifiedSkill(actSkillType);
 			if (actSkill!=null){
@@ -133,7 +133,7 @@ public class Material extends MatPoolScript {
 		}
 		// Wahrnehmer
 		int actSpotterLevel =0;
-		actSkillType = this.gd_Script.rules.getSkillType("Wahrnehmung");
+		actSkillType = this.gd_Script.getRules().getSkillType("Wahrnehmung");
 		if (actSkillType!=null){
 			if (actSkillType.equals(bestSkillType)){
 				actSpotterLevel = this.scriptUnit.getUnit().getModifiedSkill(bestSkillType).getLevel();
@@ -142,7 +142,7 @@ public class Material extends MatPoolScript {
 		}
 		// Tarner
 		int actStealthLevel = 0;
-		actSkillType = this.gd_Script.rules.getSkillType("Tarnung");
+		actSkillType = this.gd_Script.getRules().getSkillType("Tarnung");
 		if (actSkillType!=null){
 			if (actSkillType.equals(bestSkillType)){
 				actStealthLevel = this.scriptUnit.getUnit().getModifiedSkill(bestSkillType).getLevel();
@@ -267,14 +267,14 @@ public class Material extends MatPoolScript {
 		
 		
 		// allgemein: + AusdauerLevel
-		SkillType ausdauerType = this.gd_Script.rules.getSkillType("Ausdauer");
+		SkillType ausdauerType = this.gd_Script.getRules().getSkillType("Ausdauer");
 		Skill ausdauerSkill = this.scriptUnit.getUnit().getModifiedSkill(ausdauerType);
 		if (ausdauerSkill!=null && ausdauerSkill.getLevel()>0){
 			prio+=ausdauerSkill.getLevel();
 		}
 		
 		// Zusatz: auch nur Reitlevel dazu
-		SkillType reitType = this.gd_Script.rules.getSkillType("Reiten");
+		SkillType reitType = this.gd_Script.getRules().getSkillType("Reiten");
 		Skill reitSkill = this.scriptUnit.getUnit().getModifiedSkill(reitType);
 		if (reitSkill!=null && reitSkill.getLevel()>0){
 			prio+=(int)(reitSkill.getLevel() * (int)reitenFaktor);
@@ -439,7 +439,13 @@ public class Material extends MatPoolScript {
 				this.addMatPoolRequest(mpr);
 				this.addComment("Material: Pferde angefordert.");
 			} else {
-				this.addComment("Material: nicht genügend Reittalent für Pferde");
+				if (kapa_policy==MatPoolRequest.KAPA_max_zuFuss) {
+					mpr = new MatPoolRequest(this,anz_pferde,"Pferd",prio,comment);
+					this.addMatPoolRequest(mpr);
+					this.addComment("Material: Pferde angefordert zum Führen");
+				} else {
+					this.addComment("Material: nicht genügend Reittalent für Pferde");
+				}
 			}
 		}
 		
@@ -556,7 +562,7 @@ public class Material extends MatPoolScript {
 		}
 
 		if (needRdU){
-			this.gd_Script.rules.getItemType("Ring der Unsichtbarkeit",true);
+			this.gd_Script.getRules().getItemType("Ring der Unsichtbarkeit",true);
 			mpr = new MatPoolRequest(this,persons,"Ring der Unsichtbarkeit",prioTarn,comment,kapa_policy,kapa_benutzer);
 			if (this.inRegion){
 				mpr.setOnlyRegion(true);
@@ -572,7 +578,7 @@ public class Material extends MatPoolScript {
 		}
 		
 		if (needAdwS){
-			this.gd_Script.rules.getItemType("Amulett des wahren Sehens",true);
+			this.gd_Script.getRules().getItemType("Amulett des wahren Sehens",true);
 			mpr = new MatPoolRequest(this,persons,"Amulett des wahren Sehens",prioTarn,comment,kapa_policy,kapa_benutzer);
 			if (this.inRegion){
 				mpr.setOnlyRegion(true);
@@ -582,7 +588,7 @@ public class Material extends MatPoolScript {
 		
 		// RdM
 		if (isMage){
-			this.gd_Script.rules.getItemType("Ring der Macht",true);
+			this.gd_Script.getRules().getItemType("Ring der Macht",true);
 			mpr = new MatPoolRequest(this,persons,"Ring der Macht",prioTarn,comment,kapa_policy,kapa_benutzer);
 			if (this.inRegion){
 				mpr.setOnlyRegion(true);
@@ -592,7 +598,7 @@ public class Material extends MatPoolScript {
 		
 		// GdTS
 		if (isMage || OP.getOptionBoolean("GdTS", false)){
-			this.gd_Script.rules.getItemType("Gürtel der Trollstärke",true);
+			this.gd_Script.getRules().getItemType("Gürtel der Trollstärke",true);
 			mpr = new MatPoolRequest(this,persons,"Gürtel der Trollstärke",prioTarn,comment,kapa_policy,kapa_benutzer);
 			if (this.inRegion){
 				mpr.setOnlyRegion(true);

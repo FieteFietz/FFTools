@@ -71,6 +71,13 @@ public class Forester extends MatPoolScript{
 	 */
 	private int sollBestand=0;
 	
+	
+	/**
+	 * wenn WdL benutzt wird, kann das entstehende Holz auch gleich geschlagen werden. Parameter: macheHolz=ja
+	 */
+	private boolean generateMakeOrder = false;
+	
+	
 	// Konstruktor
 	public Forester() {
 		super.setRunAt(this.runners);
@@ -125,6 +132,8 @@ public void runScript(int scriptDurchlauf){
 		if (prio>0){
 			this.maxMenge = prio;
 		}
+		
+		this.generateMakeOrder = OP.getOptionBoolean("macheHolz", false);
 		
 		
 		// wieviel Holz anfordern?
@@ -303,6 +312,13 @@ public void runScript(int scriptDurchlauf){
 		
 		if (mayProduce){
 			this.addOrder("Benutze " + Produktion + " Wasser~des~Lebens", true);
+			if (this.generateMakeOrder) {
+				if (this.isMallornregion) {
+					this.addOrder("MACHEN " + (Produktion*10*2) + " Mallorn", true);
+				} else {
+					this.addOrder("MACHEN " + (Produktion*10*2) + " Holz", true);
+				}
+			}
 		}
 	}
 }

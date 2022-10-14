@@ -59,7 +59,9 @@ public class ProtectedShip implements Comparable<ProtectedShip>{
 			return;
 		}
 		
-		
+		if (this.s.getUnits()==null) {
+			return;
+		}
 		for (Unit u:this.s.getUnits().values()) {
 			ScriptUnit su = this.captn.getScriptMain().getScriptUnit(u);
 			if (su!=null) {
