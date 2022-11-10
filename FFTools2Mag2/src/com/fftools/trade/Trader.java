@@ -183,7 +183,9 @@ public class Trader {
 			int amount = OP.getOptionInt("menge", -1);
 			if (amount>0 && amount < 2000){
 				this.buyPolicy = trader_buy_setUser;
-				this.buy.setAmount(amount);
+				if (this.buy!=null) {
+					this.buy.setAmount(amount);
+				}
 			} else {
 				if (amount!=-1){
 					// durgefallen..nix machen..nur meldung
@@ -269,7 +271,12 @@ public class Trader {
 		// Profit
 		if (OP.getOptionDbl("Profit", 0)>0) {
 			this.Profit = OP.getOptionDbl("Profit", 0);
-			this.scriptUnit.addComment("Profit im TA soll gesetzt werden auf: " + this.Profit);
+			this.scriptUnit.addComment("Umsatzfaktor (war Profit) im TA soll gesetzt werden auf: " + this.Profit);
+		}
+		
+		if (OP.getOptionDbl("Umsatzfaktor", 0)>0) {
+			this.Profit = OP.getOptionDbl("Umsatzfaktor", 0);
+			this.scriptUnit.addComment("Umsatzfaktor im TA soll gesetzt werden auf: " + this.Profit);
 		}
 		
 		

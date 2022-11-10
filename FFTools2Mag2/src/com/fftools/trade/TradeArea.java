@@ -117,6 +117,7 @@ public class TradeArea {
 	
 	/**
 	 * für Dnalor....Profit setzen können, bestimmt max Einkaufpreis.
+	 * neuer Name: Umsatzfaktor
 	 * 
 	 */
 	private double Profit=2;
@@ -694,7 +695,7 @@ public class TradeArea {
 		
 		
 		int kaufTheo = this.suggestedBuyAmount(tR,true,erg);
-		erg.addFirst("Vorgeschlagen: " + kaufTheo + "(max:" + this.calcMaxAvailableAmount(tR, buyItemType,null) + ") " + buyItemType.getName() + " bei Profit=" + this.getProfit() + " ( Run " + this.overlord.getMainDurchlauf() + ")");
+		erg.addFirst("Vorgeschlagen: " + kaufTheo + "(max:" + this.calcMaxAvailableAmount(tR, buyItemType,null) + ") " + buyItemType.getName() + " bei Umsatzfaktor=" + this.getProfit() + " ( Run " + this.overlord.getMainDurchlauf() + ")");
 		if (this.isLagerVoll(tR, this.suggestedBuyAmount(tR,null))){
 			erg.addFirst("Lager voll! (Faktor:" + maxRundeEinkaufAufLager + ", theoMenge:" + this.suggestedBuyAmount(tR,erg) + ")");
 		}
@@ -795,7 +796,7 @@ public class TradeArea {
 			// Überkaufen?
 			
 			int maxMengeProfit = this.calcMaxAvailableAmount( r, itemType,erg);
-			erg.addFirst("Überkauf geplant. MaxVerfügbar nach Profit: " + maxMengeProfit);
+			erg.addFirst("Überkauf geplant. MaxVerfügbar nach Umsatzfaktor: " + maxMengeProfit);
 			
 			// einfaches klassisches deckeln des einkaufes
 			if (kaufTheo>maxMengeProfit){kaufTheo = maxMengeProfit;}
@@ -844,7 +845,7 @@ public class TradeArea {
 		// double maxEinkaufspreisD = (double)this.getAreaMinSellPrice(itemType) / profit;
 		double meanSellPrice = (double)this.getAreaWeightedMeanSellPrice(itemType);
 		double maxEinkaufspreisD =  meanSellPrice / profit;
-		erg.addFirst("MaxEinkaufsmenge nach Profit - TA-Durschnittsverkauspreis: " + meanSellPrice + ", mit Profit=" + profit + " -> maxEinkaufspreis=" + maxEinkaufspreisD);
+		erg.addFirst("MaxEinkaufsmenge nach Profit - TA-Durschnittsverkauspreis: " + meanSellPrice + ", mit Umsatzfaktor=" + profit + " -> maxEinkaufspreis=" + maxEinkaufspreisD);
 		if (maxEinkaufspreisD==0){
 			// kein Verkauf im TA...wir nehmen den reportweiten
 			maxEinkaufspreisD = (double)this.overlord.getTradeAreaHandler().getReportWeightedMeanSellPrice(itemType) / profit;

@@ -173,7 +173,7 @@ public class Handeln extends TradeAreaScript{
 				this.getTradeArea().setProfit(this.getTrader().getProfit());
 			}
 		} else {
-			this.addComment("Profit konnte nicht gesetzt werden - TA nicht gefunden");
+			this.addComment("Umsatzfaktor konnte nicht gesetzt werden - TA nicht gefunden");
 		}
 		
 		// user info hier?
