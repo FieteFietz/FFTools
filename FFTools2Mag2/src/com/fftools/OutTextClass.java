@@ -96,14 +96,14 @@ public class OutTextClass {
 	 * @param s
 	 */
 	public void addOutLine(String s) {
-		String sS = "\r\n" + s;
+		String sS = "\r\n" + getLogDateS() + s;
 		this.addOutChars(sS);
 		this.cntPoints = sS.length();
 		// checkMaxRowPoints();
 	}
 	
 	public void addNewLine(){
-		this.addOutChars("\r\n");
+		this.addOutChars("\r\n" + getLogDateS());
 		cntPoints=0;
 	}
 	
@@ -233,7 +233,7 @@ public class OutTextClass {
 				fileWriters.put(actFileName, fileWriter);
 				
 				fileWriter.write("\r\n\r\n\r\n");
-				fileWriter.write("***** " + getDateS() + " new logentries follow....******\r\n");
+				fileWriter.write("***** " + getLogDateS() + " new logentries follow....******\r\n");
 				fileWriter.write(getVersionsString());
 				fileWriter.write("\r\n");
 			} catch (IOException e) {
@@ -280,6 +280,12 @@ public class OutTextClass {
 	public static String getDateS() {
 		SimpleDateFormat fr = new SimpleDateFormat("_yyyyMMdd_HHmmss");
   	  	String dateS =  fr.format(new Date());
+  	  	return dateS;
+	}
+	
+	public static String getLogDateS() {
+		SimpleDateFormat fr = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+  	  	String dateS =  fr.format(new Date()) + ":";
   	  	return dateS;
 	}
 	

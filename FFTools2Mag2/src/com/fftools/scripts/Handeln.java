@@ -239,7 +239,8 @@ public class Handeln extends TradeAreaScript{
 					addComment("!! Es gibt keinen Grund, hier etwas einzukaufen!!");
 					kaufMenge=0;
 				} else {
-					this.scriptUnit.doNotConfirmOrders("!!unerwartete vorgeschlagene Einkaufsmenge!!");
+					addComment("der TA-Manger hat keine Einkaufsorder ausgegeben.");
+					kaufMenge=0;
 				}
 			}
 			if (this.getTrader().getBuyPolicy() == Trader.trader_buy_Max){
@@ -252,10 +253,9 @@ public class Handeln extends TradeAreaScript{
 						kaufMenge = vorMenge;
 					}
 				} else if (vorMenge==-1){
-					addComment("!! Es gibt keinen Grund, hier etwas einzukaufen!!");
-					kaufMenge=0;
+					addComment("!! Es gibt keinen Grund, hier etwas einzukaufen!! - aber Standard ist der normale Einkauf");
 				} else {
-					this.scriptUnit.doNotConfirmOrders("!!unerwartete vorgeschlagene Einkaufsmenge!!");
+					addComment("der TA-Manger hat keine Einkaufsorder ausgegeben - aber Standard ist der normale Einkauf");
 				}
 			}
 			

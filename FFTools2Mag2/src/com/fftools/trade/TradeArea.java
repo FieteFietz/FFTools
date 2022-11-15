@@ -778,9 +778,11 @@ public class TradeArea {
 		// TA-Vorratsfaktor: ab welchem Anteil des Gesamteinkaufswertes 
 		// gelten Lagerbestände als Vorräte? Angabe in Prozent
 		
-		gesamtEinkauf += suggestedAreaStorage(itemType,r);
+		int segAreaSt = suggestedAreaStorage(itemType,r);
 		
-		erg.addFirst("vorgeschlagene TA-Lagermenge = " + suggestedAreaStorage(itemType,r) + ", neuer Gesamteinkauf: " + gesamtEinkauf);
+		gesamtVerkauf -= segAreaSt;
+		
+		erg.addFirst("vorgeschlagene TA-Lagermenge: " + segAreaSt + ", benötigte Einkaufsmenge: " + gesamtVerkauf +  ", Gesamteinkauf(nominell): " + gesamtEinkauf);
 		double myRatio = (double)gesamtVerkauf / (double)gesamtEinkauf;
 		
 		

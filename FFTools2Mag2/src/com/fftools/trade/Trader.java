@@ -177,7 +177,10 @@ public class Trader {
 			this.setAreaName = OP.getOptionString("TradeArea");
 			this.setAreaOriginSetter(true);
 		}
-		if (OP.isOptionString("menge", "auto")){
+		
+		boolean ScripterOptionAutoMenge = reportSettings.getOptionBoolean("HandelAutoMenge",this.scriptUnit.getUnit().getRegion());
+		
+		if (OP.isOptionString("menge", "auto") || ScripterOptionAutoMenge){
 			this.buyPolicy = trader_buy_setManager;
 		} else {
 			int amount = OP.getOptionInt("menge", -1);
