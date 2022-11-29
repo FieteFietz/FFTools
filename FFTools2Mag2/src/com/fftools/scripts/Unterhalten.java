@@ -36,7 +36,8 @@ public class Unterhalten extends TransportScript{
 	// Default Runde 502 auf 2
 	// mit setScripterOption minUnterhalterTalent=X gesetzt werden
 		
-	private int mindestTalent=2;
+	private int mindestTalent_Default=2;
+	private int mindestTalent=0;
 	private CircusPool circusPool = null;
 	private int limit;
 	// private static final OutTextClass outText = OutTextClass.getInstance();
@@ -62,6 +63,8 @@ public class Unterhalten extends TransportScript{
 	private String LernfixOrder = "Talent=Unterhaltung";
 	
 	private int pers_gewicht = -1;
+	
+	
 	
 	// Konstruktor
 	public Unterhalten() {
@@ -109,6 +112,23 @@ public void runScript(int scriptDurchlauf){
 		if (unitMinLevel>this.mindestTalent){
 			this.mindestTalent = unitMinLevel;
 		}
+		
+		if (this.mindestTalent==0) {
+			this.mindestTalent = this.mindestTalent_Default;
+		}
+		
+		this.addComment("Debug: Mindesttalentwert=" + this.mindestTalent);
+		
+		String Lernplan = OP.getOptionString("Lernplan");
+		if (Lernplan.length()>1) {
+			this.LernfixOrder="Lernplan=" + Lernplan;
+		}
+		
+		String Lerntalent = OP.getOptionString("Lerntalent");
+		if (Lerntalent.length()>1) {
+			this.LernfixOrder="Talent=" + Lerntalent;
+		}
+		
 		
 		if (OP.getOptionString("mode").equalsIgnoreCase("auto")){
 			this.automode = true;
