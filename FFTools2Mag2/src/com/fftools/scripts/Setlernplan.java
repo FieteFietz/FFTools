@@ -44,7 +44,7 @@ public class Setlernplan extends Script{
 	 */
 	private void scriptStart(){
 		LernplanHandler LPH = this.getOverlord().getLernplanHandler();
-		LPH.parseOrders(this.scriptUnit);
+		LPH.parseOrders(this.scriptUnit,this);
 	}
 	
 	/**

@@ -9,6 +9,7 @@ import com.fftools.ReportSettings;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
+import com.fftools.utils.FFToolsUnits;
 import com.fftools.utils.GotoInfo;
 
 
@@ -22,9 +23,8 @@ import com.fftools.utils.GotoInfo;
 
 public class Pferde extends MatPoolScript{
 	
-	
-	private static final int Durchlauf_vorMP1 = 29;
-	private static final int Durchlauf_nachMP1 = 310;
+	private static final int Durchlauf_vorMP1 = 29; // nach MP 0, da müssten RdfF Requests schon durch sein
+	private static final int Durchlauf_nachMP1 = 60; // vor Lernfix bei 62
 	
 	/**
 	 * Anforderung der Pferde
@@ -189,10 +189,10 @@ public class Pferde extends MatPoolScript{
 			this.pferdRequestPrio = 10;
 		}
 		
-		int menge = this.maxMachenPferde();
+		setSkillLevel();
 		
 		if (this.SkillLevel<this.minTalent){
-			this.addComment("mindestTalent nicht erreicht. Versuche zu lernen.");
+			this.addComment("mindestTalent " + this.minTalent + " nicht erreicht. Versuche zu lernen.");
 			this.alternativOrder();
 		} else {
 			// feststellen, ob in Pferdezucht
@@ -200,6 +200,8 @@ public class Pferde extends MatPoolScript{
 				// wenn ja, nicht als PferdeMACHER registrieren!
 				isZuechter=true;
 				// Pferde zur Zucht requesten
+				// int menge = this.maxMachenPferdeZucht();
+				int menge = this.maxMachenPferdeZucht();
 				
 				if (menge>0){
 					this.zuechterRequest = new MatPoolRequest(this,menge,"Pferd",this.pferdRequestPrio,"Zuechter");
@@ -226,11 +228,11 @@ public class Pferde extends MatPoolScript{
 		// nur wenn zuechter
 		if (this.isZuechter && this.zuechterRequest!=null){
 			// erreichen wir Auslastung?
-			if (this.isInMinAuslastung(this.zuechterRequest.getBearbeitet())){
+			if (this.isInMinAuslastungZuechter(this.zuechterRequest.getBearbeitet())){
 				// jo, wir werden zuechten 
 				this.addOrder("ZÜCHTE PFERDE", true);
 				double chance = (double)this.SkillLevel / 100;
-				int anzVersuche = Math.min(this.zuechterRequest.getBearbeitet(), this.SkillLevel * this.scriptUnit.getUnit().getModifiedPersons());
+				int anzVersuche = Math.min(this.zuechterRequest.getBearbeitet(), this.maxMachenPferdeZucht());
 				int expected = (int)((double)anzVersuche * chance);
 				this.addComment("Pferdezucht - zu erwartende Zucht: " + expected + " Pferde.");
 			} else {
@@ -252,15 +254,11 @@ public class Pferde extends MatPoolScript{
 		return false;
 	}
 
-
-	/**
-	 * liefert die maximale Anzahl zu machender Pferde durch
-	 * diese Einheit
-	 * @return
-	 */
-	public int maxMachenPferde(){
-		int erg = 0;
+	
+	private void setSkillLevel() {
 		int skillLevel = 0;
+		this.SkillLevel = skillLevel;
+		
 		SkillType skillType = this.gd_Script.getRules().getSkillType("Pferdedressur", false);
 		if (skillType!=null){
 			Skill skill = this.scriptUnit.getUnit().getModifiedSkill(skillType);
@@ -269,7 +267,34 @@ public class Pferde extends MatPoolScript{
 				this.SkillLevel = skillLevel;
 			}
 		}
-		erg = skillLevel * this.scriptUnit.getUnit().getModifiedPersons();
+	}
+	
+
+	/**
+	 * liefert die maximale Anzahl zu machender Pferde durch
+	 * diese Einheit
+	 * @return
+	 */
+	public int maxMachenPferde(){
+		int erg = 0;
+		
+		int Peff = 0; // effektive Personenanzahl
+		Peff = FFToolsUnits.getPersonenEffektiv(this.scriptUnit);
+
+		// erg = skillLevel * this.scriptUnit.getUnit().getModifiedPersons();
+		erg = this.SkillLevel * Peff;
+		return erg;
+	}
+	
+	/**
+	 * liefert die maximale Anzahl zu machender Pferde durch
+	 * diese Einheit beim Züchten
+	 * kein RdfF, kein Schaffenstrunk
+	 * @return
+	 */
+	public int maxMachenPferdeZucht(){
+		int erg = 0;
+		erg = this.SkillLevel * this.scriptUnit.getUnit().getModifiedPersons();
 		return erg;
 	}
 	
@@ -289,8 +314,24 @@ public class Pferde extends MatPoolScript{
 		if (sollAuslastung < this.minAuslastung){
 			erg = false;
 		}
+		return erg;
+	}
+	
+	/**
+	 * überprüft, ob eine gewünschet Anzahl Pferde mit der Restriktion
+	 * der Mindestauslastung vereinbar ist
+	 * @param zuFangen
+	 * @return
+	 */
+	public boolean isInMinAuslastungZuechter(int zuFangen){
+		boolean erg = true;
 		
-		
+		double maxLeistung = (double)this.maxMachenPferdeZucht();
+		double sollLeistung = (double)zuFangen;
+		double sollAuslastung = (sollLeistung / maxLeistung) * 100;
+		if (sollAuslastung < this.minAuslastung){
+			erg = false;
+		}
 		return erg;
 	}
 	
@@ -299,22 +340,6 @@ public class Pferde extends MatPoolScript{
 	 *
 	 */
 	public void alternativOrder(){
-		// Haben wir einen Lernplan?
-		/*
-		if (this.LernPlanName.length()>2){
-			this.addComment("Setze Lernfix mit Lernplan=" + this.LernPlanName);
-			this.scriptUnit.findScriptClass("Lernfix", "Lernplan=" + this.LernPlanName);
-			return;
-		}
-		if (this.LernTalent.length()>2){
-			this.addComment("Setze Lernfix mit Talent=" + this.LernTalent);
-			this.scriptUnit.findScriptClass("Lernfix", "Talent=" + this.LernTalent);
-			return;
-		}
-		// default behaviour
-		this.addComment("kein gesetztes Lernen -> Default.");
-		this.addOrder("Lernen Pferdedressur",true);
-		*/
 		this.Lerne();
 	}
 	

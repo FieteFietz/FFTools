@@ -110,7 +110,8 @@ public class AkademiePool {
 			ArrayList<AusbildungsRelation> actRel = new ArrayList<AusbildungsRelation>();
 			for (AusbildungsRelation AR:this.relevantRelations){
 				if (AR.getOrderedSkillType()==null){
-					AR.getScriptUnit().doNotConfirmOrders("!!!Unbekanntes Talent!!!");
+					// AR.getScriptUnit().doNotConfirmOrders("!!!Unbekanntes Talent!!!");
+					AR.getScriptUnit().addComment("AkademiePool: kein Lern / Lehrtalent zugeordnet", true);
 				} else {
 					if (AR.getAkademieFromAM()==null && AR.getOrderedSkillType().equals(AT.getSkillType())){
 						if (!AR.isAvoidAka() && !AR.isTeacher()){

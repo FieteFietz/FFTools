@@ -1,5 +1,6 @@
 package com.fftools.utils;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -37,6 +38,8 @@ public class FFToolsOptionParser {
 	 * nur zur Sicherheit eine lokale Referenz.
 	 */
 	private ScriptUnit scriptUnit = null;
+	
+	private ArrayList<String> afterComments = new ArrayList<String>();
 	
 	
 	/**
@@ -79,6 +82,9 @@ public class FFToolsOptionParser {
 			return;
 		}
 		
+		this.afterComments.clear();
+		this.afterComments.add("start OP " + Instant.now());
+		
 		// gleich mal parsen..
 		for (Order o:this.scriptUnit.getUnit().getOrders2()){
 			String order = o.getText();
@@ -93,6 +99,13 @@ public class FFToolsOptionParser {
 				}
 			}
 		}
+		/*
+		if (this.afterComments.size()>0) {
+			for (String s2 :this.afterComments) {
+				this.scriptUnit.addComment(s2,false);
+			}
+		}
+		*/
 	}
 	
 	/**
@@ -104,8 +117,14 @@ public class FFToolsOptionParser {
 		String[] pairs = s.split(" ");
 		for (int i=0;i<pairs.length;i++){
 			String s2 = pairs[i];
+			this.afterComments.add("debug OP, parsing " + s2);
 			if (s2.indexOf("=")>0){
 				this.parseSingleOption(s2);
+			}
+			// Unterbrechen des Parsen, wenn der nächste scriptBefehl erkannt wird
+			if (s2.toLowerCase().equals("script")) {
+				this.afterComments.add("debug OP, break - " + s2);
+				break;
 			}
 		}
 	}
@@ -298,10 +317,25 @@ public class FFToolsOptionParser {
 		if (l.size()==0){
 			return;
 		}
+		
+		this.afterComments.clear();
+		this.afterComments.add("start OP addOPList " + Instant.now());
+
 		for (Iterator<String> iter = l.iterator();iter.hasNext();){
 			String s = (String)iter.next();
 			this.addOptionString(s);
+			if (s.equalsIgnoreCase("script")) {
+				this.afterComments.add("debug OP - break addOptionList");
+				break;
+			}
 		}
+		/*
+		if (this.afterComments.size()>0) {
+			for (String s2 :this.afterComments) {
+				this.scriptUnit.addComment(s2,false);
+			}
+		}
+		*/
 	}
 	
 	public void reset(){

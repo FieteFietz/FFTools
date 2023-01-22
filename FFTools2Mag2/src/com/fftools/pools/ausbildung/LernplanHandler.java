@@ -6,14 +6,15 @@ import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import magellan.library.Order;
-import magellan.library.StringID;
-
 import com.fftools.OutTextClass;
 import com.fftools.ScriptUnit;
 import com.fftools.overlord.OverlordInfo;
 import com.fftools.pools.ausbildung.relations.AusbildungsRelation;
+import com.fftools.scripts.Script;
 import com.fftools.utils.FFToolsOptionParser;
+
+import magellan.library.Order;
+import magellan.library.StringID;
 
 /**
  * Verwaltet Objekte vom Typ <ttt>Lernplan</ttt>
@@ -29,12 +30,6 @@ public class LernplanHandler implements OverlordInfo {
 	 */
 	private Hashtable<StringID,Lernplan> lernPlanMap = null; 
 	
-	/**
-	 * Liste aller bereist erfassten units, um keine doppelt zu erfassen
-	 */
-	private ArrayList<ScriptUnit> scriptedUnits = null;
-	
-	private final String scriptIdentifier = "// script setLernplan";
 	public static final String lernplanDetailSeparator = "%"; 
 	
 	
@@ -84,38 +79,17 @@ public class LernplanHandler implements OverlordInfo {
 	 * nach Definitionen zum LernPlan
 	 * @param u
 	 */
-	public void parseOrders(ScriptUnit u){
+	public void parseOrders(ScriptUnit u, Script s){
 		if (u==null){
 			return;
 		}
-		if (this.scriptedUnits==null){
-			this.scriptedUnits = new ArrayList<ScriptUnit>();
-		}
-		if (this.scriptedUnits.contains(u)){
-			// schon mal gescripted
-			return;
-		}
-		// wir werden jetzt parsen, also gleich dazu
-		this.scriptedUnits.add(u);
+		
+		
 		
 		// neuen Optionparser
 		FFToolsOptionParser OP = new FFToolsOptionParser(u);
-		ArrayList<String> orders = new ArrayList<String>();
-		for (Order o:u.getUnit().getOrders2()){
-			String order = o.getText();
-			if (order.toLowerCase().indexOf(scriptIdentifier.toLowerCase())>=0){
-				orders.add(order);
-			}
-		}
-		
-		if (orders.size()>0){
-			for (String order:orders){
-				// diese orderzeile passt in unser beuteschema
-				OP.reset();
-				OP.addOptionString(order);
-				this.processOptionParser(u,OP);
-			}
-		}
+		OP.addOptionList(s.getArguments());
+		this.processOptionParser(u,OP);
 	}
 	
 	/**
@@ -312,7 +286,6 @@ public class LernplanHandler implements OverlordInfo {
 	  }
 	  
 	  public void reset(){
-		  this.scriptedUnits = null;
 		  this.lernPlanMap = null;
 	  }
 	

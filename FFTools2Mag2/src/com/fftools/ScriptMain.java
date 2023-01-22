@@ -605,9 +605,11 @@ public class ScriptMain {
 		for (Region r:gd_ScriptMain.getRegions()){
 			if (r.getUnits()!=null && r.getUnits().size()>0){
 				isInActualSelectedRegions = true;
-				if (c.getSelectedRegions()!=null && c.getSelectedRegions().size()>0){
-					if (!c.getSelectedRegions().values().contains(r)){
-						isInActualSelectedRegions=false;
+				if (c != null) {
+					if (c.getSelectedRegions()!=null && c.getSelectedRegions().size()>0){
+						if (!c.getSelectedRegions().values().contains(r)){
+							isInActualSelectedRegions=false;
+						}
 					}
 				}
 				for (Unit u:r.getUnits().values()){

@@ -107,7 +107,7 @@ public class Lernplan {
 			return;
 		}
 		// (wie gut dass wir scriptunit haben...link auf Gamedata vorhanden..
-		SkillType skillType = u.getScriptMain().gd_ScriptMain.rules.getSkillType(talentName);
+		SkillType skillType = u.getScriptMain().gd_ScriptMain.getRules().getSkillType(talentName);
 		if (skillType==null){
 			// skill nicht gefunden -> abbruch
 			outText.addOutLine("!!! Lernplan:Talent unbekannt! " + u.unitDesc() , true);

@@ -120,7 +120,7 @@ public class LernFixReadCRAction extends MenuAction{
 						LPH.reset();
 						outText.addOutLine("LernplanHandler requested");
 					}
-					LPH.parseOrders(su);
+					LPH.parseOrders(su,null);
 					// outText.addNewLine();
 				}
 			}

@@ -183,6 +183,13 @@ public class MJM_HighCommand  {
     				if (!infoCommentsReceiver.contains(JM)) {
     					infoCommentsReceiver.add(JM);
     				}
+    				
+    				// Nachvollziehbarkeit
+    				if (!orderedMoveToRegions.contains(r)) {
+    					orderedMoveToRegions.add(r);
+    				}
+    				
+    				
     				// Abbrechen wenn benötigte Anzahl erreicht
     				if (countRequestMovers<=0) {
     					infoComment = "MJM_HC: Abbruch der Verstärkungssuche 1. Reihe für " + r.toString();
@@ -241,6 +248,10 @@ public class MJM_HighCommand  {
     				// zur Info ergänzen
     				if (!infoCommentsReceiver.contains(JM)) {
     					infoCommentsReceiver.add(JM);
+    				}
+    				// Nachvollziehbarkeit
+    				if (!orderedMoveToRegions.contains(r)) {
+    					orderedMoveToRegions.add(r);
     				}
     				// Abbrechen wenn benötigte Anzahl erreicht
     				if (countRequestMovers<=0) {
