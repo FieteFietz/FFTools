@@ -19,6 +19,7 @@ import magellan.library.Message;
 import magellan.library.Region;
 import magellan.library.Ship;
 import magellan.library.Unit;
+import magellan.library.gamebinding.EresseaConstants;
 import magellan.library.rules.MessageType;
 import magellan.library.rules.Race;
 import magellan.library.utils.Direction;
@@ -129,7 +130,13 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 					Object o = su.getScript(Sailto.class);
 					if (o!=null) {
 						Sailto st = (Sailto) o;
-						if (st.nextShipStop!=null && st.nextShipStop.getRegionType().isOcean()) {
+						boolean protectableShip = true;
+						if (su.hasOrder("// kein_SJM_Schutz") || su.hasOrder("// no_Protection")) {
+							su.addComment("SJM: Schiff wird nicht geschützt.");
+							protectableShip = false;
+						}
+						
+						if (protectableShip && st.nextShipStop!=null && st.nextShipStop.getRegionType().isOcean()) {
 							// bingo: wir haben einen nächsten Stop
 							ProtectedShip pS = new ProtectedShip();
 							pS.captn = su;
