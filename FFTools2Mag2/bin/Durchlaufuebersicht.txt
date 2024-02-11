@@ -131,6 +131,7 @@ Overlord SkriptinfosOverlord Skriptinfos
 50:Transport,Mymonster
 51:Zupfer,Steine,Eisen,Lumberjack,Laen
 55->Manager:PferdeManager
+57->Manager:MatPoolManager
 59:Unterhalten,Bauen
 60:Lernen
 62:Lernfix

@@ -179,14 +179,23 @@ public class Rekrutieren extends MatPoolScript{
 		this.silber_benoetigt = anzahl * this.recruitCosts;
 		
 		if (this.anzahlGeplant>0) {
-		
+			String prioInfo="nix";
 			// silberprio eventuell anders?
 			int newSilberPrio=reportSettings.getOptionInt("Rekrutieren_SilberPrio", super.region());
 			if (newSilberPrio>-1){
 				this.rekrutierungskostenPrio=newSilberPrio;
+				prioInfo="Rekrutierungskosten aus den Repoortsettings übernommen";
 			}
 			
+			int localPrio = OP.getOptionInt("prio", 0);
+			if (localPrio>0) {
+				this.rekrutierungskostenPrio=localPrio;
+				prioInfo="Rekrutierungskosten aus den Befehlsparametern übernommen";
+			}
 			
+			if (prioInfo.length()>5) {
+				this.addComment(prioInfo);
+			}
 			
 			// debug
 			// int test = this.scriptUnit.getUnit().getModifiedPersons();
