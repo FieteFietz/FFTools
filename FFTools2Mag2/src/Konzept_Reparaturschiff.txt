@@ -1,0 +1,36 @@
+Konzept ReparaturSchiff
+
+Kapitän kann nicht gleichzeitig Handwerker sein!
+Daher Aufteilung in 2 scripte: ReparaturSchiff (Kapitän) und SeeWerft (Segler bzw reine Schiffbauer)
+
+ShipsToRepair
+	- ist beschädigt
+	- hat Kapitän
+		- Kapitän ist scriptUnit
+			- Kapitän hat ein SailTo-Script ODER ein Seeschlangenjagd-Script
+	
+	- anzahlRepPunkte_ToDo (wieviel muss repariert werden)
+	- anzahlRepPunkte_Done (wieviel wird bereits diese Runde repariert)
+
+SeeWerft
+	- Parameter: minHolz maxHolz Talent|Lernplan prio
+	
+	- Request: maxHolz mit prio
+	
+	- Eigenschaft: anzahlHolzVerfügbar
+	- Eigenschaft: brauchtHolz (ja, wenn anzahlHolzVerfügbar < minHolz)
+	
+	- wenn in gleicher Region wie ein ShipsToRepair
+		- Anmeldung beim SeeWerftManager
+			- Hinzufügen eines SeeWerftPools für diese Region
+				- Ergänzen der SeeWerft zum Pool
+				- Ergänzen aller ShipsToRepait zum Pool
+				
+		- SeeWerftManager vergibt MACHE Befehl
+		- wenn kein MACHE-Befehl erhalten -> Lernfix
+	
+	- wenn NICHT in gleicher Region wie ein ShipsToRepair
+		-> Lernfix
+			
+			
+	 

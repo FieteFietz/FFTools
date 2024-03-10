@@ -3,11 +3,12 @@ package com.fftools.scripts;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import magellan.library.Building;
-import magellan.library.Item;
-
 import com.fftools.ReportSettings;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
+import com.fftools.utils.FFToolsRegions;
+
+import magellan.library.Building;
+import magellan.library.Item;
 
 /**
  * 
@@ -29,14 +30,12 @@ public class Gebaeudeunterhalt extends MatPoolScript{
 	private int defaultHolzPrio = 970;
 	private int defaultSteinPrio = 970;
 
-	
-	private final String MauernDerEwigkeit = "Der Zahn der Zeit kann diesen Mauern nichts anhaben.";
-	private final String magischerSchimmer = "Ein magischer Schimmer liegt auf diesen Mauern.";
+
 		
 	// Parameter des Scripts... Zuweisung im Konstruktor!
 	
-	private int durchlaufVorMatpool = 86;    // Anfordern von Unterhalt
-	private int durchlaufNachMatpool = 340;  // Test ob Unterhalt gegeben wurde
+	private int durchlaufVorMatpool = 52;    // Anfordern von Unterhalt
+	private int durchlaufNachMatpool = 70;  // Test ob Unterhalt gegeben wurde
 	private int[] runners; 
 	
 	int aktuelleRunde=0;
@@ -86,6 +85,23 @@ public class Gebaeudeunterhalt extends MatPoolScript{
 	}
 	
 	private void anforderungsLauf(){
+		// Gebäude und Runde aus GD holen
+		gebaeude = super.scriptUnit.getUnit().getModifiedBuilding();
+		aktuelleRunde=super.scriptUnit.getScriptMain().gd_ScriptMain.getDate().getDate();   
+		//Ist die Einheit in einem Gebäude und hat/bekommt zufällig das Komando? 
+		if (gebaeude==null) {
+			return;
+		}
+		if (gebaeude.getModifiedOwnerUnit()!=super.scriptUnit.getUnit()) {
+			return;
+		}
+		if (this.scriptUnit.isLeavingBuilding) {
+			return;
+		}
+		if (FFToolsRegions.sindMauernEwig(gebaeude)) {
+			return;
+		}
+		
 	    
 // Setzt Prios für Vorausanforderungen
 		
@@ -114,56 +130,54 @@ public class Gebaeudeunterhalt extends MatPoolScript{
 		}
 		
 
-		// Gebäude und Runde aus GD holen
-		gebaeude = super.scriptUnit.getUnit().getModifiedBuilding();
-		aktuelleRunde=super.scriptUnit.getScriptMain().gd_ScriptMain.getDate().getDate();                 		
+		              		
 		
-		//Ist die Einheit in einem Gebäude und hat/bekommt zufällig das Komando? 
-		if ( (gebaeude!=null) && (gebaeude.getModifiedOwnerUnit()==super.scriptUnit.getUnit()) && !this.sindMauernEwig(gebaeude)  && !this.scriptUnit.isLeavingBuilding){
+		
+		
 		    
-			// Unterhalskosten ermitteln!
-			Iterator<Item> iter = gebaeude.getBuildingType().getMaintenanceItems().iterator();
-			 if (iter != null){ 
-				 for(;iter.hasNext();){
-					 Item item = (Item) iter.next();		
-					 super.addComment("Gebäudeunterhalt für " + this.versorgungsRunden + " Runden angefordert");  
-					 for (int n=0;n<=this.versorgungsRunden-1;n++){
-			    	      if (item!=null){
-				    	      super.setPrioParameter(this.defaultSilberPrio, -0.5, 0, 1);
-				    	      if (item.getName().equalsIgnoreCase("Eisen")){
-				    	    	  super.setPrioParameter(this.defaultEisenPrio, -0.5, 0, 1);
-				    	      }
-				    	      if (item.getName().equalsIgnoreCase("Holz")){
-				    	    	  super.setPrioParameter(this.defaultHolzPrio, -0.5, 0, 1);
-				    	      }
-				    	      if (item.getName().equalsIgnoreCase("Stein")){
-				    	    	  super.setPrioParameter(this.defaultSteinPrio, -0.5, 0, 1);
-				    	      }
-				    	     
-					          // Für jedes Item Matpoolrelation mit ID an den PoolMatpool senden!
-				    	      MatPoolRequest actRequest = new MatPoolRequest(n+1,this,item.getAmount(),item.toString(),this.getPrio(n),"Gebäudeunterhalt Runde " + (aktuelleRunde+n));
-				    	      
-				    	      if (item.getName().equalsIgnoreCase("Silber pro Größenpunkt")){
-				    	    	  // wow!  eine Taverne?! oder ähnliches
-				    	    	  // neues Item nur Silber, Amount = item.amount * Größe
-				    	    	  super.addComment("Besonderer unterhalt erkannt: " + item.getAmount() + " Silber pro Größenpunkt.");
-				    	    	  super.addComment("Gebäudegröße:" + gebaeude.getSize() + ", Silbersumme: " + (gebaeude.getSize() * item.getAmount()));
-				    	    	  actRequest = new MatPoolRequest(n+1,this,item.getAmount() * gebaeude.getSize(),"Silber",this.getPrio(n),"Gebäudeunterhalt Runde " + (aktuelleRunde+n));
-				    	      }
-				    	      
-				    	      
-					    	  this.addMatPoolRequest(actRequest);
-					          fordertan = true;
-					          if (this.matPoolRequests==null){
-					        	  this.matPoolRequests=new ArrayList<MatPoolRequest>();
-					          }
-					          this.matPoolRequests.add(actRequest);
-			    	      }	
-				      }
-				 }
-			}
-		
+		// Unterhaltskosten ermitteln!
+		Iterator<Item> iter = gebaeude.getBuildingType().getMaintenanceItems().iterator();
+		 if (iter != null){ 
+			 for(;iter.hasNext();){
+				 Item item = (Item) iter.next();		
+				 super.addComment("Gebäudeunterhalt für " + this.versorgungsRunden + " Runden angefordert");  
+				 for (int n=0;n<=this.versorgungsRunden-1;n++){
+		    	      if (item!=null){
+			    	      super.setPrioParameter(this.defaultSilberPrio, -0.5, 0, 1);
+			    	      if (item.getName().equalsIgnoreCase("Eisen")){
+			    	    	  super.setPrioParameter(this.defaultEisenPrio, -0.5, 0, 1);
+			    	      }
+			    	      if (item.getName().equalsIgnoreCase("Holz")){
+			    	    	  super.setPrioParameter(this.defaultHolzPrio, -0.5, 0, 1);
+			    	      }
+			    	      if (item.getName().equalsIgnoreCase("Stein")){
+			    	    	  super.setPrioParameter(this.defaultSteinPrio, -0.5, 0, 1);
+			    	      }
+			    	     
+				          // Für jedes Item Matpoolrelation mit ID an den PoolMatpool senden!
+			    	      MatPoolRequest actRequest = new MatPoolRequest(n+1,this,item.getAmount(),item.toString(),this.getPrio(n),"Gebäudeunterhalt Runde " + (aktuelleRunde+n));
+			    	      
+			    	      if (item.getName().equalsIgnoreCase("Silber pro Größenpunkt")){
+			    	    	  // wow!  eine Taverne?! oder ähnliches
+			    	    	  // neues Item nur Silber, Amount = item.amount * Größe
+			    	    	  super.addComment("Besonderer unterhalt erkannt: " + item.getAmount() + " Silber pro Größenpunkt.");
+			    	    	  super.addComment("Gebäudegröße:" + gebaeude.getSize() + ", Silbersumme: " + (gebaeude.getSize() * item.getAmount()));
+			    	    	  actRequest = new MatPoolRequest(n+1,this,item.getAmount() * gebaeude.getSize(),"Silber",this.getPrio(n),"Gebäudeunterhalt Runde " + (aktuelleRunde+n));
+			    	      }
+			    	      
+			    	      
+				    	  this.addMatPoolRequest(actRequest);
+				          fordertan = true;
+				          if (this.matPoolRequests==null){
+				        	  this.matPoolRequests=new ArrayList<MatPoolRequest>();
+				          }
+				          this.matPoolRequests.add(actRequest);
+		    	      }	
+			      }
+			 }
 		}
+		
+		
 		
 		
 	}
@@ -201,27 +215,7 @@ public class Gebaeudeunterhalt extends MatPoolScript{
 			}
 		}	
 	} 
-	
-	/**
-	 * Überprüft, ob das Gebäude magisch vom Unterhalt befreit wurde.
-	 * @param b Das Gebäude
-	 * @return true, wenn kein Unterhalt fällig wird, sonst false
-	 */
-	private boolean sindMauernEwig(Building b){
-		if (b!=null && b.getEffects()!=null && b.getEffects().size()>0){
-			for (Iterator<String> iter = b.getEffects().iterator();iter.hasNext();){
-				String s = (String)iter.next();
-				if (s.startsWith(MauernDerEwigkeit)){
-					return true;
-				}
-				if (s.startsWith(magischerSchimmer)){
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
+
 	
 	public void set_zero_unterhalt(String reason) {
 		if (fordertan==true){	

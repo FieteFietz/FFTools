@@ -21,7 +21,7 @@ public class LernPoolScript extends Script {
 	
 	
 	public void lerneTalent(String _string, boolean _lehrAuftrag){
-		this.lerneTalent(super.gd_Script.rules.getSkillType(_string), _lehrAuftrag);
+		this.lerneTalent(super.gd_Script.getRules().getSkillType(_string), _lehrAuftrag);
 	}
 	
 	

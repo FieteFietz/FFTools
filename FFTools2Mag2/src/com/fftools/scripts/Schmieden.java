@@ -93,6 +93,12 @@ public class Schmieden extends MatPoolScript{
 	
 	private int setMenge = 0;
 	
+	/**
+	 * auf Wunsch von Jutta
+	 * Talent optional machen
+	 */
+	private String LernTalent = ""; 
+	
 	// Konstruktor
 	public Schmieden() {
 		super.setRunAt(this.runners);
@@ -171,6 +177,24 @@ public void runScript(int scriptDurchlauf){
 		if (this.itemType!=null){
 			this.neededSkillType = this.itemType.getMakeSkill().getSkillType();
 		}
+		String talent = OP.getOptionString("Talent");
+		if (talent.length()>1) {
+			// ein bestimmtes Talent soll gelernt werden - kurzer check, ob es das gibt
+			talent = talent.substring(0, 1).toUpperCase() + talent.substring(1).toLowerCase();
+			
+			SkillType skillType = super.gd_Script.getRules().getSkillType(talent);
+			
+			if (skillType==null){
+				// wow, kein Lerntalent
+				super.scriptUnit.doNotConfirmOrders("Schmieden mit Parameter Talent: Talent nicht erkannt! -> NICHT bestaetigt!");
+				addOutLine("!!! ungueltiges Lerntalent bei " + this.unitDesc());
+			} else {
+				this.LernTalent=talent;
+				this.addComment("Schmieden: als zu lernendes Talent erkannt: " + this.LernTalent);
+			}
+		}
+		
+		
 		int prodPoints = 0;
 		Skill neededSkill=null;
 		int actSkillLevel = 0;
@@ -439,7 +463,11 @@ public void runScript(int scriptDurchlauf){
 			FFToolsUnits.leaveAcademy(this.scriptUnit, " Schmied arbeitet und verlässt Aka");
 		} else {
 			// lernen
-			this.lerneTalent(this.itemType.getMakeSkill().getSkillType().getName(), true);
+			if (this.LernTalent.length()>1) {
+				this.lerneTalent(this.LernTalent, true);
+			} else {
+				this.lerneTalent(this.itemType.getMakeSkill().getSkillType().getName(), true);
+			}
 		}
 	}
 			

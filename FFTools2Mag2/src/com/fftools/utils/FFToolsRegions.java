@@ -50,6 +50,9 @@ import magellan.library.utils.logging.Logger;
 public class FFToolsRegions {
 	public static final OutTextClass outText = OutTextClass.getInstance();
 	
+	private static final String MauernDerEwigkeit = "Der Zahn der Zeit kann diesen Mauern nichts anhaben.";
+	private static final String magischerSchimmer = "Ein magischer Schimmer liegt auf diesen Mauern.";
+	
 	private static long cntCacheHits = 0;
 	private static long cntCacheRequests = 0;
 	
@@ -1378,6 +1381,26 @@ public class FFToolsRegions {
 				r.removeTag(ScriptMain.MAPLINE_TAG);
 			}
 		}
+	}
+	
+	 /**
+	 * Überprüft, ob das Gebäude magisch vom Unterhalt befreit wurde.
+	 * @param b Das Gebäude
+	 * @return true, wenn kein Unterhalt fällig wird, sonst false
+	 */
+	public static boolean sindMauernEwig(Building b){
+		if (b!=null && b.getEffects()!=null && b.getEffects().size()>0){
+			for (Iterator<String> iter = b.getEffects().iterator();iter.hasNext();){
+				String s = (String)iter.next();
+				if (s.startsWith(MauernDerEwigkeit)){
+					return true;
+				}
+				if (s.startsWith(magischerSchimmer)){
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	
