@@ -83,6 +83,7 @@ public class Schmieden extends MatPoolScript{
 	 * SkillType benötigt für Herstellung der Ware
 	 */
 	private SkillType neededSkillType = null;
+	private int neededSkillLevel=0;
 	
 	/**
 	 * vor MatPool maximale Produktionsmenge
@@ -175,7 +176,9 @@ public void runScript(int scriptDurchlauf){
 		
 		// Skilltype ermitteln
 		if (this.itemType!=null){
-			this.neededSkillType = this.itemType.getMakeSkill().getSkillType();
+			Skill skill = this.itemType.getMakeSkill();
+			this.neededSkillType = skill.getSkillType();
+			this.neededSkillLevel = skill.getLevel();
 		}
 		String talent = OP.getOptionString("Talent");
 		if (talent.length()>1) {
@@ -232,6 +235,7 @@ public void runScript(int scriptDurchlauf){
 				}
 				Peff = FFToolsUnits.getPersonenEffektiv(this.scriptUnit);
 				prodPoints = actSkillLevel *  Peff;
+				
 			}
 		}
 		
@@ -241,6 +245,17 @@ public void runScript(int scriptDurchlauf){
 		} else {
 			this.addComment("Wirksamer Talentlevel: " + actSkillLevel + " " + this.neededSkillType.getName());
 		}
+		
+		if (this.neededSkillLevel>0) { 
+			if (this.neededSkillLevel>actSkillLevel) {
+				this.scriptUnit.doNotConfirmOrders("Keine Produktion möglich - zu geringer Talentwert (" + this.neededSkillLevel + "/" + actSkillLevel +  ")");
+				return;
+			} else {
+				this.scriptUnit.addComment("Schmieden: mindestTalentcheck OK: " + actSkillLevel + ">=" + this.neededSkillLevel);
+			}
+		}
+		
+		
 		
 		// Maximale Anzahl an Ware ermitteln
 		int maxMachenWare = 0;

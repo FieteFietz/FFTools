@@ -3,7 +3,6 @@ package com.fftools.pools.bau;
 
 import java.util.Hashtable;
 
-import com.fftools.OutTextClass;
 import com.fftools.ScriptMain;
 import com.fftools.overlord.OverlordInfo;
 import com.fftools.overlord.OverlordRun;
@@ -20,7 +19,6 @@ import magellan.library.Ship;
  *
  */
 public class WerftManager implements OverlordRun,OverlordInfo{
-	private static final OutTextClass outText = OutTextClass.getInstance();
 	
 	// 212 läuft Werftsegler
 	public static final int Durchlauf0 = 220;
@@ -114,5 +112,6 @@ public class WerftManager implements OverlordRun,OverlordInfo{
 	public int[] runAt(){
 		return runners;
 	}
+	
 	
 }

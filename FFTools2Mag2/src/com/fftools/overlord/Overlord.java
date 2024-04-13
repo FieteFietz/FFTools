@@ -12,6 +12,7 @@ import com.fftools.pools.alchemist.AlchemistManager;
 import com.fftools.pools.ausbildung.AusbildungsManager;
 import com.fftools.pools.ausbildung.LernplanHandler;
 import com.fftools.pools.bau.BauManager;
+import com.fftools.pools.bau.SeeWerftManager_SWM;
 import com.fftools.pools.bau.WerftManager;
 import com.fftools.pools.circus.CircusPoolManager;
 import com.fftools.pools.heldenregionen.HeldenRegionsManager;
@@ -76,6 +77,7 @@ public class Overlord {
 	private WerftManager werftManager = null;
 	private SeeschlangenJagdManager_SJM SJM = null;
 	private MonsterJagdManager_MJM MJM = null;
+	private SeeWerftManager_SWM SWM = null;
 	
 	
 	/**
@@ -209,6 +211,8 @@ public class Overlord {
 					OverlordInfo oI = (OverlordInfo)o;
 					if (isInRun(oI, mainDurchlauf)){
 						OverlordRun oR = (OverlordRun)o;
+						outText.addOutChars(" | " + mainDurchlauf + ": start " + this.getSimpleClassName(oI.getClass()));
+						outText.addNewLine();
 						oR.run(mainDurchlauf);
 						outText.addOutChars(" | " + mainDurchlauf + ": done with " + this.getSimpleClassName(oI.getClass()));
 						outText.addNewLine();
@@ -476,6 +480,18 @@ public class Overlord {
 			this.addRunner(MJM);
 		}
 		return this.MJM;
+	}
+	
+	/**
+	 * 
+	 * @return the SWM
+	 */
+	public SeeWerftManager_SWM getSWM() {
+		if (this.SWM==null) {
+			this.SWM = new SeeWerftManager_SWM(this);
+			this.addRunner(SWM);
+		}
+		return this.SWM;
 	}
 	
 

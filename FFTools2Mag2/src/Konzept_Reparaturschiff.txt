@@ -8,29 +8,58 @@ ShipsToRepair
 	- hat Kapitän
 		- Kapitän ist scriptUnit
 			- Kapitän hat ein SailTo-Script ODER ein Seeschlangenjagd-Script
-	
+			- oder schiff ist das Reparaturschiff selbst - dass hat oberste Prio!
 	- anzahlRepPunkte_ToDo (wieviel muss repariert werden)
 	- anzahlRepPunkte_Done (wieviel wird bereits diese Runde repariert)
 
-SeeWerft
+SeeWerft [53] 
 	- Parameter: minHolz maxHolz Talent|Lernplan prio
 	
-	- Request: maxHolz mit prio
+	- Request: maxHolz mit prio [53]
 	
 	- Eigenschaft: anzahlHolzVerfügbar
-	- Eigenschaft: brauchtHolz (ja, wenn anzahlHolzVerfügbar < minHolz)
+	- Eigenschaft: brauchtHolz (ja, wenn anzahlHolzVerfügbar < minHolz: [62])
 	
 	- wenn in gleicher Region wie ein ShipsToRepair
 		- Anmeldung beim SeeWerftManager
 			- Hinzufügen eines SeeWerftPools für diese Region
 				- Ergänzen der SeeWerft zum Pool
-				- Ergänzen aller ShipsToRepait zum Pool
+				- Ergänzen aller ShipsToRepair zum Pool
 				
-		- SeeWerftManager vergibt MACHE Befehl
+		- SeeWerftManager vergibt MACHE Befehl [65]
 		- wenn kein MACHE-Befehl erhalten -> Lernfix
 	
 	- wenn NICHT in gleicher Region wie ein ShipsToRepair
 		-> Lernfix
+
+ReparaturSchiff [64]
+	- prüft auf Entfernung zur Basis und Lohn reserve und HolzMinBestand der SeeWerft
+	- wenn Bingo
+		- RTB
+	- wenn Ready
+		- Anmeldung beim SeeWerftManager
+		
+	- nach SeeWerftManager [65]
+		- Ziel erhalten -> SailTo
+			- bei Seeschlangenjägern: SJ.targetRegionCoord
+			- bei anderen: SailTo st: st.nextShipStop
+		- kein Ziel erhalten
+			- in Basis: Lernen
+			- unterwegs: RTB				
 			
-			
-	 
+	
+SeeWerftManager [65]
+	- stellt Liste ships2repair zusammen
+	- erfasst Liste der einsatzfähigen Reparaturschiffe
+		- incl deren Heimathäfen (zur Entfernungsprüfung)
+	- ordnet jedem Reparaturschiff ein Zielschiff zu, wenn verfügbar
+	
+	- verwaltet SeeWerftPools für Regionen, die sowohl ShipsToRepair beinhalten als auch Seewerften
+
+SeeWerftPool
+	- pro Region ein Pool
+	- ordnet den SeeWerften to zu reparierenden Schiffe zu
+	
+	
+		
+		

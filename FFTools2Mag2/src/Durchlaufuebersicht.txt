@@ -29,10 +29,10 @@ Heldenregion		10
 ifNotRegion			1
 ifRegion			1
 ifUnit				1
-Lehren				8
-Lernen				6
-					155 nach MP, Lernsilber?
-Lernfix				62
+Lehren				80
+Lernen				60
+					850 nach MP, Lernsilber?
+Lernfix				68
 Liefere				160
 Lohn				4 Anforderung
 					100 Check
@@ -48,9 +48,9 @@ Rekrutieren			2 Geld beantragen
 Request				10
 					100 (noch offen, unused!)
 RequestInfo			156
-Route				3
+Route				40
 Runde				1
-SailTo				4
+SailTo				42
 Schmieden			50 Bestellen
 					100 Produzieren oder Lernen
 SetKapa				2
@@ -131,11 +131,22 @@ Overlord SkriptinfosOverlord Skriptinfos
 50:Transport,Mymonster
 51:Zupfer,Steine,Eisen,Lumberjack,Laen
 52:Gebaeudeunterhalt
+
+53:SeeWerft
+
 55->Manager:PferdeManager
 57->Manager:MatPoolManager
+58:Seeschlangenjagd (Attacker)
+59->Manager:SJM
 59:Unterhalten,Bauen
 60:Lernen
-62:Lernfix
+
+62:SeeWerft
+
+64:Reparaturschiff
+65->Manager: SWM (Seewerftmanager) 
+
+68:Lernfix
 72:Gebaeudeunterhalt
 74->Manager:CircusPoolManager
 78:Unterhalten

@@ -25,7 +25,7 @@ public class Seeschlangenjagd extends MatPoolScript{
 
 	int Durchlauf_Attacker = 58; // bei Manager registrieren, nach MatPool nach Request und Lohn 
 	// 54: der manager verteilt aufgaben  // vor Lernfix!
-	int Durchlauf_Mover = 65; // Prüfungen, infos, etc
+	int Durchlauf_Mover = 65; // Prüfungen, infos, etc  // inaktiv!!!
 	private int[] runners = {Durchlauf_Attacker,Durchlauf_Mover};
 	
 	public boolean is_attacking = false;

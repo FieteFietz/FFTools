@@ -25,7 +25,7 @@ import com.fftools.utils.FFToolsOptionParser;
 public class Lernfix extends MatPoolScript{
 	
 	
-	private static final int Durchlauf = 62; // ge‰ndert von 2 auf 5, damit Pferde davor passt
+	private static final int Durchlauf = 68;
 	private AusbildungsPool ausbildungsPool=null;
 	
 	private String LernplanName = null;
@@ -84,11 +84,15 @@ public class Lernfix extends MatPoolScript{
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit);
 		OP.addOptionList(this.getArguments());
 		
-		this.setAvoidAka(!OP.getOptionBoolean("aka", true));
-		if (this.isAvoidAka()) {
-			this.addComment("Lernfix: ich werde eine Einladung in eine Akademie ausschlagen!");
+		if (!this.avoidAka) {
+			this.setAvoidAka(!OP.getOptionBoolean("aka", true));
+			if (this.isAvoidAka()) {
+				this.addComment("Lernfix: ich werde eine Einladung in eine Akademie ausschlagen!");
+			} else {
+				this.addComment("Lernfix: Akademieplatz denkbar!");
+			}
 		} else {
-			this.addComment("Lernfix: Akademieplatz denkbar!");
+			this.addComment("Lernfix: gem‰ﬂ Scriptorder werde ich eine Einladung in eine Akademie ausschlagen!");
 		}
 		
 		String talentName = OP.getOptionString("Talent");
