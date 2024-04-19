@@ -5,16 +5,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import magellan.library.Building;
-import magellan.library.Skill;
-import magellan.library.StringID;
-import magellan.library.rules.SkillType;
-
 import com.fftools.pools.ausbildung.AusbildungsPool;
 import com.fftools.pools.ausbildung.Lernplan;
 import com.fftools.pools.ausbildung.relations.AusbildungsRelation;
 import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
+
+import magellan.library.Skill;
+import magellan.library.StringID;
+import magellan.library.rules.SkillType;
 /**
  * AusbildungsRelationemitter, das zentrale Lernscript im Monopol
  * 

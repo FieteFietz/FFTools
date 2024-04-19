@@ -16,16 +16,16 @@ import com.fftools.utils.GotoInfo;
 public class BauauftragScriptComparator implements Comparator<Bauen> {
 	
 	private Region targetRegion;
-	private int level=1;
+	// private int level=1;
 	private String talentName;
-	private int builtSize=1;
+	// private int builtSize=1;
 	
 	
 	
 	public BauauftragScriptComparator(Region r, int _level,String _talentName, int _builtSize){
 		this.targetRegion = r;
-		this.level=_level;
-		this.builtSize=_builtSize;
+		// this.level=_level;
+		// this.builtSize=_builtSize;
 		this.talentName = _talentName;
 	}
 	

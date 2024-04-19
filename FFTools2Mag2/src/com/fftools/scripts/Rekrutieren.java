@@ -1,16 +1,15 @@
 package com.fftools.scripts;
 
+import com.fftools.pools.matpool.relations.MatPoolRequest;
+import com.fftools.utils.FFToolsGameData;
+import com.fftools.utils.FFToolsOptionParser;
+
 import magellan.library.Order;
 import magellan.library.Region;
 import magellan.library.TempUnit;
 import magellan.library.Unit;
 import magellan.library.UnitID;
 import magellan.library.rules.Race;
-
-import com.fftools.pools.matpool.relations.MatPoolRequest;
-import com.fftools.utils.FFToolsGameData;
-import com.fftools.utils.FFToolsOptionParser;
-import com.fftools.utils.FFToolsRegions;
 
 
 /**

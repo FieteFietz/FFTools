@@ -3,7 +3,6 @@ package com.fftools.pools.bau;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 
 import com.fftools.OutTextClass;
 import com.fftools.ScriptUnit;
@@ -18,7 +17,6 @@ import com.fftools.scripts.Seewerft;
 import com.fftools.utils.FFToolsRegions;
 
 import magellan.library.CoordinateID;
-import magellan.library.Region;
 import magellan.library.Ship;
 import magellan.library.Unit;
 import magellan.library.utils.Direction;
@@ -27,6 +25,7 @@ import magellan.library.utils.Regions;
 public class SeeWerftManager_SWM implements OverlordRun,OverlordInfo {
 	
 	private static final OutTextClass outText = OutTextClass.getInstance();
+	public static final String MAPLINE_TAG="FFTools_SWM_MoveLine";
 	
 	private static final int Durchlauf = 65;
 	
@@ -44,9 +43,6 @@ public class SeeWerftManager_SWM implements OverlordRun,OverlordInfo {
 	
 	// Liste aller Schiffe, die repariert werden müssen
 	private ArrayList<Ship2Repair> ships2Repair_list = new ArrayList<Ship2Repair>(0);
-	
-	// warum auch immer das nicht in "run" definiert werden konnte
-	private List<Region> homePath = null;
 	
 	private HashMap<CoordinateID, SeeWerftPool> pools = new HashMap<CoordinateID, SeeWerftPool>();
 	
@@ -129,12 +125,9 @@ public class SeeWerftManager_SWM implements OverlordRun,OverlordInfo {
 				// Entfernung berechnen
 				int Reisewochen = -1;
 				// Pfad nach Hause ermitteln
-				homePath = Regions.planShipRoute(pS.s,this.overLord.getScriptMain().gd_ScriptMain, r.HomeRegionCoord);
-				if (homePath!=null) {
-					Direction d = Direction.INVALID;
-					d = Regions.getMapMetric(this.overLord.getScriptMain().gd_ScriptMain).toDirection(pS.s.getShoreId());
-					Reisewochen = FFToolsRegions.getShipPathSizeTurns_Virtuell_Ports(pS.s.getRegion().getCoordinate(),d, r.HomeRegionCoord, this.overLord.getScriptMain().gd_ScriptMain, speed, null);
-				}
+				Direction d = Direction.INVALID;
+				d = Regions.getMapMetric(this.overLord.getScriptMain().gd_ScriptMain).toDirection(pS.s.getShoreId());
+				Reisewochen = FFToolsRegions.getShipPathSizeTurns_Virtuell_Ports(pS.s.getRegion().getCoordinate(),d, r.HomeRegionCoord, this.overLord.getScriptMain().gd_ScriptMain, speed, null);
 				String reiseInfo = "(kein Weg gefunden)";
 				if (Reisewochen>=0 && Reisewochen<=r.maxWeeks) {
 					reiseInfo = " (Entf: " + Reisewochen + " Wochen)";
@@ -143,7 +136,7 @@ public class SeeWerftManager_SWM implements OverlordRun,OverlordInfo {
 				if (Reisewochen > r.maxWeeks) {
 					zuweitweg+=1;
 				}
-				if (Reisewochen==-1) {
+				if (Reisewochen<0) {
 					keinWeg+=1;
 				}
 			}
@@ -218,23 +211,20 @@ public class SeeWerftManager_SWM implements OverlordRun,OverlordInfo {
 						int speed = this.overLord.getScriptMain().gd_ScriptMain.getGameSpecificStuff().getGameSpecificRules().getShipRange(RS.s);
 						int ReisewochenHome = -1;
 						// Pfad nach Hause ermitteln
-						homePath = Regions.planShipRoute(sh.s ,this.overLord.getScriptMain().gd_ScriptMain, RS.HomeRegionCoord);
-						if (homePath!=null) {
-							Direction d = Direction.INVALID;
-							d = Regions.getMapMetric(this.overLord.getScriptMain().gd_ScriptMain).toDirection(sh.s.getShoreId());
-							ReisewochenHome = FFToolsRegions.getShipPathSizeTurns_Virtuell_Ports(sh.s.getRegion().getCoordinate(),d, RS.HomeRegionCoord, this.overLord.getScriptMain().gd_ScriptMain, speed, null);
-						}
+						
+						Direction d = Direction.INVALID;
+						d = Regions.getMapMetric(this.overLord.getScriptMain().gd_ScriptMain).toDirection(sh.s.getShoreId());
+						ReisewochenHome = FFToolsRegions.getShipPathSizeTurns_Virtuell_Ports(sh.s.getRegion().getCoordinate(),d, RS.HomeRegionCoord, this.overLord.getScriptMain().gd_ScriptMain, speed, null);
+						
 						if (ReisewochenHome<=RS.maxWeeks && ReisewochenHome>=0) {
 							// wir sind innerhalb der maxWeeks von der HomeRegion
 							// Entfernung zwischen sh und RS ermitteln und bei RS eintragen, damit danach sortiert werden kann
 							int ReisewochenTarget = -1;
 							// Pfad zum sh ermitteln
-							homePath = Regions.planShipRoute(RS.s ,this.overLord.getScriptMain().gd_ScriptMain, sh.nextShipStop);
-							if (homePath!=null) {
-								Direction d = Direction.INVALID;
-								d = Regions.getMapMetric(this.overLord.getScriptMain().gd_ScriptMain).toDirection(RS.s.getShoreId());
-								ReisewochenTarget = FFToolsRegions.getShipPathSizeTurns_Virtuell_Ports(RS.s.getRegion().getCoordinate(),d, sh.nextShipStop, this.overLord.getScriptMain().gd_ScriptMain, speed, null);
-							}
+							d = Direction.INVALID;
+							d = Regions.getMapMetric(this.overLord.getScriptMain().gd_ScriptMain).toDirection(RS.s.getShoreId());
+							ReisewochenTarget = FFToolsRegions.getShipPathSizeTurns_Virtuell_Ports(RS.s.getRegion().getCoordinate(),d, sh.nextShipStop, this.overLord.getScriptMain().gd_ScriptMain, speed, null);
+							
 							if (ReisewochenTarget>=0) {
 								// ok - wir kommen da hin
 								RS.actDist2target = ReisewochenTarget;

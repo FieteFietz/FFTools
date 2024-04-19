@@ -9,7 +9,6 @@ import com.fftools.trade.TradeRegion;
 import com.fftools.utils.FFToolsOptionParser;
 import com.fftools.utils.FFToolsRegions;
 import com.fftools.utils.FFToolsUnits;
-import com.fftools.utils.GotoInfo;
 
 import magellan.library.Building;
 import magellan.library.CoordinateID;
@@ -47,7 +46,7 @@ public class Jagemonster extends TradeAreaScript{
 	/**
 	 * wird im Lauf 3 gesetzt, wenn wir uns denn bewegen
 	 */
-	private GotoInfo gotoInfo = null;
+	// private GotoInfo gotoInfo = null;
 	
 	/**
 	 * Ziel des Jägers
@@ -469,8 +468,7 @@ public class Jagemonster extends TradeAreaScript{
 	 */
 	private void orderMove() {
 		if (this.targetDest!=null) {
-			this.gotoInfo = new GotoInfo();
-			this.gotoInfo = FFToolsRegions.makeOrderNACH(this.scriptUnit, super.region().getCoordinate(), this.targetDest,true,"JageMonster", false);
+			FFToolsRegions.makeOrderNACH(this.scriptUnit, super.region().getCoordinate(), this.targetDest,true,"JageMonster", false);
 		}
 	}
 	

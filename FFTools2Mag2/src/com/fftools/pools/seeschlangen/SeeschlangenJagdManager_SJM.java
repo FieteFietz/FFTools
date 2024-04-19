@@ -3,7 +3,6 @@ package com.fftools.pools.seeschlangen;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import com.fftools.OutTextClass;
 import com.fftools.ScriptUnit;
 import com.fftools.overlord.Overlord;
 import com.fftools.overlord.OverlordInfo;
@@ -19,7 +18,6 @@ import magellan.library.Message;
 import magellan.library.Region;
 import magellan.library.Ship;
 import magellan.library.Unit;
-import magellan.library.gamebinding.EresseaConstants;
 import magellan.library.rules.MessageType;
 import magellan.library.rules.Race;
 import magellan.library.utils.Direction;
@@ -34,7 +32,7 @@ import magellan.library.utils.Regions;
  */
 public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 
-	private static final OutTextClass outText = OutTextClass.getInstance();
+	// private static final OutTextClass outText = OutTextClass.getInstance();
 	
 	public static final String MAPLINE_TAG="FFTools_SSJM_MoveLine";
 	
@@ -180,9 +178,16 @@ public class SeeschlangenJagdManager_SJM implements OverlordRun,OverlordInfo {
 											0;fled
 											1;survived
 									 */
+									/* old:
 									String factionNO = m.getAttributes().get("abbrev");
 									String survivedS = m.getAttributes().get("survived");
 									String fledS = m.getAttributes().get("fled");
+									*/
+									
+									String factionNO = m.getAttribute("abbrev");
+									String survivedS = m.getAttribute("survived");
+									String fledS = m.getAttribute("fled");
+									
 									int survided=0;
 									int fled = 0;
 									if (survivedS!=null) {

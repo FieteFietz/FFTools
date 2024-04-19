@@ -8,7 +8,6 @@ import com.fftools.overlord.OverlordInfo;
 import com.fftools.overlord.OverlordRun;
 import com.fftools.scripts.Jagemonster;
 
-import magellan.client.swing.TradeOrganizerOld;
 import magellan.library.Region;
 import magellan.library.Unit;
 

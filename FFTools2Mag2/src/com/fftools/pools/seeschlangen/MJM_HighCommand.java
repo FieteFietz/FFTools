@@ -25,8 +25,8 @@ public class MJM_HighCommand  {
 	private ArrayList<Jagemonster> Jäger = new ArrayList<Jagemonster>(0);
 	
 	private ArrayList<Region> attackRegions = new ArrayList<Region>(0);
-	private ArrayList<Region> NOattackRegions = new ArrayList<Region>(0);
-	private ArrayList<Region> needTacticRegions = new ArrayList<Region>(0);
+	// private ArrayList<Region> NOattackRegions = new ArrayList<Region>(0);
+	// private ArrayList<Region> needTacticRegions = new ArrayList<Region>(0);
 	
 	private ArrayList<Region> orderedMoveToRegions = new ArrayList<Region>(0);
 	

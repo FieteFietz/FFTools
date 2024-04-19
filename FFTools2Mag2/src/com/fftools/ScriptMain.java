@@ -7,6 +7,15 @@ import java.util.Properties;
 
 import javax.swing.JTextArea;
 
+import com.fftools.overlord.Overlord;
+import com.fftools.pools.circus.CircusPoolManager;
+import com.fftools.pools.seeschlangen.MonsterJagdManager_MJM;
+import com.fftools.pools.treiber.TreiberPoolManager;
+import com.fftools.scripts.Script;
+import com.fftools.trade.TradeAreaHandler;
+import com.fftools.utils.FFToolsRegions;
+import com.fftools.utils.FFToolsTags;
+
 import magellan.client.Client;
 import magellan.library.Building;
 import magellan.library.Faction;
@@ -18,16 +27,6 @@ import magellan.library.Unit;
 import magellan.library.event.GameDataEvent;
 import magellan.library.gamebinding.EresseaRelationFactory;
 import magellan.library.utils.Regions;
-
-import com.fftools.overlord.Overlord;
-import com.fftools.pools.bau.TradeAreaBauManager;
-import com.fftools.pools.circus.CircusPoolManager;
-import com.fftools.pools.seeschlangen.MonsterJagdManager_MJM;
-import com.fftools.pools.treiber.TreiberPoolManager;
-import com.fftools.scripts.Script;
-import com.fftools.trade.TradeAreaHandler;
-import com.fftools.utils.FFToolsRegions;
-import com.fftools.utils.FFToolsTags;
 
 
 /**

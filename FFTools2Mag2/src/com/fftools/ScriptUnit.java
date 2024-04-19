@@ -161,6 +161,12 @@ public class ScriptUnit {
 	}
 	
 	/**
+	 * zum Sortieren von Scriptunits
+	 */
+	public int sortValue=0;
+	
+	
+	/**
 	 * Liefert true, wenn nicht benoetigte Orderzeilen bereits geloescht worden, sonst false
 	 * 
 	 * @return

@@ -2,10 +2,14 @@ package com.fftools.scripts;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
+import com.fftools.ScriptMain;
 import com.fftools.ScriptUnit;
-import com.fftools.pools.seeschlangen.SeeschlangenJagdManager_SJM;
+import com.fftools.ScriptUnitComparator_natural;
+import com.fftools.pools.bau.SeeWerftManager_SWM;
+import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.utils.FFToolsOptionParser;
 import com.fftools.utils.FFToolsRegions;
 
@@ -35,7 +39,6 @@ public class Reparaturschiff extends Script implements Comparable<Reparaturschif
 	
 	private String Lernplan="";
 	private String Lerntalent="";
-	private List<Region> homePath = null;
 	
 	/**
 	 * Parameterloser Constructor
@@ -94,7 +97,7 @@ public class Reparaturschiff extends Script implements Comparable<Reparaturschif
 		this.Lerntalent = OP.getOptionString("Talent");
 		
 		int setReserveWochen = OP.getOptionInt("ReserveWochen", 0);
-		if (setReserveWochen>0 && setReserveWochen<50) {
+		if (setReserveWochen>0 && setReserveWochen<500) {
 			this.ReserveWochen = setReserveWochen;
 		}
 
@@ -144,7 +147,7 @@ public class Reparaturschiff extends Script implements Comparable<Reparaturschif
 					this.addComment("Reparaturschiff: " + countSeewerftenNeedWood + " (alle) Seewerften melden Holzbedarf -> RTB");
 				}
 				if (this.s.getRegion().getCoordinate().equals(this.HomeRegionCoord)) {
-					this.addComment("Reparaturschiff: wird sind in der Home Region - Lernen");
+					this.addComment("Reparaturschiff: wir sind in der Home Region - Lernen");
 					this.Lernen();
 				} else {
 					this.makeOrderNach();
@@ -155,9 +158,9 @@ public class Reparaturschiff extends Script implements Comparable<Reparaturschif
 			
 			if (countSeewerftenNeedWood > 0) {
 				if (countSeewerftenNeedWood==1) {
-					this.addComment("Reparaturschiff: Seewerft meldet Holzbedarf, aber es ist scheinbar noch genug an Bord");
+					this.addComment("Reparaturschiff: Seewerft meldet Holzbedarf, aber es ist scheinbar noch genug Holz an Bord");
 				} else {
-					this.addComment("Reparaturschiff: " + countSeewerftenNeedWood + " Seewerften melden Holzbedarf, aber es ist scheinbar noch genug an Bord");
+					this.addComment("Reparaturschiff: " + countSeewerftenNeedWood + " Seewerften melden Holzbedarf, aber es ist scheinbar noch genug Holz an Bord");
 				}
 			} else {
 				if (countSeewerften==1) {
@@ -174,12 +177,11 @@ public class Reparaturschiff extends Script implements Comparable<Reparaturschif
 		int ReisewochenHome = -1;
 		// Pfad nach Hause ermitteln
 		int speed = this.gd_Script.getGameSpecificStuff().getGameSpecificRules().getShipRange(this.s);
-		homePath = Regions.planShipRoute(this.s ,this.gd_Script, this.HomeRegionCoord);
-		if (homePath!=null) {
-			Direction d = Direction.INVALID;
-			d = Regions.getMapMetric(this.gd_Script).toDirection(this.s.getShoreId());
-			ReisewochenHome = FFToolsRegions.getShipPathSizeTurns_Virtuell_Ports(this.s.getRegion().getCoordinate(),d, this.HomeRegionCoord, this.gd_Script, speed, null);
-		} 
+		
+		Direction d = Direction.INVALID;
+		d = Regions.getMapMetric(this.gd_Script).toDirection(this.s.getShoreId());
+		ReisewochenHome = FFToolsRegions.getShipPathSizeTurns_Virtuell_Ports(this.s.getRegion().getCoordinate(),d, this.HomeRegionCoord, this.gd_Script, speed, null);
+		 
 		if (ReisewochenHome<0) {
 			this.doNotConfirmOrders("!!! Reparaturschiff: weg nach Hause nicht zu finden!!!");
 			return;
@@ -202,29 +204,166 @@ public class Reparaturschiff extends Script implements Comparable<Reparaturschif
 		this.addComment("Reparaturschiff: MindestSilberbestand=" + MindestSilberbestand + " Silber (" +  this.ReserveWochen + " Reservewochen berücksichtigt)");
 		
 		if (Silberbestand<MindestSilberbestand) {
-			// RTB
-			this.actTargetRegionID = this.HomeRegionCoord;
+			
 			if (this.s.getRegion().getCoordinate().equals(this.HomeRegionCoord)) {
 				this.addComment("Reparaturschiff: wird sind in der Home Region - Lernen");
 				this.Lernen();
 				this.doNotConfirmOrders("!!!Reparaturschiff in der HomeRegion mit zu wenig Silber!!!");
 			} else {
-				this.addComment("Reparaturschiff: SilberMindestbestand unterschritten. RTB.");
-				this.makeOrderNach();
+				this.addComment("Reparaturschiff: SilberMindestbestand unterschritten. Suche nach Silber.");
+				// this.makeOrderNach();
+				this.search4silverOrRTB();
 			}
-
+			// nicht beim SWM anmelden
 			return;
 		}
-		
-		
-		
+
 		// Anmeldung beim SWM
 		this.getOverlord().getSWM().addReparaturschiff(this);
 		
 	}
 	
+	/**
+	 * zu wenig Silber an Bord
+	 * Innerhalb der Reservewochen nach einem Depot in Ebene, Wald oder Hafenregion suchen
+	 * 	mit genügend Silber
+	 * wenn nichts aufzufinden: RTB
+	 */
+	private void search4silverOrRTB() {
+		
+		// Lohn - Script suchen und anzahl wochen ermitteln
+		int Lohnwochen=-1;
+		int LohnPrio=1000;
+		Object o = this.scriptUnit.getScript(Lohn.class);
+		if (o!=null) {
+			Lohn L = (Lohn)o;
+			Lohnwochen = L.getAnzRunden();
+			LohnPrio = L.Prioritaet_Lohn;
+		} else {
+			this.doNotConfirmOrders("!!! Reparaturschiff: kein Lohn-Script gefunden - kann den Silberbedarf nicht berechnen !!!");
+			RTB();
+			return;
+		}
+		
+		// Anzahl Personen auf dem Schiff berechnen - es wird angenommen, alle haben analoge Lohn-Einstellungen
+		Ship s = this.scriptUnit.getUnit().getModifiedShip();
+		int AnzahlPersonen=0;
+		for (Unit u : s.modifiedUnits()) {
+			AnzahlPersonen+=u.getModifiedPersons();
+		}
+		
+		if (AnzahlPersonen<=0) {
+			this.doNotConfirmOrders("!!! Reparaturschiff: Berechnung der Personenanzahl ist gescheitert !!!");
+			RTB();
+			return;
+		}
+		
+		int neededSilber = (Lohnwochen + this.ReserveWochen) * 10 * AnzahlPersonen;
+		this.addComment("Silberbedarf: " + neededSilber + " Silber (" + (Lohnwochen + this.ReserveWochen) + " Wochen mit " + AnzahlPersonen + " Personen)");
+
+		// durch alle SUs durchgehen
+		ArrayList<ScriptUnit> possibleDepots = new ArrayList<ScriptUnit>();
+		ScriptMain sm = this.scriptUnit.getScriptMain();
+    	for (ScriptUnit su : sm.getScriptUnits().values()){
+    		if (su.isDepot()){
+    			int Reisewochen = Dist2ValidSilverRegion(su.getUnit().getRegion());
+    			if (Reisewochen>=0 && enoughSilver(su, neededSilber)) {
+    				su.sortValue = Reisewochen;
+    				possibleDepots.add(su);
+    			}
+    		}
+    	}
+    	if (possibleDepots.size()==0) {
+    		this.addComment("Kein geeignetes Depot in Reichweite (Reservewochen) gefunden -> RTB");
+    		RTB();
+    		return;
+    	}
+    	
+    	// Liste der Depots sortieren
+    	Collections.sort(possibleDepots, new ScriptUnitComparator_natural());
+    	// Sicherheitsausgabe
+    	this.addComment("Silbernachschub: verfügbare Depots in Reichweite (sortiert): ");
+    	int seq_num = 1;
+    	for (ScriptUnit su:possibleDepots) {
+    		this.addComment(seq_num++ + ": " + su.toString() + " (" + su.sortValue + " Reisewochen)");
+    	}
+    	
+    	ScriptUnit silberDepot = possibleDepots.get(0);
+    	this.addComment("Anfahrt für Silbernachschub: " + silberDepot.toString() + " (" + silberDepot.sortValue + " Reisewochen)");
+    	this.actTargetRegionID = silberDepot.getUnit().getRegion().getCoordinate();
+    	makeOrderNach(0,0,255);
+    	
+    	// Gimmick: beim Depot entsprechende Silberforderung anlegen
+    	Object o2 = silberDepot.getScript(Depot.class);
+    	if (o2!=null) {
+    		Depot d = (Depot)o2;
+    		MatPoolRequest MPR = new MatPoolRequest(d,neededSilber,"Silber",LohnPrio,"Silbernachschub für Reparaturschiff " + s.toString());
+    		d.addMatPoolRequest(MPR);
+    	} else {
+    		this.doNotConfirmOrders("!!! Reparaturschiff: beim anvisierten Silberdepot konnte kein Depot-Script gefunden werden !!!");
+    	}
+    	
+	}
 	
+	
+	private void RTB() {
+		this.actTargetRegionID = this.HomeRegionCoord;
+		makeOrderNach();
+	}
+	
+	
+	private int Dist2ValidSilverRegion(Region r) {
+		// Regionstyp
+		if (!(r.getRegionType().getName().equalsIgnoreCase("Ebene") || r.getRegionType().getName().equalsIgnoreCase("Wald"))) {
+			return -1;
+		}
+		// Einfache Abstandsberechnung
+		if (Regions.getDist(this.getUnit().getRegion().getCoordinate(), r.getCoordinate())>this.ReserveWochen) {
+			return -1;
+		}
+		// Genaue Abstandsberechung
+		int Reisewochen = -1;
+		int speed = this.gd_Script.getGameSpecificStuff().getGameSpecificRules().getShipRange(this.s);
+		Direction d = Direction.INVALID;
+		d = Regions.getMapMetric(this.gd_Script).toDirection(this.s.getShoreId());
+		Reisewochen = FFToolsRegions.getShipPathSizeTurns_Virtuell_Ports(this.s.getRegion().getCoordinate(),d, r.getCoordinate(), this.gd_Script, speed, null);
+		
+		if (Reisewochen>this.ReserveWochen) {
+			return -1;
+		}
+		
+		return Reisewochen;
+	}
+	
+	private boolean enoughSilver(ScriptUnit su, int neededSilber) {
+		ItemType silverType=this.scriptUnit.getScriptMain().gd_ScriptMain.getRules().getItemType("Silber",false);
+		if (silverType==null) {
+			return false;
+		}
+		Item i = su.getModifiedItem(silverType);
+		if (i!=null) {
+			if (i.getAmount()>=neededSilber) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * standard linie gelb
+	 */
 	public void makeOrderNach() {
+		makeOrderNach(0, 255, 0);
+	}
+
+	
+	/**
+	 * mit expliziter Farbangabe
+	 * @param R
+	 * @param G
+	 * @param B
+	 */
+	public void makeOrderNach(int R, int G, int B) {
 		if (this.actTargetRegionID==null) {
 			return;
 		}
@@ -240,11 +379,12 @@ public class Reparaturschiff extends Script implements Comparable<Reparaturschif
 		List<Region> targetPath = Regions.planShipRoute(this.scriptUnit.getUnit().getModifiedShip(),super.gd_Script, this.actTargetRegionID);
 		if (targetPath!=null && targetPath.size()>0) {
 			super.addOrder("NACH " + Regions.getDirections(targetPath) + " ; vom SWM zugewiesen", true);
-			FFToolsRegions.addMapLine(this.region(), this.actTargetRegionID, 0, 255, 0, 5, SeeschlangenJagdManager_SJM.MAPLINE_TAG);
+			FFToolsRegions.addMapLine(this.region(), this.actTargetRegionID, R, G, B, 5, SeeWerftManager_SWM.MAPLINE_TAG);
 		} else {
 			this.doNotConfirmOrders("!!! vom SWM ungültige Befehle erhalten, Zielregion nicht erreichbar: " + this.actTargetRegionID.toString(",", false));
 		}
 	}
+	
 	
 	
 	/**

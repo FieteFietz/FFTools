@@ -167,5 +167,10 @@ public class Lohn extends MatPoolScript{
 	public boolean errorMsgIfNotAllowedAddedScript(){
 		return false;
 	}
+
+
+	public int getAnzRunden() {
+		return AnzRunden;
+	}
 	
 }

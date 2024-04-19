@@ -6,8 +6,6 @@ import java.util.Iterator;
 import com.fftools.ReportSettings;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.utils.FFToolsOptionParser;
-import com.fftools.utils.FFToolsUnits;
-import com.sun.org.apache.xerces.internal.parsers.AbstractXMLDocumentParser;
 
 import magellan.library.Skill;
 import magellan.library.rules.SkillType;
@@ -319,7 +317,7 @@ public class Material extends MatPoolScript {
 			
 			// waffentalent bekannt ?helden?
 			if (this.scriptUnit.getUnit().isHero()){
-				this.gd_Script.rules.getItemType("Gürtel der Trollstärke",true);
+				this.gd_Script.getRules().getItemType("Gürtel der Trollstärke",true);
 				mpr = new MatPoolRequest(this,persons,"Gürtel der Trollstärke",prio + offsetWaffen,comment,kapa_policy,kapa_benutzer);
 				if (this.inRegion){
 					mpr.setOnlyRegion(true);

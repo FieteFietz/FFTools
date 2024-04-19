@@ -48,7 +48,7 @@ public class Lernen extends MatPoolScript{
 //			akademie feststellen falls einheit darin ist oder betritt.
 	    	Building gebaeude = this.scriptUnit.getUnit().getModifiedBuilding();
 	    	if (gebaeude != null){
-	    		if ((this.scriptUnit.getScriptMain().gd_ScriptMain.rules.getBuildingType("Akademie").equals(gebaeude.getBuildingType()))&&(gebaeude.getSize()>=25)){
+	    		if ((this.scriptUnit.getScriptMain().gd_ScriptMain.getRules().getBuildingType("Akademie").equals(gebaeude.getBuildingType()))&&(gebaeude.getSize()>=25)){
 	    			this.akademie = gebaeude;
 	    		}
 	      	}
