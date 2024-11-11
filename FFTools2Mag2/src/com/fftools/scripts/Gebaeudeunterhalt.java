@@ -125,7 +125,7 @@ public class Gebaeudeunterhalt extends MatPoolScript{
 		}
 		
 		int newVersorgungsrunden=reportSettings.getOptionInt("Gebaeudeunterhalt_Runden", this.region());
-		if (newVersorgungsrunden>0) {
+		if (newVersorgungsrunden>=0) {
 			this.versorgungsRunden=newVersorgungsrunden;
 		}
 		
@@ -136,45 +136,49 @@ public class Gebaeudeunterhalt extends MatPoolScript{
 		
 		    
 		// Unterhaltskosten ermitteln!
-		Iterator<Item> iter = gebaeude.getBuildingType().getMaintenanceItems().iterator();
-		 if (iter != null){ 
-			 for(;iter.hasNext();){
-				 Item item = (Item) iter.next();		
-				 super.addComment("Gebäudeunterhalt für " + this.versorgungsRunden + " Runden angefordert");  
-				 for (int n=0;n<=this.versorgungsRunden-1;n++){
-		    	      if (item!=null){
-			    	      super.setPrioParameter(this.defaultSilberPrio, -0.5, 0, 1);
-			    	      if (item.getName().equalsIgnoreCase("Eisen")){
-			    	    	  super.setPrioParameter(this.defaultEisenPrio, -0.5, 0, 1);
-			    	      }
-			    	      if (item.getName().equalsIgnoreCase("Holz")){
-			    	    	  super.setPrioParameter(this.defaultHolzPrio, -0.5, 0, 1);
-			    	      }
-			    	      if (item.getName().equalsIgnoreCase("Stein")){
-			    	    	  super.setPrioParameter(this.defaultSteinPrio, -0.5, 0, 1);
-			    	      }
-			    	     
-				          // Für jedes Item Matpoolrelation mit ID an den PoolMatpool senden!
-			    	      MatPoolRequest actRequest = new MatPoolRequest(n+1,this,item.getAmount(),item.toString(),this.getPrio(n),"Gebäudeunterhalt Runde " + (aktuelleRunde+n));
-			    	      
-			    	      if (item.getName().equalsIgnoreCase("Silber pro Größenpunkt")){
-			    	    	  // wow!  eine Taverne?! oder ähnliches
-			    	    	  // neues Item nur Silber, Amount = item.amount * Größe
-			    	    	  super.addComment("Besonderer unterhalt erkannt: " + item.getAmount() + " Silber pro Größenpunkt.");
-			    	    	  super.addComment("Gebäudegröße:" + gebaeude.getSize() + ", Silbersumme: " + (gebaeude.getSize() * item.getAmount()));
-			    	    	  actRequest = new MatPoolRequest(n+1,this,item.getAmount() * gebaeude.getSize(),"Silber",this.getPrio(n),"Gebäudeunterhalt Runde " + (aktuelleRunde+n));
-			    	      }
-			    	      
-			    	      
-				    	  this.addMatPoolRequest(actRequest);
-				          fordertan = true;
-				          if (this.matPoolRequests==null){
-				        	  this.matPoolRequests=new ArrayList<MatPoolRequest>();
-				          }
-				          this.matPoolRequests.add(actRequest);
-		    	      }	
-			      }
+		if (this.versorgungsRunden>0) {
+			Iterator<Item> iter = gebaeude.getBuildingType().getMaintenanceItems().iterator();
+			 if (iter != null){ 
+				 for(;iter.hasNext();){
+					 Item item = (Item) iter.next();		
+					 super.addComment("Gebäudeunterhalt wird für " + this.versorgungsRunden + " Runden angefordert");  
+					 for (int n=0;n<=this.versorgungsRunden-1;n++){
+			    	      if (item!=null){
+				    	      super.setPrioParameter(this.defaultSilberPrio, -0.5, 0, 1);
+				    	      if (item.getName().equalsIgnoreCase("Eisen")){
+				    	    	  super.setPrioParameter(this.defaultEisenPrio, -0.5, 0, 1);
+				    	      }
+				    	      if (item.getName().equalsIgnoreCase("Holz")){
+				    	    	  super.setPrioParameter(this.defaultHolzPrio, -0.5, 0, 1);
+				    	      }
+				    	      if (item.getName().equalsIgnoreCase("Stein")){
+				    	    	  super.setPrioParameter(this.defaultSteinPrio, -0.5, 0, 1);
+				    	      }
+				    	     
+					          // Für jedes Item Matpoolrelation mit ID an den PoolMatpool senden!
+				    	      MatPoolRequest actRequest = new MatPoolRequest(n+1,this,item.getAmount(),item.toString(),this.getPrio(n),"Gebäudeunterhalt Runde " + (aktuelleRunde+n));
+				    	      
+				    	      if (item.getName().equalsIgnoreCase("Silber pro Größenpunkt")){
+				    	    	  // wow!  eine Taverne?! oder ähnliches
+				    	    	  // neues Item nur Silber, Amount = item.amount * Größe
+				    	    	  super.addComment("Besonderer unterhalt erkannt: " + item.getAmount() + " Silber pro Größenpunkt.");
+				    	    	  super.addComment("Gebäudegröße:" + gebaeude.getSize() + ", Silbersumme: " + (gebaeude.getSize() * item.getAmount()));
+				    	    	  actRequest = new MatPoolRequest(n+1,this,item.getAmount() * gebaeude.getSize(),"Silber",this.getPrio(n),"Gebäudeunterhalt Runde " + (aktuelleRunde+n));
+				    	      }
+				    	      
+				    	      
+					    	  this.addMatPoolRequest(actRequest);
+					          fordertan = true;
+					          if (this.matPoolRequests==null){
+					        	  this.matPoolRequests=new ArrayList<MatPoolRequest>();
+					          }
+					          this.matPoolRequests.add(actRequest);
+			    	      }	
+				      }
+				 }
 			 }
+		} else {
+			super.addComment("Gebäudeunterhalt wird wunschgemäß nicht angefordert");
 		}
 		
 		

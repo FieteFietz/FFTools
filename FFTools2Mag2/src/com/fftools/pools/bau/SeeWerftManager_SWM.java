@@ -118,9 +118,10 @@ public class SeeWerftManager_SWM implements OverlordRun,OverlordInfo {
 		// Test: Reparaturschiffe informieren
 		for (Reparaturschiff r: this.availableReparaturSchiffe) {
 			int speed = this.overLord.getScriptMain().gd_ScriptMain.getGameSpecificStuff().getGameSpecificRules().getShipRange(r.s);
-			r.addComment("SWM: anzahl zu reparierender Schiffe in Reichweite (" + r.maxWeeks + " Wochen): " + ships2Repair_list.size());
+			r.addComment("SWM: anzahl zu reparierender Schiffe gesamt: " + ships2Repair_list.size());
 			int zuweitweg=0;
 			int keinWeg=0;
+			int inReichweite=0;
 			for (Ship2Repair pS:ships2Repair_list) {
 				// Entfernung berechnen
 				int Reisewochen = -1;
@@ -130,8 +131,9 @@ public class SeeWerftManager_SWM implements OverlordRun,OverlordInfo {
 				Reisewochen = FFToolsRegions.getShipPathSizeTurns_Virtuell_Ports(pS.s.getRegion().getCoordinate(),d, r.HomeRegionCoord, this.overLord.getScriptMain().gd_ScriptMain, speed, null);
 				String reiseInfo = "(kein Weg gefunden)";
 				if (Reisewochen>=0 && Reisewochen<=r.maxWeeks) {
-					reiseInfo = " (Entf: " + Reisewochen + " Wochen)";
-					r.addComment("SWM - beschädigt: " + pS.s.toString() + " in " + pS.s.getRegion().toString() + reiseInfo + " [" + pS.repairsNeeded + "]");
+					// reiseInfo = " (Entf: " + Reisewochen + " Wochen)";
+					// r.addComment("SWM - beschädigt: " + pS.s.toString() + " in " + pS.s.getRegion().toString() + reiseInfo + " [" + pS.repairsNeeded + "]");
+					inReichweite+=1;
 				}
 				if (Reisewochen > r.maxWeeks) {
 					zuweitweg+=1;
@@ -139,6 +141,9 @@ public class SeeWerftManager_SWM implements OverlordRun,OverlordInfo {
 				if (Reisewochen<0) {
 					keinWeg+=1;
 				}
+			}
+			if (inReichweite>0) {
+				r.addComment("SWM: anzahl zu reparierender Schiffe in Reichweite: (" + r.maxWeeks + " Wochen ab Home) " + inReichweite);
 			}
 			if (zuweitweg>0) {
 				r.addComment("SWM: anzahl zu reparierender Schiffe, die zu weit weg sind: " + zuweitweg);
@@ -200,9 +205,22 @@ public class SeeWerftManager_SWM implements OverlordRun,OverlordInfo {
 		
 		// Sortieren
 		Collections.sort(this.ships2Repair_list);
+		outText.setFile("SeeWerftManager_RepSchiff");
+		boolean oldScreenOut = outText.isScreenOut();
+		outText.setScreenOut(false);
+		outText.addNewLine();
+		outText.addOutLine("******SWM - Info******");
+		outText.addOutLine("Liste der zu reparierenden Schiffe (" + this.ships2Repair_list.size() + " Einträge): ");
+		for (Ship2Repair sh:this.ships2Repair_list) {
+			if (sh.repairsNeeded>0 && sh.nextShipStop!=null) {
+				outText.addOutLine(sh.s.toString() + " in " + sh.s.getRegion().toString() + " | Schaden: " + sh.repairsNeeded);
+			}
+		}
+		outText.addNewLine();
 		
 		for (Ship2Repair sh:this.ships2Repair_list) {
 			if (sh.repairsNeeded>0 && sh.nextShipStop!=null) {
+				outText.addOutLine("checking: " + sh.s.toString() + " in " + sh.s.getRegion().toString() + " | Schaden: " + sh.repairsNeeded);
 				// neue Liste zusammenbauen mit den noch verfügbaren Reparaturschiffen
 				ArrayList<Reparaturschiff> actAvailReparaturschiffe = new ArrayList<Reparaturschiff>(0);
 				for (Reparaturschiff RS:this.availableReparaturSchiffe) {
@@ -215,7 +233,7 @@ public class SeeWerftManager_SWM implements OverlordRun,OverlordInfo {
 						Direction d = Direction.INVALID;
 						d = Regions.getMapMetric(this.overLord.getScriptMain().gd_ScriptMain).toDirection(sh.s.getShoreId());
 						ReisewochenHome = FFToolsRegions.getShipPathSizeTurns_Virtuell_Ports(sh.s.getRegion().getCoordinate(),d, RS.HomeRegionCoord, this.overLord.getScriptMain().gd_ScriptMain, speed, null);
-						
+						outText.addOutLine("prüfe RepSchiff: " + RS.s.toString() + " in " + RS.s.getRegion().toString() + ", RW_home: " +ReisewochenHome + "/" + RS.maxWeeks);
 						if (ReisewochenHome<=RS.maxWeeks && ReisewochenHome>=0) {
 							// wir sind innerhalb der maxWeeks von der HomeRegion
 							// Entfernung zwischen sh und RS ermitteln und bei RS eintragen, damit danach sortiert werden kann
@@ -224,11 +242,15 @@ public class SeeWerftManager_SWM implements OverlordRun,OverlordInfo {
 							d = Direction.INVALID;
 							d = Regions.getMapMetric(this.overLord.getScriptMain().gd_ScriptMain).toDirection(RS.s.getShoreId());
 							ReisewochenTarget = FFToolsRegions.getShipPathSizeTurns_Virtuell_Ports(RS.s.getRegion().getCoordinate(),d, sh.nextShipStop, this.overLord.getScriptMain().gd_ScriptMain, speed, null);
-							
 							if (ReisewochenTarget>=0) {
 								// ok - wir kommen da hin
 								RS.actDist2target = ReisewochenTarget;
+								// RS.actDist2target_Regions = Regions.getDist(RS.s.getRegion().getCoordinate(), sh.nextShipStop);
+								RS.actDist2target_Regions = FFToolsRegions.lastPathLength;
+								outText.addOutLine("Weg gefunden zur Zielregion: " + ReisewochenTarget + " Wochen, " + RS.actDist2target_Regions + " Regionen, RS verfügbar");
 								actAvailReparaturschiffe.add(RS);
+							} else {
+								outText.addOutLine("kein Weg gefunden zur Zielregion: " + ReisewochenTarget);
 							}
 						}
 					}
@@ -237,6 +259,10 @@ public class SeeWerftManager_SWM implements OverlordRun,OverlordInfo {
 				// Reparaturschiffe in Reichweite nach Entfernung sortieren - wenn welche da sind
 				if (actAvailReparaturschiffe.size()>1) {
 					Collections.sort(actAvailReparaturschiffe);
+					outText.addOutLine("Verfügbare RS nach Entf: " + actAvailReparaturschiffe.size());
+					for (Reparaturschiff RS:actAvailReparaturschiffe) {
+						outText.addOutLine(RS.s.toString() + " Wochen: " + RS.actDist2target + ", Regionen: " + RS.actDist2target_Regions);
+					}
 				}
 				
 				// Nun dem ersten das Ziel zuordnen
@@ -246,15 +272,26 @@ public class SeeWerftManager_SWM implements OverlordRun,OverlordInfo {
 					RS.actTargetRegionID=sh.nextShipStop;
 					// Infos:
 					sh.captn.addComment("SWM: zur Reparatur kommt: " + RS.s.toString()+ " (" + RS.actDist2target + " Wochen)");
-					RS.addComment("SWM: Reparaturziel: " + sh.s.toString() + " (" + RS.actDist2target + " Wochen)");
+					RS.addComment("SWM: Reparaturziel: " + sh.s.toString() + " (" + RS.actDist2target + " Wochen, " + RS.actDist2target_Regions + " Regionen)");
 					
 					// Anweisungen umsetzen
 					RS.makeOrderNach();
+					outText.addOutLine("RS gesetzt:" + RS.s.toString());
+				} else {
+					outText.addOutLine("keine RS verfügbar");
 				}
+				outText.addNewLine();
+				outText.addNewLine();
 			} else {
-				sh.captn.addComment("SWM: Schiff wird diese Runde vollständig repariert - kein Ziel mehr für Reparaturschiffe mehr.");
+				sh.captn.addComment("SWM: Schiff wird diese Runde vollständig repariert - kein Ziel mehr für Reparaturschiffe.");
 			}
 		}
+		
+		outText.addNewLine();
+		outText.addOutLine("Ende SWM plan RS");
+		
+		outText.setFileStandard();
+		outText.setScreenOut(oldScreenOut);
 
 	}
 	

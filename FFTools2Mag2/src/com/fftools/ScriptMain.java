@@ -8,8 +8,10 @@ import java.util.Properties;
 import javax.swing.JTextArea;
 
 import com.fftools.overlord.Overlord;
+import com.fftools.pools.bau.SeeWerftManager_SWM;
 import com.fftools.pools.circus.CircusPoolManager;
 import com.fftools.pools.seeschlangen.MonsterJagdManager_MJM;
+import com.fftools.pools.seeschlangen.SeeschlangenJagdManager_SJM;
 import com.fftools.pools.treiber.TreiberPoolManager;
 import com.fftools.scripts.Script;
 import com.fftools.trade.TradeAreaHandler;
@@ -44,6 +46,7 @@ public class ScriptMain {
 	private static final ReportSettings reportSettings = ReportSettings.getInstance();
 	
 	private Hashtable<Unit,ScriptUnit> scriptUnits = null;
+	private ArrayList<ScriptUnit> Units2Add = null;
 	
 	private ArrayList<Region> scriptRegions = null;
 	private ArrayList<Building> scriptProductionBuildings = null;
@@ -159,6 +162,89 @@ public class ScriptMain {
 		return new_su;
 		
 	}
+	
+	public void addLaterUnits() {
+		if (this.Units2Add==null) {
+			return;
+		}
+		if (this.Units2Add.size()==0) {
+			return;
+		}
+		for (ScriptUnit su:this.Units2Add) {
+			this.scriptUnits.put(su.getUnit(), su);
+			su.addComment("Einheit nachträglich zu den SUs hinzugefügt");
+		}
+		this.Units2Add.clear();
+	}
+	
+	
+	/**
+	 * für den Sonderfall, dass während der ScriptBearbeitung neue Scripte in die Map eingefügt werden soll
+	 * das geht nicht, wenn diese gerade iteritiert wird...
+	 * @param u
+	 * @return
+	 */
+	public ScriptUnit addUnitLater(Unit u){
+		
+		// neue ScriptUnit anlegen
+		ScriptUnit new_su = new ScriptUnit(u,this);
+		// falls wir einen client context haben...
+		if (this.client!=null) {new_su.setClient(this.client);}
+		// hinzufuegen
+		if (Units2Add==null) {
+			Units2Add = new ArrayList<ScriptUnit>();
+		}
+		Units2Add.add(new_su);
+		new_su.addComment("Unit auf Liste der nachträglich zu ergänzenden SUs");
+		
+		// regionen hinzufügen
+		Region r = u.getRegion();
+		if (this.scriptRegions==null){
+			this.scriptRegions = new ArrayList<Region>();
+		}
+		if (!this.scriptRegions.contains(r)){
+			this.scriptRegions.add(r);
+		}
+		
+		// outText.addOutLine("..zu ScriptMain hinzugefuegt: " + u.toString(true));
+		
+		// 20171014: scriptPoductionBuildings pflegen
+		Building b = u.getModifiedBuilding();
+		if (b!=null){
+			boolean toAdd=false;
+			if (b.getType().getName().equalsIgnoreCase("Sägewerk")){
+				toAdd=true;
+			}
+			if (b.getType().getName().equalsIgnoreCase("Schmiede")){
+				toAdd=true;
+			}
+			if (b.getType().getName().equalsIgnoreCase("Bergwerk")){
+				toAdd=true;
+			}
+			if (b.getType().getName().equalsIgnoreCase("Steinbruch")){
+				toAdd=true;
+			}
+			if (b.getType().getName().equalsIgnoreCase("Akademie")){
+				toAdd=true;
+			}
+			if (b.getType().getName().equalsIgnoreCase("Pferdezucht")){
+				toAdd=true;
+			}
+			if (toAdd){
+				if (scriptProductionBuildings==null){
+					scriptProductionBuildings = new ArrayList<Building>();
+				}
+				if (!scriptProductionBuildings.contains(b)){
+					scriptProductionBuildings.add(b);
+				}
+			}
+		}
+		
+		return new_su;
+		
+	}
+	
+	
 	
 	public int getNumberOfScriptUnits(){
 		if (scriptUnits==null){return 0;} else {return scriptUnits.size();}
@@ -289,96 +375,99 @@ public class ScriptMain {
 					istAkademie=true;
 				}
 				Unit u = b.getModifiedOwnerUnit();
-				// outText.addOutLine("checke " + b.toString());
-				if (u!=null){
-					ScriptUnit su = scriptUnits.get(u);
-					if (su!=null){
-						// OK, owner ist ScriptUnit
-						// checken, ob alle arbeiten
-						ArrayList<Unit> insiders = new ArrayList<Unit>();
-						// outText.addOutLine("creating insiders");
-						for (Unit u3 : u.getRegion().getUnits().values()){
-							// outText.addOutLine("checking " + u3.toString());
-							if (u3.getModifiedBuilding()!=null){
-								if (u3.getModifiedBuilding().equals(b)){
-									// outText.addOutLine("added");
-									insiders.add(u3);
+				if (u!=null) {
+					// outText.addOutLine("checke " + b.toString());
+					boolean GebU = reportSettings.getOptionBoolean("Gebaeudeunterhalt", u.getRegion());
+					if (GebU){
+						ScriptUnit su = scriptUnits.get(u);
+						if (su!=null){
+							// OK, owner ist ScriptUnit
+							// checken, ob alle arbeiten
+							ArrayList<Unit> insiders = new ArrayList<Unit>();
+							// outText.addOutLine("creating insiders");
+							for (Unit u3 : u.getRegion().getUnits().values()){
+								// outText.addOutLine("checking " + u3.toString());
+								if (u3.getModifiedBuilding()!=null){
+									if (u3.getModifiedBuilding().equals(b)){
+										// outText.addOutLine("added");
+										insiders.add(u3);
+									}
 								}
 							}
-						}
-						// outText.addOutLine("checking insiders");
-						if (insiders.size()>0){
-							boolean OneInsideWorking=false;
-							String Workingers = "";
-							String WorkingersForeigners = "";
-							for (Unit u2:insiders){
-								// outText.addOutLine("checking " + u2.toString(true));
-								// kenne ich die befehle vom Insassen?
-								if (u2.isDetailsKnown()){
-									// outText.addOutLine("checking orders");
-									boolean unitWorking = false;
-									if (u2.getOrders2()!=null && u2.getOrders2().size()>0){
-										for(Iterator<Order> iterO = u2.getOrders2().iterator(); iterO.hasNext();) {
-											Order o = (Order) iterO.next();
-											String s = o.getText();
-											// @entfernen
-											s = s.replace("@", "");
-											if (istAkademie){
-												// LERNE
-												if ((s.length()>=orderStartWith2.length()) &&  s.substring(0, orderStartWith2.length()).equalsIgnoreCase(orderStartWith2)){
-													unitWorking=true;
-													break;
+							// outText.addOutLine("checking insiders");
+							if (insiders.size()>0){
+								boolean OneInsideWorking=false;
+								String Workingers = "";
+								String WorkingersForeigners = "";
+								for (Unit u2:insiders){
+									// outText.addOutLine("checking " + u2.toString(true));
+									// kenne ich die befehle vom Insassen?
+									if (u2.isDetailsKnown()){
+										// outText.addOutLine("checking orders");
+										boolean unitWorking = false;
+										if (u2.getOrders2()!=null && u2.getOrders2().size()>0){
+											for(Iterator<Order> iterO = u2.getOrders2().iterator(); iterO.hasNext();) {
+												Order o = (Order) iterO.next();
+												String s = o.getText();
+												// @entfernen
+												s = s.replace("@", "");
+												if (istAkademie){
+													// LERNE
+													if ((s.length()>=orderStartWith2.length()) &&  s.substring(0, orderStartWith2.length()).equalsIgnoreCase(orderStartWith2)){
+														unitWorking=true;
+														break;
+													}
+													// LEHRE
+													if ((s.length()>=orderStartWith3.length()) &&  s.substring(0, orderStartWith3.length()).equalsIgnoreCase(orderStartWith3)){
+														unitWorking=true;
+														break;
+													}
+												} else {
+													// MACHE
+													if ((s.length()>=orderStartWith.length()) &&  s.substring(0, orderStartWith.length()).equalsIgnoreCase(orderStartWith)){
+														unitWorking=true;
+														break;
+													} 
+													// ZÜCHTE
+													if ((s.length()>=orderStartWith4.length()) &&  s.substring(0, orderStartWith4.length()).equalsIgnoreCase(orderStartWith4)){
+														unitWorking=true;
+														break;
+													} 
 												}
-												// LEHRE
-												if ((s.length()>=orderStartWith3.length()) &&  s.substring(0, orderStartWith3.length()).equalsIgnoreCase(orderStartWith3)){
-													unitWorking=true;
-													break;
-												}
-											} else {
-												// MACHE
-												if ((s.length()>=orderStartWith.length()) &&  s.substring(0, orderStartWith.length()).equalsIgnoreCase(orderStartWith)){
-													unitWorking=true;
-													break;
-												} 
-												// ZÜCHTE
-												if ((s.length()>=orderStartWith4.length()) &&  s.substring(0, orderStartWith4.length()).equalsIgnoreCase(orderStartWith4)){
-													unitWorking=true;
-													break;
-												} 
 											}
 										}
-									}
-									if (unitWorking){
+										if (unitWorking){
+											OneInsideWorking=true;
+											Workingers += " " + u2.toString(true);
+										} 
+									} else {
+										// den kenn ich nicht
 										OneInsideWorking=true;
-										Workingers += " " + u2.toString(true);
-									} 
+										WorkingersForeigners += " " + u2.toString(true);
+									}
+								}
+								
+								if (OneInsideWorking){
+									// irgendjemand arbeitet
+									String sText = "Gebäudebesitzer, Prüfung auf Unterhaltsbedarf ergibt Bedarf durch diese Einheiten: ";
+									if (Workingers.length()>1){
+										sText += Workingers;
+									}
+									if (WorkingersForeigners.length()>1){
+										sText += " (unbekannte Befehle von: " + WorkingersForeigners + ")";
+									}
+									su.addComment(sText);
 								} else {
-									// den kenn ich nicht
-									OneInsideWorking=true;
-									WorkingersForeigners += " " + u2.toString(true);
+									// niemand arbeitet
+									su.addComment("Gebäudebesitzer und niemand arbeitet, Unterhalt nicht nötig");
+									su.addOrder("BEZAHLE NICHT ;niemand arbeitet...", true);
+									suZahleNICHT += " " + su.toString();
 								}
-							}
-							
-							if (OneInsideWorking){
-								// irgendjemand arbeitet
-								String sText = "Gebäudebesitzer, Prüfung auf Unterhaltsbedarf ergibt Bedarf durch diese Einheiten: ";
-								if (Workingers.length()>1){
-									sText += Workingers;
-								}
-								if (WorkingersForeigners.length()>1){
-									sText += " (unbekannte Befehle von: " + WorkingersForeigners + ")";
-								}
-								su.addComment(sText);
+								
 							} else {
-								// niemand arbeitet
-								su.addComment("Gebäudebesitzer und niemand arbeitet, Unterhalt nicht nötig");
-								su.addOrder("BEZAHLE NICHT ;niemand arbeitet...", true);
-								suZahleNICHT += " " + su.toString();
+								su.doNotConfirmOrders("!!! keine Insassen im Gebäude ?!?!?");
+								su.addComment("!!! keine Insassen im Gebäude ?!?!?");
 							}
-							
-						} else {
-							su.doNotConfirmOrders("!!! keine Insassen im Gebäude ?!?!?");
-							su.addComment("!!! keine Insassen im Gebäude ?!?!?");
 						}
 					}
 				}
@@ -414,6 +503,8 @@ public class ScriptMain {
 		// FF 20080804 : trustlevels
 		this.resetFactionTrsutLevel();
 		
+		this.refreshMapLines();
+		
 		// und zum schluss refreshen
 		// natuerlich nur, wenn wir nen client haben..
 		outText.addOutLine("refreshing client");
@@ -424,12 +515,57 @@ public class ScriptMain {
 		
 		long endT = System.currentTimeMillis();
 		
-		if (this.client!=null && this.client.getSelectedRegions()!=null && this.client.getSelectedRegions().size()>0){
-			outText.addOutLine("!Achtung. Nur selektierte Regionen wurden bearbeitet. Anzahl: " + this.client.getSelectedRegions().size());
+		if (this.client!=null) {
+			if (this.client.getSelectedRegions().size()>0){
+				outText.addOutLine("!Achtung. Nur selektierte Regionen wurden bearbeitet. Anzahl: " + this.client.getSelectedRegions().size());
+			} else {
+				outText.addOutLine("getSelectedRegions().size() <= 0 :" + this.client.getSelectedRegions().size());
+			}	
+		} else {
+			outText.addOutLine("kein Magellan-lauf im Client");
 		}
 		outText.addOutLine("Statistik: " + confirmedScripterUnits + " Script-Einheiten bestätigt, " + unConfirmedScripterUnits + " unbestätigt.");
 		outText.addOutLine("runScripts benötigte " + (endT-startT) + " ms.");
 
+	}
+	
+	private void refreshMapLines() {
+		if (this.client==null) {
+			return;
+		}
+		outText.addOutLine("refreshing MAP lines");
+		
+		if (FFToolsRegions.exists_Mapline(this.client.getData(), TradeAreaHandler.MAPLINE_TAG_ID)) {
+			outText.addOutLine("refreshing TAC lines");
+			FFToolsRegions.deActivateMapLine(this.client.getData(), TradeAreaHandler.MAPLINE_TAG_ID);
+			FFToolsRegions.activateMapLine(this.client.getData(), TradeAreaHandler.MAPLINE_TAG_ID);
+		}
+		
+		if (FFToolsRegions.exists_Mapline(this.client.getData(), MonsterJagdManager_MJM.MAPLINE_ATTACK_TAG)) {
+			outText.addOutLine("refreshing MJM Attack lines");
+			FFToolsRegions.deActivateMapLine(this.client.getData(), MonsterJagdManager_MJM.MAPLINE_ATTACK_TAG);
+			FFToolsRegions.activateMapLine(this.client.getData(), MonsterJagdManager_MJM.MAPLINE_ATTACK_TAG);
+		}
+		
+		if (FFToolsRegions.exists_Mapline(this.client.getData(), MonsterJagdManager_MJM.MAPLINE_MOVE_TAG)) {
+			outText.addOutLine("refreshing MJM Move lines");
+			FFToolsRegions.deActivateMapLine(this.client.getData(), MonsterJagdManager_MJM.MAPLINE_MOVE_TAG);
+			FFToolsRegions.activateMapLine(this.client.getData(), MonsterJagdManager_MJM.MAPLINE_MOVE_TAG);
+		}
+		
+		if (FFToolsRegions.exists_Mapline(this.client.getData(), SeeschlangenJagdManager_SJM.MAPLINE_TAG)) {
+			outText.addOutLine("refreshing SSJM lines");
+			FFToolsRegions.deActivateMapLine(this.client.getData(), SeeschlangenJagdManager_SJM.MAPLINE_TAG);
+			FFToolsRegions.activateMapLine(this.client.getData(), SeeschlangenJagdManager_SJM.MAPLINE_TAG);
+		}
+		
+		if (FFToolsRegions.exists_Mapline(this.client.getData(), SeeWerftManager_SWM.MAPLINE_TAG)) {
+			outText.addOutLine("refreshing SWM lines");
+			FFToolsRegions.deActivateMapLine(this.client.getData(), SeeWerftManager_SWM.MAPLINE_TAG);
+			FFToolsRegions.activateMapLine(this.client.getData(), SeeWerftManager_SWM.MAPLINE_TAG);
+		}
+		
+		outText.addOutLine("refreshing MAP lines....finished");
 	}
 	
 	

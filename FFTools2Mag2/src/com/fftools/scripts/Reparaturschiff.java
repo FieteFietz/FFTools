@@ -33,7 +33,8 @@ public class Reparaturschiff extends Script implements Comparable<Reparaturschif
 	
 	public Ship s = null;
 	
-	public int actDist2target = 0;
+	public int actDist2target = 0;  // in ReiseWochen
+	public int actDist2target_Regions = 0; // in Regionen
 	
 	public CoordinateID actTargetRegionID = null;
 	
@@ -209,13 +210,15 @@ public class Reparaturschiff extends Script implements Comparable<Reparaturschif
 				this.addComment("Reparaturschiff: wird sind in der Home Region - Lernen");
 				this.Lernen();
 				this.doNotConfirmOrders("!!!Reparaturschiff in der HomeRegion mit zu wenig Silber!!!");
+				// nicht beim SWM anmelden
+				return;
 			} else {
 				this.addComment("Reparaturschiff: SilberMindestbestand unterschritten. Suche nach Silber.");
 				// this.makeOrderNach();
 				this.search4silverOrRTB();
+				// 20240707: trotzdem beim SWM anmelden, damit auch jetzt noch repariert werden kann
+				// targetRegion ist ja bereits gesetzt...
 			}
-			// nicht beim SWM anmelden
-			return;
 		}
 
 		// Anmeldung beim SWM
@@ -269,6 +272,8 @@ public class Reparaturschiff extends Script implements Comparable<Reparaturschif
     			int Reisewochen = Dist2ValidSilverRegion(su.getUnit().getRegion());
     			if (Reisewochen>=0 && enoughSilver(su, neededSilber)) {
     				su.sortValue = Reisewochen;
+    				// su.sortValue_2 = Regions.getDist(this.region().getCoordinate(), su.getUnit().getRegion().getCoordinate());
+    				su.sortValue_2 = FFToolsRegions.lastPathLength;
     				possibleDepots.add(su);
     			}
     		}
@@ -398,6 +403,15 @@ public class Reparaturschiff extends Script implements Comparable<Reparaturschif
 	
 	
 	public int compareTo(Reparaturschiff a) {
+		/*
+		 * actDist2target: Entfernung in Reisewochen
+		 * falls gleich, dann den nehmen, der von der normalen Entfernung dichter drann ist - ggf auch Pfadlänge
+		 */
+		
+		
+		if (this.actDist2target == a.actDist2target) {
+			return this.actDist2target_Regions - a.actDist2target_Regions;
+		}
 		
 		return this.actDist2target - a.actDist2target;
 		

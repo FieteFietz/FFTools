@@ -71,6 +71,8 @@ public class FFToolsRegions {
 	
 	public static Region nextShipStop = null;
 	
+	public static int lastPathLength=-1;
+	
 	
 	/**
 	 * Gibt es eine Koordinate in den übergebenen Regionen?
@@ -829,6 +831,8 @@ public class FFToolsRegions {
 			return -1;
 		}
 		
+		FFToolsRegions.lastPathLength = pathL.size();
+		
 		int runden=0;
 		int actDist=0;
 		// nun mal doch druchgehen und mitzählen, bei Landkontakt endet die Runde
@@ -1303,10 +1307,32 @@ public class FFToolsRegions {
 					// nix mehr da - remove des kompletten Tags
 					r.removeTag("mapline");
 				}
-				
 			}	
 		}
 	}
+	
+	public static boolean exists_Mapline(GameData gd, String identifier) {
+		for (Region r : gd.getRegions()){
+			if (r.containsTag("mapline")){ 
+				StringTokenizer st = new StringTokenizer(r.getTag("mapline"), " ");
+				// alle Elemente des Tags durchgehen
+				while(st.hasMoreTokens()) {
+					String token = st.nextToken();
+					String[] ss = token.split(",");
+					
+					// wir erkennen "unsere" am 7. Parameter
+					if (ss.length>6){
+						if (ss[6].equalsIgnoreCase(identifier)){
+							// Treffer
+							return true;
+						}
+					}
+				}
+			}	
+		}
+		return false;
+	}
+	
 	
 	public static void remove_AllMapLines(GameData gd,String identifier){
 		

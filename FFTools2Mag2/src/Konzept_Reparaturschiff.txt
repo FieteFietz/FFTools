@@ -35,7 +35,8 @@ SeeWerft [53]
 ReparaturSchiff [64]
 	- prüft auf Entfernung zur Basis und Lohn reserve und HolzMinBestand der SeeWerft
 	- wenn Bingo
-		- RTB
+		- wenn Silber: Suche nach Depot in Ebene/Wald innerhalb Reisezeit Reservewochen
+		- sonst/wenn alle Seewerften Holzmangel haben: RTB
 	- wenn Ready
 		- Anmeldung beim SeeWerftManager
 		

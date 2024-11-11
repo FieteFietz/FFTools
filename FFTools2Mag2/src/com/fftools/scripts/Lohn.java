@@ -88,6 +88,10 @@ public class Lohn extends MatPoolScript{
 		
 		// anzahl der in Frage kommenden Personen bestimmen
 		int personenAnzahl = super.scriptUnit.getUnit().getModifiedPersons();
+		
+		if (personenAnzahl<=0) {
+			this.addComment("Hinweis von Lohn: keine Personen in der Einheit berücksichtigt.");
+		}
 		// wurde was dazurekrutiert?
 		// personenAnzahl += super.scriptUnit.getRecruitedPersons();
 		

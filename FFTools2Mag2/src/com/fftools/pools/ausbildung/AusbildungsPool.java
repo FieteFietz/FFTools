@@ -35,6 +35,7 @@ private static final OutTextClass outText = OutTextClass.getInstance();
 public static final ReportSettings reportSettings = ReportSettings.getInstance();
 private AusbildungsManager ausbildungsManager = null;
 private Region region=null;
+private boolean LernfixAuto=false;
 private ArrayList<AusbildungsRelation> relationList=null;
 
 // Reihenfolge der Skills nach Prio in der Region.
@@ -195,6 +196,7 @@ private MatPool matPool = null;
 		
 		// eventuell veränderte VorratsRundenanzahl
 		int newVorratsRunden=reportSettings.getOptionInt("Ausbildung_LernSilberVorratsRunden", this.region);
+		this.LernfixAuto = reportSettings.getOptionBoolean("LernfixAuto", this.region);
     	if (newVorratsRunden>-1 && newVorratsRunden<=10){
     		this.vorratsRunden = newVorratsRunden;
     	}
@@ -1011,11 +1013,16 @@ private MatPool matPool = null;
 					}
 					relation.getScriptUnit().addComment("AusbildungsPool: Einheit ist Lehrer! (Lehrt insgesammt " + anzSchueler + " Schüler)");
 					Skill lehrfach = (Skill)relation.getSubject().values().toArray()[relation.getSubject().values().toArray().length-1];
+					int Kosten = relation.getLernKosten(lehrfach);
 					relation.setOrderedSkillType(lehrfach.getSkillType());
 					// Tags setzen
 					relation.getScriptUnit().putTag(CRParser.TAGGABLE_STRING3, "Lehrer - Pool");				
 					relation.getScriptUnit().putTag(CRParser.TAGGABLE_STRING4, lehrfach.getName());
-					relation.getScriptUnit().addOrder("LEHREN " + schuelerId,true);
+					if (this.LernfixAuto && Kosten<=0) {
+						relation.getScriptUnit().addOrder("LERNEN AUTO " + lehrfach.getName(),true);
+					} else {
+						relation.getScriptUnit().addOrder("LEHREN " + schuelerId,true);
+					}
 				} else { // PooldedRelations ist null!
 					outText.addOutLine("AusbildungsPool: Lehrer (" + relation.getScriptUnit().getUnit().getID()+") ohne Schüler");
 					relation.getScriptUnit().doNotConfirmOrders("AusbildungsPool: Lehrer ohne Schüler!");
@@ -1031,24 +1038,31 @@ private MatPool matPool = null;
 				// Tags setzen
 				relation.getScriptUnit().putTag(CRParser.TAGGABLE_STRING4, lernfach.getName());	
 				
-				int Kosten = relation.getLernKosten(lernfach.getSkillType());
+				int Kosten = relation.getLernKosten(lernfach);
 				String Befehl="LERNEN ";
+				String BefehlAuto = "LERNEN AUTO ";
 				// Lernfach ein fiktives magisches Talent?
 				if (lernfach.getName().equals("draig")||lernfach.getName().equals("illaun")||lernfach.getName().equals("tybied")||lernfach.getName().equals("gwyrrd")||lernfach.getName().equals("cerddor")){
 					Befehl += "Magie";
-					// relation.getScriptUnit().addOrder("LERNEN Magie",true);
+					BefehlAuto += "Magie" ;
 				}
 				else{
 					// Ok kein magier.. dann standard
 					Befehl += lernfach.getName();
-					// relation.getScriptUnit().addOrder("LERNEN " + lernfach.getName(),true);
-					
+					BefehlAuto += lernfach.getName();
 				}
 				
 				if (Kosten>0){
 					Befehl += " " + Kosten;
 				}
-				relation.getScriptUnit().addOrder(Befehl,true);
+				
+				if (this.LernfixAuto && Kosten<=0) {
+					relation.getScriptUnit().addOrder(BefehlAuto,true);
+				} else {
+					relation.getScriptUnit().addOrder(Befehl,true);
+				}
+				
+				
 				
 				relation.setOrderedSkillType(lernfach.getSkillType());
                 // Kommentare und Bestätigungen setzen

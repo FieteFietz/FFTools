@@ -1,0 +1,22 @@
+
+
+
+***** 2024-04-19 13:31:13: new logentries follow....******
+
+Versions:
+FFTools2: 0.974 RC, jar not read: FFTools2.jar
+Magellan: null
+
+
+2024-04-19 13:31:13:This is FFTools2 Version: 0.974 RC, jar not read: FFTools2.jar
+
+2024-04-19 13:31:13:findSettingsDirectory returned: C:\Users\Fiete\AppData\Roaming\Magellan
+2024-04-19 13:31:13:took as reportname-parameter: D:\Fiete\Eressea\Reports\1291\Delta_1291.zip
+2024-04-19 13:31:13:RunConsole main: directory used for ini files: C:\Users\Fiete\AppData\Roaming\Magellan
+2024-04-19 13:31:13:setting path to FFTools2 to: D:\Fiete\Eressea\Magellan_2.1\FFTools2.jar
+2024-04-19 13:31:13:Again: This is FFTools2 Version: 0.974 RC, jar not read: D:\Fiete\Eressea\Magellan_2.1\FFTools2.jar
+
+2024-04-19 13:31:13:FFtools2 expecting here: D:\Fiete\Eressea\Magellan_2.1\FFTools2.jar
+2024-04-19 13:31:13:FFTools_Scripter Console Start
+2024-04-19 13:31:13:trying to load: D:\Fiete\Eressea\Reports\1291\Delta_1291.zip
+2024-04-19 13:31:13:java.nio.file.NoSuchFileException: D:\Fiete\Eressea\Reports\1291\Delta_1291.zip

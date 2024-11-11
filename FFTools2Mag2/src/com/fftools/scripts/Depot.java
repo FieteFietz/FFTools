@@ -1,30 +1,39 @@
 package com.fftools.scripts;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import com.fftools.ScriptUnit;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.trade.TradeArea;
 import com.fftools.trade.TradeRegion;
 import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
 import com.fftools.utils.FFToolsRegions;
+import com.fftools.utils.GotoInfo;
 
 import magellan.library.Building;
+import magellan.library.CoordinateID;
+import magellan.library.Faction;
 import magellan.library.Item;
 import magellan.library.Region;
+import magellan.library.TempUnit;
 import magellan.library.Unit;
+import magellan.library.UnitID;
 import magellan.library.rules.BuildingType;
 import magellan.library.rules.ItemType;
+import magellan.library.rules.Race;
 import magellan.library.utils.Utils;
 
 public class Depot extends TransportScript{
 	
 	private static final int Duchlauf_main=20;
+	private static final int Duchlauf_Bauern=29;
 	private static final int Durchlauf_nachLetztemMP = 800; //nur Info
 	
-	private int[] runsAt = {Duchlauf_main,Durchlauf_nachLetztemMP};
+	private int[] runsAt = {Duchlauf_main,Duchlauf_Bauern,Durchlauf_nachLetztemMP};
 	
 	public static int default_request_prio = 1;
 	private String default_request_kommentar = "Depot";
@@ -32,6 +41,7 @@ public class Depot extends TransportScript{
 	private int default_runden_silbervorrat = 3;
 	private int default_silbervorrat_maxPrio = 100;
 	private int default_silbervorrat_minPrio = 10;
+	
 	
 	private int used_silbervorrat_maxPrio = 0;
 	
@@ -42,6 +52,8 @@ public class Depot extends TransportScript{
 	private boolean debugOutput = false;
 	
 	private boolean mitBauernCheck = true;
+	
+	private int minFreeUnitsFaction_BauernHome = 20;
 	
 	
 	/**
@@ -59,6 +71,8 @@ public class Depot extends TransportScript{
 		switch (scriptDurchlauf){
 		
 			case Duchlauf_main:this.runDepot(scriptDurchlauf);break;
+			
+			case Duchlauf_Bauern: this.checkBauernHome();break;
 
 			case Durchlauf_nachLetztemMP:this.runNachMP(scriptDurchlauf);break;
 			
@@ -194,8 +208,12 @@ public class Depot extends TransportScript{
 					this.addMatPoolRequest(actMPR);
 					this.silberDepotMPRs.add(actMPR);
 				}
+			} else {
+				this.addComment("**Depot-debug: AnzahlRunden=0");
 			}
 			
+		} else {
+			this.addComment("**Depot-debug: Reportsettings - DepotSilber=nein");
 		}
 		
 		// versuch, auch das Depot als TR-Name Setter zuzulassen
@@ -249,6 +267,211 @@ public class Depot extends TransportScript{
 		
 		return erg;
 	}
+	
+	/**
+	 * wenn repoprtsetting BauernHome gesetzt ist, prüfen, ob wir eine Temp auf den Weg bringen sollten...
+	 */
+	private void checkBauernHome() {
+		Region r = this.getUnit().getRegion();
+		String BauernHome = reportSettings.getOptionString("BauernHome", r);
+		if (BauernHome!=null) {
+			if (BauernHome.length()>2){
+				CoordinateID actDest = null;
+				if (BauernHome.indexOf(',') > 0) {
+					actDest = CoordinateID.parse(BauernHome,",");
+				}
+				if (actDest==null){
+					this.doNotConfirmOrders("!!! BauernHOME Angabe nicht erkannt (2)!");
+					return;
+				} else {
+					
+					if (actDest.equals(this.region().getCoordinate())) {
+						// wir sind in der Home-Region - da machen wir keinen Bauerntransfer
+						this.addComment("BauernHome: Depot ist in der HomeRegion - kein Bauerntransfer");
+						return;
+					}
+					
+					// sieht gut aus
+					// Bauerncheck durchführen
+					int actPersonen = r.getModifiedPeasants();
+					int maxPersonen = Utils.getIntValue(this.gd_Script.getGameSpecificRules().getMaxWorkers(r), 0);
+					
+					// Bauernwachstum prognistizieren
+					int Bauernwachstum = (int) Math.ceil(actPersonen * 0.001);
+					actPersonen += Bauernwachstum;
+					int todoRekrutieren = actPersonen - maxPersonen;
+					int todoBauernRekruten = todoRekrutieren;
+					if (todoRekrutieren>r.modifiedRecruit()) {
+						todoRekrutieren = r.modifiedRecruit();
+					}
+					if (actPersonen>maxPersonen) {
+						this.addComment("Bauernhome: Bauernprognose " + actPersonen + " ist größer als RegionsMax " + maxPersonen + ", versende "  + todoRekrutieren + " Bauern");
+						
+						if (this.getUnit().isStarving()) {
+							this.doNotConfirmOrders("!!! Das Depot hungert: überschüssige Bauern können nicht versendet werden!!!");
+						} else {
+							Race ra = super.scriptUnit.getUnit().getDisguiseRace();
+							if (ra==null){
+								ra = super.scriptUnit.getUnit().getRace();
+							}
+							
+							// bei Orks verdoppeln
+							
+							Race orkRace = this.gd_Script.getRules().getRace("Orks",false);
+							if (orkRace==null){
+								this.doNotConfirmOrders("Ork-Rasse nicht in den Regeln gefunden - FFTools braucht ein Update");
+							} else {
+								if (ra.equals(orkRace)){
+									todoRekrutieren = todoRekrutieren*2;
+									this.addComment("Rekrutieren: Orks erkannt. Maximal mögliche Rekruten verdoppelt auf:" + todoRekrutieren);
+									
+								}
+							}
+							
+							
+							int silber_benoetigt = todoRekrutieren * ra.getRecruitmentCosts();
+							ItemType silverType=this.scriptUnit.getScriptMain().gd_ScriptMain.getRules().getItemType("Silber",false);
+							Item i = this.scriptUnit.getModifiedItem(silverType);
+							
+							if (i==null) {
+								this.doNotConfirmOrders("!!! BauernHome: Depot hat gar kein Silber ??!");
+								return;
+							}
+							if (i.getAmount()<silber_benoetigt) {
+								this.doNotConfirmOrders("!!! BauernHome: Depot hat zu wenig Silber ??! (" + i.getAmount() + "/" + silber_benoetigt + " Silber)");
+								return;
+							}
+						
+						
+							if (!BauernMitreise(todoBauernRekruten)) {
+								
+								// Hat die Fraktion noch genügend Einheiten frei
+								Faction f = this.getUnit().getFaction();
+								if (f.modifiedUnits()!=null) {
+									if (f.modifiedUnits().size()>(2500 - this.minFreeUnitsFaction_BauernHome)) {
+										this.doNotConfirmOrders("!!! Bauernhome: nicht mehr genügend Einheiten frei!!!");
+										return;
+									}
+								}
+								
+								
+								// temp anlegen
+								// neue Unit ID
+								Unit parentUnit = this.scriptUnit.getUnit();
+								UnitID id = UnitID.createTempID(this.gd_Script, this.scriptUnit.getScriptMain().getSettings(), parentUnit);
+								// Die tempUnit anlegen
+								TempUnit tempUnit = parentUnit.createTemp(this.gd_Script,id);
+								tempUnit.addOrder(Rekrutieren.scriptCreatedTempMark);
+								// Kommandos setzen
+								// Kommandos durchlaufen
+								
+								tempUnit.addOrder("BENENNE Einheit \"Bauernwanderung\"");
+								String RekrutierString = "Rekrutieren " + todoRekrutieren + " ;Bauernwanderung"; 
+								tempUnit.addOrder(RekrutierString);
+								tempUnit.addOrder("// script Bauern Home=" + BauernHome);
+								tempUnit.addOrder("// aus " + this.region().toString());
+								tempUnit.addOrder("// setTag eTag1 Bauernwanderung");
+								tempUnit.setOrdersConfirmed(true);
+								
+								ScriptUnit su = this.scriptUnit.getScriptMain().addUnitLater(tempUnit);
+								GotoInfo GI = FFToolsRegions.makeOrderNACH(su, this.region().getCoordinate(), actDest,true,"BauernHome");
+								su.specialProtectedOrders.add(RekrutierString);
+								su.specialProtectedOrders.add("NACH " + GI.getPath());
+								
+								Lohn L = new Lohn();
+								L.setScriptUnit(su);
+								L.setGameData(this.gd_Script);
+								L.setClient(this.c);
+								su.addAScript(L);
+								
+								MatPoolRequest MPR = new MatPoolRequest(L,silber_benoetigt,"Silber",1000,"Rekrutier Silber für Bauernwanderung");
+								L.addMatPoolRequest(MPR);
+							}
+						}
+						
+					} else {
+						this.addComment("Bauernhome: Bauernprognose " + actPersonen + " ist kleiner als RegionsMax " + maxPersonen + " Bauern");
+					}  // actPersonen>maxPersonen
+					
+				} 
+			} else {
+				//  // Länge <=2
+				this.doNotConfirmOrders("!!! BauernHOME Angabe nicht erkannt (1)!");
+				return;
+			}
+		} // Bauernhome überhaupt gesetzt
+	}
+	
+	/*
+	 * Sind bereits Bauern auf Wanderschaft in der Region? Dann sollen die Rekrutieren
+	 */
+	private boolean BauernMitreise(int AnzahlRekruten) {
+		
+		// alle scriptunits in der Region durchgehen
+		Hashtable <Unit, ScriptUnit> regionsScriptUnits = this.scriptUnit.getScriptMain().getScriptUnits(this.region());
+		if (regionsScriptUnits!=null) {
+			for (ScriptUnit su:regionsScriptUnits.values()) {
+				// ist su ein Bauern-script
+				Object o = su.getScript(Bauern.class);
+				if (o!=null) {
+					// Bingo
+					Bauern bauern = (Bauern) o;
+					// Rasse
+					Race ra = bauern.scriptUnit.getUnit().getDisguiseRace();
+					if (ra==null){
+						ra = bauern.scriptUnit.getUnit().getRace();
+					}
+					// bei Orks verdoppeln
+					int todoRekrutieren = AnzahlRekruten;
+					Race orkRace = this.gd_Script.getRules().getRace("Orks",false);
+					if (orkRace==null){
+						this.doNotConfirmOrders("Ork-Rasse nicht in den Regeln gefunden - FFTools braucht ein Update");
+					} else {
+						if (ra.equals(orkRace)){
+							todoRekrutieren = todoRekrutieren*2;
+							bauern.addComment("Rekrutieren: Orks erkannt. Maximal mögliche Rekruten verdoppelt auf:" + todoRekrutieren);
+						}
+					}
+					
+					String RekrutierString = "REKRUTIERE " + todoRekrutieren + " ;BauernHome";
+					bauern.addOrder(RekrutierString, true);
+					
+					int silber_benoetigt = todoRekrutieren * ra.getRecruitmentCosts();
+					ItemType silverType=this.scriptUnit.getScriptMain().gd_ScriptMain.getRules().getItemType("Silber",false);
+					Item i = this.scriptUnit.getModifiedItem(silverType);
+					
+					if (i==null) {
+						this.doNotConfirmOrders("!!! BauernHome: Depot hat gar kein Silber ??!");
+						return true;
+					}
+					if (i.getAmount()<silber_benoetigt) {
+						this.doNotConfirmOrders("!!! BauernHome: Depot hat zu wenig Silber ??! (" + i.getAmount() + "/" + silber_benoetigt + " Silber)");
+						return true;
+					}
+					
+					
+					// Hat die Fraktion noch genügend Einheiten frei
+					Faction f = bauern.getUnit().getFaction();
+					if (f.modifiedUnits()!=null) {
+						if (f.modifiedUnits().size()>(2500 - this.minFreeUnitsFaction_BauernHome)) {
+							bauern.doNotConfirmOrders("!!! Bauernhome: nicht mehr genügend Einheiten frei!!! bei " + f.toString());
+							this.doNotConfirmOrders("!!! Bauernhome: nicht mehr genügend Einheiten frei!!! bei " + f.toString());
+							return true;
+						}
+					}
+					
+					
+					
+					MatPoolRequest MPR = new MatPoolRequest(bauern,silber_benoetigt,"Silber",1000,"Rekrutier Silber für Bauernwanderung");
+					bauern.addMatPoolRequest(MPR);
+					this.addComment("BauernHome: Rekrutierung übernimmt: " + bauern.scriptUnit.toString());
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	
 	/**
 	 * rein informativ für die unit

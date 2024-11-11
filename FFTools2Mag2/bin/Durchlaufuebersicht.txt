@@ -9,11 +9,13 @@ Bauen				8 Baumanager
 					10 (vor MP)
 					100 (nach MP)
 Bauauftrag			8
+Bauern				23
 Beschreibung		159
 Burgenbau			8
 Checkhelpstatus		161
-Depot				2  (Anmeldung TM, alles requesten)
-					152 (nur Info, Silberdepotcheck)
+Depot				20  (Anmeldung TM, alles requesten)
+					29 Bauern
+					800 (nur Info, Silberdepotcheck, Bauerncheck)
 EnterBuilding       2  (nach AuramaxWarning)
 Eisen				50 (vor Lernfix)
 Forester			350 (vor letztem Matpool
@@ -26,25 +28,33 @@ Handeln				3	Anfordern
 					70  Verkaufen
 					152 Kann ich kaufen?
 Heldenregion		10
-ifNotRegion			1
-ifRegion			1
+ifEnemy				14,15,16
+ifNotEnemy			14,15,16
+ifNotRegion			14,15,16
+ifNotRegionType		14,15,16
+ifNotSkill			14,15,16
+ifRegion			14,15,16
+ifRegionType		14,15,16
+ifSkill				14,15,16
 ifUnit				1
 Lehren				80
 Lernen				60
 					850 nach MP, Lernsilber?
 Lernfix				68
 Liefere				160
-Lohn				4 Anforderung
-					100 Check
+Lohn				34 Anforderung
+					420 Check
 Lumberjack			51 (vor Lernfix), 205 (nach MatPool)
 Material			3
+maxBestandAnfang	14,15,16
+minBestandAnfang	14,15,16
 MyMonster			50
 OnTAC				15 - add
 					16 - info
 Pferde				2
 					36 nach MP1 (nur bei Zuechter, wenn genügend Pferde, dann züchten, sonst Lernfix)
-Rekrutieren			2 Geld beantragen
-					162 check + Befehl
+Rekrutieren			26 Geld beantragen
+					28 check + Befehl
 Request				10
 					100 (noch offen, unused!)
 RequestInfo			156
@@ -107,20 +117,21 @@ Overlord SkriptinfosOverlord Skriptinfos
 10:Settrankorder
 12:Setkapa
 13->Manager:TradeAreaHandler
-14:Auramaxwarning
-15:Ifregion
-16:Setregionicon,Ifnotregion
+14:Auramaxwarning, IfSkill (14,15,16), IfNotSkill (14,15,16), IfRegionType (14,15,16), IfNotRegionType (14,15,16)
+15:Ifregion (14,15,16), IfEnemy (14,15,16), IfNotEnemy (14,15,16), IfRegionType (14,15,16), IfNotRegionType (14,15,16)
+16:Setregionicon,Ifnotregion (14,15,16), IfRegionType (14,15,16), IfNotRegionType (14,15,16)
 17:Ifunit
 18:Runde
 19:Ack
 20:Depot
 21:Trankeffekt
 22:Gibnix
+23:Bauern
 25:Enterbuilding
 26:Rekrutieren
 27->Manager:MatPoolManager
 28:Rekrutieren
-29:Pferde
+29:Pferde, Depot (Bauern)
 30:Material
 32:Handeln
 33:Settradeareaconnection
@@ -131,9 +142,7 @@ Overlord SkriptinfosOverlord Skriptinfos
 50:Transport,Mymonster
 51:Zupfer,Steine,Eisen,Lumberjack,Laen
 52:Gebaeudeunterhalt
-
 53:SeeWerft
-
 55->Manager:PferdeManager
 57->Manager:MatPoolManager
 58:Seeschlangenjagd (Attacker)

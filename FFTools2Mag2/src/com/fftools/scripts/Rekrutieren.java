@@ -4,11 +4,14 @@ import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
 
+import magellan.library.Building;
 import magellan.library.Order;
 import magellan.library.Region;
 import magellan.library.TempUnit;
 import magellan.library.Unit;
 import magellan.library.UnitID;
+import magellan.library.gamebinding.EresseaRelationFactory;
+import magellan.library.rules.CastleType;
 import magellan.library.rules.Race;
 
 
@@ -38,6 +41,13 @@ public class Rekrutieren extends MatPoolScript{
 	private int recruitCosts = 10;
 	
 	private int anzahlGeplant=0;
+	
+	/**
+	 * spezialmodi
+	 * 1) EON
+	 */
+	private String mode="";
+	
 	
 	/**
 	 * Parameterloser Constructor
@@ -98,10 +108,13 @@ public class Rekrutieren extends MatPoolScript{
 		
 		// Silber berechen...Race rausfinden
 		// Race r = super.scriptUnit.getUnit().race;
+		/*
 		Race ra = super.scriptUnit.getUnit().getDisguiseRace();
 		if (ra==null){
 			ra = super.scriptUnit.getUnit().getRace();
 		}
+		*/
+		Race ra = super.scriptUnit.getUnit().getRace();
 		
 		
 		int anzahl = 0;
@@ -173,6 +186,74 @@ public class Rekrutieren extends MatPoolScript{
 			this.doNotConfirmOrders("!!!Rekrutieren: maxPersonen erreicht -> Einheit rekrutiert nicht und verbleibt unbest‰tigt");
 		}
 		
+		// 20240428 FF EON Also Unterhalten, bei genug Silbervorrat Unterhaltung lernen bis 3, dann verw‰ssern auf 2. 
+		// Das geht recht einfach mit 2/3 der aktuellen Personenzahl. Und das ganze wird wiederholt bis die Anzahl 
+		// an Zwergen 1/10 des ‹berschusses den die Bauern erarbeiten entspricht. 
+		
+		String actMode = OP.getOptionString("mode");
+		if (actMode.equalsIgnoreCase("EON")) {
+			anzahl = this.getUnit().getPersons();
+			if (anzahl==0) {
+				this.doNotConfirmOrders("!!!Rekrutieren: mode EON - aktuelle Anzahl der Personen ist 0!!!");
+				return;
+			}
+			anzahl = (int) Math.floor((2*anzahl)/3);
+			this.addComment("mode EON: zu rekrutieren 2/3 der Personen: " + anzahl + " Personen");
+			
+			// ‹berschuss der Bauern
+			// Bauernverdienst
+			int bauernverdienst = (this.region().getPeasantWage()-10)*this.region().getModifiedPeasants();
+			if (this.region().getTrees()>0){
+				bauernverdienst-=this.region().getTrees() * 8 * (this.region().getPeasantWage()-10);
+			}
+			if (this.region().getSprouts()>0){
+				bauernverdienst-=this.region().getSprouts() * 4 * (this.region().getPeasantWage()-10);
+			}
+			this.addComment("mode EON: Bauernverdienst: " + bauernverdienst + " Silber");
+			int maxPersonenEON=(int) Math.floor(bauernverdienst/10);
+			this.addComment("mode EON: maxPersonen: " + maxPersonenEON);
+			int maxAnzahlEON = maxPersonenEON - this.getUnit().getPersons();
+			this.addComment("mode EON: zu Rekrutieren gem‰ﬂ Bauernverdienst: " + maxAnzahlEON);
+			anzahl = Math.min(anzahl, maxAnzahlEON);
+			if (anzahl<0) {anzahl=0;}
+			
+			// ceck grˆsse der Burg
+			Building b = this.getUnit().getModifiedBuilding();
+			if (b!=null) {
+				if (b.getBuildingType() instanceof CastleType) {
+					// Anzahl der Insassen ermiiteln
+					int anz_insassen = 0;
+					for (Unit u:b.modifiedUnits()) {
+						anz_insassen += u.getModifiedPersons();
+					}
+					int max_dazu = b.getSize()-anz_insassen;
+					if (max_dazu<0) {
+						max_dazu=0;
+					}
+					this.addComment("mode EON: maximale Rekruten wegen Burgengrˆﬂe: " + max_dazu + " (Burg: " + b.getSize() + ", Insassen: " + anz_insassen + ")");
+					if (anzahl>max_dazu) {
+						anzahl=max_dazu;
+					}
+				} else {
+					this.addComment("mode EON: kein Check der Burggrˆsse, Einheit ist nicht in einer Burg");
+				}
+			} else {
+				this.addComment("mode EON: kein Check der Burggrˆsse, Einheit ist nicht in einem Geb‰ude");
+			}
+			
+			// Abgleich mit maximal zu rekrutierenden Bauern in der Region
+			int maxRecruitRegion = this.getUnit().getRegion().getRecruits();
+			if (maxRecruitRegion>anzahl) {
+				this.addComment("mode EON: geplante Anzahl in der Region verf¸gbar (max: " + maxRecruitRegion + ")");
+			} else {
+				this.addComment("mode EON: geplante Anzahl nicht der Region verf¸gbar, setze auf Rekrutierungslimit: " + maxRecruitRegion);
+				anzahl=maxRecruitRegion;
+			}
+			
+			this.addComment("mode EON: zu Rekrutieren final: " + anzahl);
+			this.anzahlGeplant=anzahl;
+		}
+		
 		// Silber berechen
 		this.recruitCosts = ra.getRecruitmentCosts();
 		this.silber_benoetigt = anzahl * this.recruitCosts;
@@ -219,32 +300,42 @@ public class Rekrutieren extends MatPoolScript{
 				
 				// bingo !
 				this.addComment("-> automatische TEMP Erstellung");
-				while (personen>tempAB){
-					// temp anlegen
-					// neue Unit ID
-					Unit parentUnit = this.scriptUnit.getUnit();
-					UnitID id = UnitID.createTempID(this.gd_Script, this.scriptUnit.getScriptMain().getSettings(), parentUnit);
-					// Die tempUnit anlegen
-					TempUnit tempUnit = parentUnit.createTemp(this.gd_Script,id);
-					tempUnit.addOrder(Rekrutieren.scriptCreatedTempMark);
-					// Kommandos setzen
-					// Kommandos durchlaufen
-					for (Order o:this.scriptUnit.getUnit().getOrders2()){
-						String s = o.getText();
-						if (s.toLowerCase().startsWith("// tempunit:")){
-							s = s.substring(12);
-							tempUnit.addOrder(s);
+				// 20240526: Hinweis von EON
+				/*
+				 * Nicht sehr wichtig, aber script Rekrutieren und vermutlich auch andere, versucht auch mit hungernden Einheiten Personen 
+				 * abzugeben, was eressea nicht erlaubt.
+				 */
+				
+				if (this.getUnit().isStarving()) {
+					this.doNotConfirmOrders("!!! temp kann nicht erstellt werden, einheit hungert !!!");
+				} else {
+					while (personen>tempAB){
+						// temp anlegen
+						// neue Unit ID
+						Unit parentUnit = this.scriptUnit.getUnit();
+						UnitID id = UnitID.createTempID(this.gd_Script, this.scriptUnit.getScriptMain().getSettings(), parentUnit);
+						// Die tempUnit anlegen
+						TempUnit tempUnit = parentUnit.createTemp(this.gd_Script,id);
+						tempUnit.addOrder(Rekrutieren.scriptCreatedTempMark);
+						// Kommandos setzen
+						// Kommandos durchlaufen
+						for (Order o:this.scriptUnit.getUnit().getOrders2()){
+							String s = o.getText();
+							if (s.toLowerCase().startsWith("// tempunit:")){
+								s = s.substring(12);
+								tempUnit.addOrder(s);
+							}
 						}
+						tempUnit.setOrdersConfirmed(true);
+						// Personen ¸bergeben
+						int tempModPersons= tempAB;
+						if (OP.getOptionBoolean("tempSingleUnit", false)) {
+							tempModPersons = personen-1;
+						}
+						String newCommand = "GIB TEMP " + id.toString() + " " + tempModPersons + " Personen ;script Rekrutieren";
+						super.addOrder(newCommand, true);
+						personen -= tempModPersons;
 					}
-					tempUnit.setOrdersConfirmed(true);
-					// Personen ¸bergeben
-					int tempModPersons= tempAB;
-					if (OP.getOptionBoolean("tempSingleUnit", false)) {
-						tempModPersons = personen-1;
-					}
-					String newCommand = "GIB TEMP " + id.toString() + " " + tempModPersons + " Personen ;script Rekrutieren";
-					super.addOrder(newCommand, true);
-					personen -= tempModPersons;
 				}
 
 			} else {
@@ -294,5 +385,18 @@ public class Rekrutieren extends MatPoolScript{
 		// this.region().refreshUnitRelations(true);
 		this.getUnit().reparseOrders();
 		this.scriptUnit.incRecruitedPersons(anzahl);
+		
+		// Test!! -> funktioniert
+		EresseaRelationFactory ERF = ((EresseaRelationFactory) this.gd_Script.getGameSpecificStuff().getRelationFactory());
+		boolean updaterStopped = ERF.isUpdaterStopped();
+		if (!updaterStopped){
+			ERF.stopUpdating();
+		}
+		ERF.processRegionNow(this.region());
+		if (!updaterStopped){
+			ERF.restartUpdating();
+		}
+		
+		
 	}
 }

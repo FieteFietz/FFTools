@@ -492,7 +492,6 @@ public class TradeAreaConnector {
 		}
 		Region r = this.SU1.getUnit().getRegion();
 		FFToolsRegions.remove_MapLines_From_Region(r, TradeAreaHandler.MAPLINE_TAG_ID);
-		
 	}
 	
 	/*
@@ -502,10 +501,7 @@ public class TradeAreaConnector {
 		if (this.SU1==null || this.SU2==null){
 			return;
 		}
-		
-		
 		FFToolsRegions.addMapLine(this.SU1.getUnit().getRegion(), this.SU2.getUnit().getRegion().getID(), 153, 255, 204, 5, TradeAreaHandler.MAPLINE_TAG_ID);
-		
 	}
 
 	public int getSpeed() {

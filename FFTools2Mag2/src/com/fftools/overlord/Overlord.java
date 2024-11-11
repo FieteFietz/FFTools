@@ -179,6 +179,7 @@ public class Overlord {
 					lastProzentAngabe = System.currentTimeMillis();
 				}
 			}
+			this.scriptMain.addLaterUnits();
 			/*
 			outText.addNewLine();
 			outText.addOutChars("Zeitsumme 1: " + this.Zeitsumme1);

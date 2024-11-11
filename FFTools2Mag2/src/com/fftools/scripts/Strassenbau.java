@@ -91,7 +91,7 @@ public void runScript(int scriptDurchlauf){
 		this.PrioStrassen = OP.getOptionInt("PrioStrassen", this.PrioStrassen);
 		this.PrioGeb‰ude = OP.getOptionInt("PrioGeb‰ude", this.PrioGeb‰ude);
 		
-		this.addComment("Strassenbau-Einstellungen: " + this.AnzahlStrassen + " Strassen mit Prio " + this.PrioStrassen + ", " + this.AnzahlGeb‰ude + " Geb‰ude mit Prio " + this.PrioGeb‰ude );
+		this.addComment("Straﬂenbau-Einstellungen: " + this.AnzahlStrassen + " Straﬂen mit Prio " + this.PrioStrassen + ", " + this.AnzahlGeb‰ude + " Geb‰ude mit Prio " + this.PrioGeb‰ude );
 		
 		this.confirmUnemployed = OP.getOptionBoolean("confirmUnemployed", this.confirmUnemployed);
 		
@@ -125,24 +125,24 @@ public void runScript(int scriptDurchlauf){
 									TABM =  TA.getTradeAreaBauManager();
 								}
 								TABM.addKeinStrassenbau(actR);
-								this.addComment("Strassenbau: notIn erkannt f¸r: " + actR.toString());
+								this.addComment("Straﬂenbau: notIn erkannt f¸r: " + actR.toString());
 							} else {
 								this.doNotConfirmOrders("TA in Range not found ?! - could not add notIn-Region");
 								return;
 							}
 							
 						} else {
-							this.doNotConfirmOrders("Strassenbau - notIn: Bestandteil " + s1 + " kann nicht als X,Y erkannt werden (Parser-Fehler");
+							this.doNotConfirmOrders("Straﬂenbau - notIn: Bestandteil " + s1 + " kann nicht als X,Y erkannt werden (Parser-Fehler");
 							return;
 						}
 						
 					} else {
-						this.doNotConfirmOrders("Strassenbau - notIn: Bestandteil " + s1 + " kann nicht als X,Y erkannt werden");
+						this.doNotConfirmOrders("Straﬂenbau - notIn: Bestandteil " + s1 + " kann nicht als X,Y erkannt werden");
 						return;
 					}
 				}
 			} else {
-				this.doNotConfirmOrders("Strassenbau - notIn: Liste der Regionen hat keinen Eintrag");
+				this.doNotConfirmOrders("Straﬂenbau - notIn: Liste der Regionen hat keinen Eintrag");
 				return;
 			}
 		}

@@ -334,16 +334,16 @@ public void runScript(int scriptDurchlauf){
 		this.minStassenbauTalent = OP.getOptionInt("minStrassenbau", this.minStassenbauTalent);
 		
 		if (this.spec==Bauen.STRASSE){
-			if (this.scriptUnit.getSkillLevel("Strassenbau")<this.minStassenbauTalent){
-				this.addComment("Bauen: minTalent Strassenbau nicht erreicht, ich sollte lernen.");
-				this.lernTalent="Strassenbau";
-				this.setFinalStatusInfo("Min Strassenbau. ");
+			if (this.scriptUnit.getSkillLevel("Straﬂenbau")<this.minStassenbauTalent){
+				this.addComment("Bauen: minTalent Straﬂenbau nicht erreicht, ich sollte lernen.");
+				this.lernTalent="Straﬂenbau";
+				this.setFinalStatusInfo("Min Straﬂenbau. ");
 				this.setAutomode_hasPlan(true);
 				isLearning=true;
 				this.LernfixOrder="Talent=Straﬂenbau";
 				this.Lerne();
 			} else {
-				this.addComment("Bauen: minTalent Strassenbau ist erreicht, ich suche Arbeit.");
+				this.addComment("Bauen: minTalent Straﬂenbau ist erreicht, ich suche Arbeit.");
 			}
 		} else {
 			if (this.scriptUnit.getSkillLevel("Burgenbau")<this.minBurgenbauTalent){
@@ -829,7 +829,7 @@ public void runScript(int scriptDurchlauf){
 			String s = "Bauen: noch " + (this.targetSize - this.actSize) + " Steine f¸r Strasse nach " + this.dirLocal + " einzubauen.";
 			this.addComment(s);
 			statusInfo+=s;
-			this.steinRequest = new MatPoolRequest(this,(this.targetSize - this.actSize),"Stein",this.prioSteine,"Strassenbau " + this.dirLocal);
+			this.steinRequest = new MatPoolRequest(this,(this.targetSize - this.actSize),"Stein",this.prioSteine,"Straﬂenbau " + this.dirLocal);
 			if (this.steinSpec.length()>0){
 				this.steinRequest.addSpec(this.steinSpec);
 			}
@@ -1065,9 +1065,9 @@ public void runScript(int scriptDurchlauf){
 		if (okAusl || complete){
 			// bauen, wenn nicht schon anderes Bauscript vorhanden
 			if (this.actSize>0){
-				this.setBauBefehl("MACHEN " + actAnz + " BURG " + this.buildungNummer,"nach MP Burg");
+				this.setBauBefehl("MACHE " + actAnz + " BURG " + this.buildungNummer,"nach MP Burg");
 			} else {
-				this.setBauBefehl( "MACHEN " + actAnz + " BURG","nach MP Burg");
+				this.setBauBefehl( "MACHE " + actAnz + " BURG","nach MP Burg");
 			}
 			this.setFinalStatusInfo("baut " + actAnz + " Burg");
 			this.makingBurgLevelsNow=actAnz;
@@ -1105,7 +1105,7 @@ public void runScript(int scriptDurchlauf){
 		
 		
 		// Step 2 was kˆnnten wir maximal nach Talentstand der Einheit bauen?
-		SkillType bauType = this.gd_Script.getRules().getSkillType("Strassenbau",false);
+		SkillType bauType = this.gd_Script.getRules().getSkillType("Straﬂenbau",false);
 		int anzTalPoints = 0;
 		int Peff = 0; // effektive Personenanzahl
 		Peff = FFToolsUnits.getPersonenEffektiv(this.scriptUnit);
@@ -1117,7 +1117,7 @@ public void runScript(int scriptDurchlauf){
 		}
 		int anzTal=anzTalPoints;
 		
-		this.addComment("Bauen: Einheit ist f‰hig f¸r " + anzTal + " Stufen bei der Strasse");
+		this.addComment("Bauen: Einheit ist f‰hig f¸r " + anzTal + " Stufen bei der Straﬂe");
 
 		int actAnz = Math.min(anzTal,anzRes);
 		
@@ -1130,7 +1130,7 @@ public void runScript(int scriptDurchlauf){
 		// wird Mindestauslastung eingehalten
 		boolean okAusl = false;
 		int Auslastung = (int)Math.floor(((double)actAnz/(double)anzTal) * 100);
-		this.addComment("Bauen: Auslastung bei Strassenbau: " + Auslastung + "% (min:" + this.minAuslastung + "%)");
+		this.addComment("Bauen: Auslastung bei Straﬂenbau: " + Auslastung + "% (min:" + this.minAuslastung + "%)");
 		if (Auslastung>=this.minAuslastung){
 			okAusl=true;
 		}
@@ -1138,13 +1138,13 @@ public void runScript(int scriptDurchlauf){
 		
 		// Entscheidung
 		if (okAusl || complete){
-			this.setBauBefehl("MACHEN STRASSE " + this.dirLocal,"nach MP strasse");
-			this.setFinalStatusInfo("baut Strasse");
+			this.setBauBefehl("MACHE STRASSE " + this.dirLocal,"nach MP strasse");
+			this.setFinalStatusInfo("baut Straﬂe");
 			checkUnterhaltGeb‰ude();
 		} else {
 			// nicht bauen
-			this.addComment("Bauen: Strasse (" + this.dirLocal + ") wird diese Runde nicht weitergebaut.");
-			this.setBauBefehl("","nach MP Strasse");
+			this.addComment("Bauen: Straﬂe (" + this.dirLocal + ") wird diese Runde nicht weitergebaut.");
+			this.setBauBefehl("","nach MP Straﬂe");
 			this.setFinalStatusInfo("wartet auf Strassenbau");
 		}	
 	}

@@ -214,7 +214,7 @@ public class TradeAreaBauManager {
 				// welches Talent brauchen wir
 				String actTalentName = "Burgenbau";
 				if (b.getActTyp()==Bauen.STRASSE){
-					actTalentName="Strassenbau";
+					actTalentName="Straﬂenbau";
 				}
 				
 				// mit welchem level
@@ -822,9 +822,9 @@ public class TradeAreaBauManager {
 	public void addStrassenBau(Strassenbau u){
 		if (this.registerStrassenbau==null){
 			this.registerStrassenbau = u;
-			u.addComment("Automatischer Strassenbau f¸r dieses TA registriert: " + this.getTradeArea().getName());
+			u.addComment("Automatischer Straﬂenbau f¸r dieses TA registriert: " + this.getTradeArea().getName());
 		} else {
-			u.addComment("!! Automatischer Strassenbau konnte nicht registriert werden. Ist bereits geschehen durch: " +this.registerStrassenbau.unitDesc());
+			u.addComment("!! Automatischer Straﬂenbau konnte nicht registriert werden. Ist bereits geschehen durch: " +this.registerStrassenbau.unitDesc());
 		}
 	}
 	
@@ -940,7 +940,7 @@ public class TradeAreaBauManager {
 				
 				
 				// debugAusgabe
-				this.registerStrassenbau.addComment("Liste der Strassenbau-Regionen und ToDos:");
+				this.registerStrassenbau.addComment("Liste der Straﬂenbau-Regionen und ToDos:");
 				OrderChanger changer = this.registerStrassenbau.gd_Script.getGameSpecificStuff().getOrderChanger();
 				for (Region r:buildableRegions) {
 					this.registerStrassenbau.addComment(r.toString() + " (" + r.getModifiedPeasants() + " Bauern):");
@@ -951,20 +951,20 @@ public class TradeAreaBauManager {
 							this.registerStrassenbau.addComment(" - Richtung " + dirS + ": " + listDir.get(d).toString() + " Steine", false);
 							if (actCounter<this.registerStrassenbau.getAnzahlStrassen()) {
 								actCounter++;
-								this.registerStrassenbau.addComment(" - (als Bauauftrag (Strasse) " + actCounter + " mit Prio " + actPrio + " beauftragt.)");
+								this.registerStrassenbau.addComment(" - (als Bauauftrag (Straﬂe) " + actCounter + " mit Prio " + actPrio + " beauftragt.)");
 								
 								TradeRegion TR = this.tradeArea.getTradeRegion(r);
 								if (TR==null) {
-									this.registerStrassenbau.doNotConfirmOrders("Strassenbau ("+actPrio+"): f¸r " + r.toString() + " kein TA gefunden - blˆder Fehler!");
+									this.registerStrassenbau.doNotConfirmOrders("Straﬂenbau ("+actPrio+"): f¸r " + r.toString() + " kein TA gefunden - blˆder Fehler!");
 								} else {
 									Unit u = TR.getDepot();
 									if (u == null){
 										// kein Depot
-										this.registerStrassenbau.doNotConfirmOrders("Strassenbau ("+actPrio+"): kein Depot in " + r.toString());
+										this.registerStrassenbau.doNotConfirmOrders("Straﬂenbau ("+actPrio+"): kein Depot in " + r.toString());
 									} else {
 										ScriptUnit su = this.registerStrassenbau.scriptUnit.getScriptMain().getScriptUnit(u);
 										if (su==null){
-											this.registerStrassenbau.addComment("Strassenbau ("+actPrio+"): kein Depot-Scriptunit in " + r.toString());
+											this.registerStrassenbau.addComment("Straﬂenbau ("+actPrio+"): kein Depot-Scriptunit in " + r.toString());
 										} else {
 											// erg‰nzen
 											Bauauftrag bA = new Bauauftrag();
@@ -977,7 +977,7 @@ public class TradeAreaBauManager {
 											bA.setGameData(this.registerStrassenbau.gd_Script);
 											su.addAScriptNow(bA);
 											bA.run1();
-											su.addComment("Strassenbau: Auftrag hier hinzugef¸gt nach " + dirS + ", Strassenbau definiert bei " + this.registerStrassenbau.getUnit().toString());
+											su.addComment("Straﬂenbau: Auftrag hier hinzugef¸gt nach " + dirS + ", Straﬂenbau definiert bei " + this.registerStrassenbau.getUnit().toString());
 											this.registerStrassenbau.addComment(" - Bauauftrag erg‰nzt bei " + su.toString());
 										}
 									}
@@ -986,15 +986,15 @@ public class TradeAreaBauManager {
 							}
 						}
 					} else {
-						this.registerStrassenbau.addComment("!! Problem: keine Strassen in Region benˆtigt!!", false);
+						this.registerStrassenbau.addComment("!! Problem: keine Straﬂen in Region benˆtigt!!", false);
 					}
 					
 				}
 			} else {
-				this.registerStrassenbau.addComment("Strassenbau: keine Regionen mit StrassenbauBedarf im TA erkannt.", false);
+				this.registerStrassenbau.addComment("Straﬂenbau: keine Regionen mit StraﬂenbauBedarf im TA erkannt.", false);
 			}
 		} else {
-			this.registerStrassenbau.addComment("Strassenbau: deaktiviert, weil Anzahl Strassen = 0 gew¸nscht");
+			this.registerStrassenbau.addComment("Straﬂenbau: deaktiviert, weil Anzahl Straﬂen = 0 gew¸nscht");
 		}
 		
 		int actCounterGeb‰ude=0;
@@ -1026,7 +1026,7 @@ public class TradeAreaBauManager {
 				}
 			}
 			if (buildableRegionsBuildings.isEmpty()) {
-				this.registerStrassenbau.addComment("Keine Regionen mit fehlenden Geb‰uden f¸r den Strassenbau bekannt.");
+				this.registerStrassenbau.addComment("Keine Regionen mit fehlenden Geb‰uden f¸r den Straﬂenbau bekannt.");
 			} else {
 				// Sortieren
 				ArrayList<Region> rS = new ArrayList<Region>();
@@ -1049,11 +1049,11 @@ public class TradeAreaBauManager {
 						Unit u = TR.getDepot();
 						if (u == null){
 							// kein Depot
-							this.registerStrassenbau.addComment("Strassenbau ("+actPrio+"): kein Depot in " + actRegion.toString());
+							this.registerStrassenbau.addComment("Straﬂenbau ("+actPrio+"): kein Depot in " + actRegion.toString());
 						} else {
 							ScriptUnit su = this.registerStrassenbau.scriptUnit.getScriptMain().getScriptUnit(u);
 							if (su==null){
-								this.registerStrassenbau.addComment("Strassenbau ("+actPrio+"): kein Depot-Scriptunit in " + actRegion.toString());
+								this.registerStrassenbau.addComment("Straﬂenbau ("+actPrio+"): kein Depot-Scriptunit in " + actRegion.toString());
 							} else {
 								// erg‰nzen
 								Bauauftrag bA = new Bauauftrag();
@@ -1066,7 +1066,7 @@ public class TradeAreaBauManager {
 								bA.setGameData(this.registerStrassenbau.gd_Script);
 								su.addAScriptNow(bA);
 								bA.run1();
-								su.addComment("Strassenbau: " + buildableRegionsBuildings.get(actRegion) + " beauftragt, Strassenbau definiert bei " + this.registerStrassenbau.getUnit().toString());
+								su.addComment("Straﬂenbau: " + buildableRegionsBuildings.get(actRegion) + " beauftragt, Straﬂenbau definiert bei " + this.registerStrassenbau.getUnit().toString());
 								this.registerStrassenbau.addComment(" - Bauauftrag erg‰nzt bei " + su.toString());
 							}
 						}
@@ -1075,10 +1075,10 @@ public class TradeAreaBauManager {
 				}
 			}
 		} else {
-			this.registerStrassenbau.addComment("Strassenbau-geb‰ude: deaktiviert, weil Anzahl Geb‰ude = 0 gew¸nscht.");
+			this.registerStrassenbau.addComment("Straﬂenbau-geb‰ude: deaktiviert, weil Anzahl Geb‰ude = 0 gew¸nscht.");
 		}
 		if (actCounter==0 && actCounterGeb‰ude==0 && !this.registerStrassenbau.isConfirmUnemployed()) {
-			this.registerStrassenbau.doNotConfirmOrders("Keine Strassen und/oder notwendige Geb‰ude mehr zu errichten.");
+			this.registerStrassenbau.doNotConfirmOrders("Keine Straﬂen und/oder notwendige Geb‰ude mehr zu errichten.");
 		}
 	}
 	

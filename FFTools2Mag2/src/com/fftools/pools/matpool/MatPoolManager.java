@@ -268,6 +268,10 @@ public class MatPoolManager implements OverlordRun,OverlordInfo{
 		return reportOFF;
 	}
 
+	public static int getDurchlauf0() {
+		return Durchlauf0;
+	}
+
 	
 	
 }

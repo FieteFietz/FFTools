@@ -169,6 +169,10 @@ public class MatPool2 implements MatPool{
 		long startT = System.currentTimeMillis();
         //	Löschen der ungeschützten orders im Zusammenhang mit GIB, Reserviere
 		// dass machen wir immer, dann können wir immer gleich GIB orders schreiben...
+		// beimk allerersten run werdeb auch die specialProtectedOrders gelöscht
+		if (durchlauf==MatPoolManager.getDurchlauf0()) {
+			// this.cleanSpecialProtectedOrders();
+		}
 		this.cleanOrders();
 		this.timeProcessOffers=0;
 		this.timeSortOffers = 0;
@@ -1032,6 +1036,18 @@ public class MatPool2 implements MatPool{
 			for (ScriptUnit su : this.matPoolUnits){
 				su.deleteSomeOrders("GIB");
 				su.deleteSomeOrders("RESERVIERE");
+			}
+		}
+	}
+	
+	/**
+	 * löscht liste special protected orders
+	 *
+	 */
+	private void cleanSpecialProtectedOrders(){
+		if (this.matPoolUnits!=null && this.matPoolUnits.size()>0){
+			for (ScriptUnit su : this.matPoolUnits){
+				su.specialProtectedOrders.clear();
 			}
 		}
 	}

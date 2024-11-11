@@ -1,0 +1,25 @@
+Konzept TA Rekrutierung
+
+jedes Depot (außer Bauerncheck=aus) erstellt eine Temp-Einheit und schickt diese in eine Sammelregion, dort geht diese an die Bauern,
+wenn
+
+- MaxBauern überschritten werden würde, wenn wir die üblichen 1% Wachstum annehmen (aufgerundet)
+- ausreichend Silber vorhanden (mit Reserve, Faktor 2)
+- ausreichend Einheitenreserve vorhanden ist (20 Einheiten Rest)
+
+TempEinheit anlegen
+-> rekrutieren lassen
+-> geld geben
+-> script Bauern anlegen
+-> script Lohn anlegen
+-> GOTO in der ersten runde anlegen
+-> TempEinheit benennen "Bauernwanderung nach {Regionsname} aus {Regionskoordinaten)
+
+// script Bauern Home=RegionX,RegionY
+Einheit bewegt sich nach X,Y
+wenn erreicht:
+	arbeiten (langer Befehl, kein script befehl!)
+	GIB 0 alles Personen
+	
+
+		

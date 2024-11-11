@@ -49,6 +49,8 @@ public class ScriptUnit {
 	private boolean NotNeededOrdersDeleted = false;
 	public ArrayList<String> originalScriptOrders = null;
 	public ArrayList<String> originalOrders_All = new ArrayList<String>(0);
+	// falls GIB und RESERVIERE das cleanOrders überleben sollen, müssen die hier ergänzt werden - werden beim ersten MatpoolRun gelöscht
+	public ArrayList<String> specialProtectedOrders = new ArrayList<String>(0);
 	
 	private boolean builtfoundScriptList = false;
 	private ArrayList<Script> foundScriptList = null;
@@ -164,6 +166,7 @@ public class ScriptUnit {
 	 * zum Sortieren von Scriptunits
 	 */
 	public int sortValue=0;
+	public int sortValue_2=0; // wird genutzt, wenn sortValue bei beiden SU gleich ist
 	
 	
 	/**
@@ -188,6 +191,7 @@ public class ScriptUnit {
 	 * und welche mit @ vorne
 	 * 20200304 und welche mit ATTACKIERE vorne
 	 * 20200327: weitere Befehle sollen nicht gelöscht werden, wir setzen ein Array auf
+	 * 20240419: weitere befehle, die extra in special protected orders enthalten sind
 	 * @return int Anzahl der geloeschten orderzeilen
 	 */
 	
@@ -282,6 +286,8 @@ public class ScriptUnit {
 				newOrders.add(this.getUnit().createOrder(s));
 			} else if (s.toUpperCase().startsWith("ZERSTÖRE")){
 				newOrders.add(this.getUnit().createOrder(s));
+			} else if (this.specialProtectedOrders.contains(s)){
+				newOrders.add(this.getUnit().createOrder(s));
 			} else {
 				cnt++;
 			}
@@ -352,6 +358,9 @@ public class ScriptUnit {
 				newOrders.add(this.getUnit().createOrder(s));
 			} else if (s.startsWith("@")){
 				// permanente orders...
+				newOrders.add(this.getUnit().createOrder(s));
+			} else if (this.specialProtectedOrders.contains(s)){
+				// ist eine special protected order
 				newOrders.add(this.getUnit().createOrder(s));
 			} else if (!(s.toLowerCase().startsWith(ordersStartWith.toLowerCase()))){
 				// orders, die nicht mit ordersStartWith beginnen
@@ -594,6 +603,9 @@ public class ScriptUnit {
 	 * @param s
 	 */
 	public void addAScriptNow(Script s){
+		if (this.foundScriptList==null){
+			this.foundScriptList = new ArrayList<Script>(1);
+		}
 		this.foundScriptList.add(s);
 	}
 	
