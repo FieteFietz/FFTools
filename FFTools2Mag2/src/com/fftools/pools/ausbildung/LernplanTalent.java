@@ -90,7 +90,7 @@ public class LernplanTalent {
 		try {
 			Integer i = Integer.valueOf(_talentZiel);
 			int newTalentZiel = i.intValue();
-			if (newTalentZiel>-50 && newTalentZiel<50){
+			if (newTalentZiel>-50 && newTalentZiel<200){
 				this.talentZiel = newTalentZiel;
 			} else {
 				talentZielOK = false;
@@ -107,8 +107,8 @@ public class LernplanTalent {
 		}
 		if (!talentZielOK){
 			// Problem beim erkennen des LernZieles
-			outText.addOutLine("!!! LernplanTalent:Lernziel nicht erkannt! " + u.unitDesc() , true);
-			u.doNotConfirmOrders("!!! LernplanTalent:Lernziel nicht erkannt!");
+			outText.addOutLine("!!! LernplanTalent:Lernziel (Zielstufe) nicht erkannt! " + u.unitDesc() , true);
+			u.doNotConfirmOrders("!!! LernplanTalent:Lernziel (Zielstufe) nicht erkannt!");
 			return;
 		}
 	}
