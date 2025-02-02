@@ -955,6 +955,7 @@ public class FFToolsRegions {
 				break;
 			}
 			
+			
 			String actF = u.getFaction().getID().toString().toLowerCase();
 			// Do we trust this faction?
 			if (!trustedFactionList.contains(actF)) {
@@ -966,6 +967,61 @@ public class FFToolsRegions {
 			}
 		}
 		if (su!=null) su.addComment("isEnemyInRegion: returning=" + erg,false);
+		return erg;
+	}
+	
+	
+	/**
+	 * Bewertet die Einheiten in der Region, ob Monster gesinnte dabei sind
+	 * Monster sind
+	 * 	- Monster, ausser eigene (aus dem Report bekannt oder zu einer trusted faction gehörend)
+	 *  - Parteigetarnte einheiten, ausser eigene, wenn includingFactionDisguised=true
+	 * @param r
+	 * @return the number of the monser-unit or "" if no monster present
+	 */
+	public static String isMonsterInRegion(Region r, ScriptUnit su, boolean includingFactionDisguised) {
+		String erg = "";
+		
+		
+		for (Unit u : r.units()) {
+			if (su!=null) su.addComment("isMonsterInRegion: checking " + u.toString(),false);
+			// wir kennen den Kampfstatus - kann nicht feindlich sein
+			if (u.getCombatStatus() != -1) {
+				if (su!=null) su.addComment("isMonsterInRegion: own unit ("  + u.getCombatStatus() + ")",false);
+				continue;
+			}
+			
+			
+			// Monster
+			if (u.getFaction()!=null && u.getFaction().getID().toString().equals("ii")) {
+				erg=u.toString(true);
+				if (su!=null) su.addComment("isMonsterInRegion: Monster!",false);
+				break;
+			}
+			
+			// parteigetarnt, und fremde Partei für uns nicht sichtbar
+			if (includingFactionDisguised) {
+				if (u.isHideFaction()) {
+					if (su!=null) su.addComment("isMonsterInRegion: disguised unit!",false);
+					if (u.getFaction()==null) {
+						if (su!=null) su.addComment("isMonsterInRegion: unit faction isnull!",false);
+					} else {
+						if (su!=null) su.addComment("isMonsterInRegion: unit faction =" + u.getFaction().toString(),false);
+					}
+				}
+				
+				
+				if (u.isHideFaction() && u.getFaction().getID().toString().equals("-1")) {
+					erg=u.toString(true);
+					if (su!=null) su.addComment("isMonsterInRegion: disguised unit!",false);
+					break;
+				}
+				
+				
+			}
+
+		}
+		if (su!=null) su.addComment("isMonsterInRegion: returning=" + erg,false);
 		return erg;
 	}
 	

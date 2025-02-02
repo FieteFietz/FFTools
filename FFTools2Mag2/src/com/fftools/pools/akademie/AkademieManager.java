@@ -13,6 +13,7 @@ import com.fftools.pools.ausbildung.AusbildungsPool;
 import com.fftools.pools.ausbildung.relations.AusbildungsRelation;
 import com.fftools.scripts.Akademie;
 import com.fftools.scripts.Lernfix;
+import com.fftools.scripts.Schmieden;
 
 import magellan.library.Building;
 import magellan.library.Region;
@@ -202,6 +203,18 @@ import magellan.library.Rules;
 	    			sU.addComment("Akadademiemanager: kein Lernfix script gefunden");
 	    		}
 	    		
+	    		o = sU.getScript(Schmieden.class);
+	    		if (o != null) {
+	    			Schmieden L = (Schmieden)o;
+	    			if (L.isAvoidAka()) {
+	    				AR.setAvoidAka(true);
+		    			sU.addComment("Akadademiemanager (Schmieden): Einheit widersetzt sich meinen Planungen, daher unberücksichtigt");
+	    			} else {
+	    				sU.addComment("Akadademiemanager (Schmieden): Einheit wird verplant");
+	    			}
+	    		} else {
+	    			sU.addComment("Akadademiemanager: kein Schmieden script gefunden");
+	    		}
 	    		
 	    		
 	    		// Akademiebesitzer immer drinne ?! (Nur wenn <=25 Pers!

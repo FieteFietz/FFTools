@@ -736,6 +736,15 @@ public class ScriptUnit {
 		this.orders_changed=true;
 	}
 	
+	public void check4hunger() {
+		if (!reportSettings.getOptionBoolean("checkHunger", this.unit.getRegion())) {
+			return;
+		}
+		if (this.unit.isStarving()) {
+			this.doNotConfirmOrders("Einheit hungert!! (und checkHunger ist aktiviert)");
+		}
+	}
+	
 	/**
 	 * ueberprueft, ob eines der scripte 
 	 * unitOrders_may_confirm via public void doNotConfirmOrders()

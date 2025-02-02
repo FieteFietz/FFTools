@@ -310,11 +310,8 @@ public class ScriptMain {
 		// not the the console, but to the logfile...
 		outText.setScreenOut(false);
 		
-		// gettimg some info from reportsettings...
+		// getting some info from reportsettings...
 		reportSettings.informUs();
-		
-		// gettimg some info from TRade Areas...
-		// this.getOverlord().getTradeAreaHandler().informUs();
 		
 		outText.setScreenOut(true);
 		
@@ -329,7 +326,7 @@ public class ScriptMain {
 		// MP getInfo
 		outText.setScreenOut(false);
 		this.getOverlord().getMatPoolManager().informUs();
-		// gettimg some info from TRade Areas...
+		// getting some info from TRade Areas...
 		this.getOverlord().getTradeAreaHandler().informUs();
 		outText.setScreenOut(true);
 		
@@ -352,6 +349,7 @@ public class ScriptMain {
 			scrU.checkShipOK(); // 20160724 FF
 			scrU.checkNACHOK(); // 20161015 FF
 			scrU.checkOverallCommand(); // 20190216 FF
+			scrU.check4hunger(); // 20250202 FF
 			scrU.setFinalConfim();
 			// autoTags
 			scrU.autoTags();

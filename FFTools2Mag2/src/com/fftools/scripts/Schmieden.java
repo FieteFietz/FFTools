@@ -100,6 +100,12 @@ public class Schmieden extends MatPoolScript{
 	 */
 	private String LernTalent = ""; 
 	
+	/**
+	 * parameter aka=false - bewirkt, dass trotz Lernfix kein Zugriff durch Akademiemanager
+	 * 22.12.2024 
+	 */
+	private boolean avoidAka=false;
+	
 	// Konstruktor
 	public Schmieden() {
 		super.setRunAt(this.runners);
@@ -173,6 +179,14 @@ public void runScript(int scriptDurchlauf){
 				this.scriptUnit.doNotConfirmOrders("!!! Schmieden: minAuslastung fehlerhaft!");
 			}
 		}
+		// 22.12.2024
+		if (this.avoidAka = !OP.getOptionBoolean("aka", true));
+		if (this.avoidAka) {
+			this.addComment("Schmieden -> Lernfix: ich werde eine Einladung in eine Akademie ausschlagen.");
+		} else {
+			this.addComment("Schmieden -> Lernfix: Akademieplatz grundsätzlich denkbar");
+		}
+		
 		
 		// Skilltype ermitteln
 		if (this.itemType!=null){
@@ -485,6 +499,10 @@ public void runScript(int scriptDurchlauf){
 			}
 		}
 	}
-			
+	
+	// für Aka-Manager
+	public boolean isAvoidAka() {
+		return avoidAka;
+	}	
 		
 }

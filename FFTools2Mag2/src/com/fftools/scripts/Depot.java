@@ -300,7 +300,6 @@ public class Depot extends TransportScript{
 					int Bauernwachstum = (int) Math.ceil(actPersonen * 0.001);
 					actPersonen += Bauernwachstum;
 					int todoRekrutieren = actPersonen - maxPersonen;
-					int todoBauernRekruten = todoRekrutieren;
 					if (todoRekrutieren>r.modifiedRecruit()) {
 						todoRekrutieren = r.modifiedRecruit();
 					}
@@ -343,13 +342,13 @@ public class Depot extends TransportScript{
 							}
 						
 						
-							if (!BauernMitreise(todoBauernRekruten)) {
+							if (!BauernMitreise(todoRekrutieren)) {
 								
 								// Hat die Fraktion noch genügend Einheiten frei
 								Faction f = this.getUnit().getFaction();
 								if (f.modifiedUnits()!=null) {
 									if (f.modifiedUnits().size()>(2500 - this.minFreeUnitsFaction_BauernHome)) {
-										this.doNotConfirmOrders("!!! Bauernhome: nicht mehr genügend Einheiten frei!!!");
+										this.doNotConfirmOrders("!!! Bauernhome: nicht mehr genügend Einheiten frei!!! (aktuell neue Einheitenanzahl: " + f.modifiedUnits().size() + ", Reserve " + this.minFreeUnitsFaction_BauernHome + " unterschritten)");
 										return;
 									}
 								}
@@ -371,6 +370,7 @@ public class Depot extends TransportScript{
 								tempUnit.addOrder("// script Bauern Home=" + BauernHome);
 								tempUnit.addOrder("// aus " + this.region().toString());
 								tempUnit.addOrder("// setTag eTag1 Bauernwanderung");
+								tempUnit.addOrder("KÄMPFE FLIEHE ;Bauernwanderung");
 								tempUnit.setOrdersConfirmed(true);
 								
 								ScriptUnit su = this.scriptUnit.getScriptMain().addUnitLater(tempUnit);
@@ -448,20 +448,7 @@ public class Depot extends TransportScript{
 						this.doNotConfirmOrders("!!! BauernHome: Depot hat zu wenig Silber ??! (" + i.getAmount() + "/" + silber_benoetigt + " Silber)");
 						return true;
 					}
-					
-					
-					// Hat die Fraktion noch genügend Einheiten frei
-					Faction f = bauern.getUnit().getFaction();
-					if (f.modifiedUnits()!=null) {
-						if (f.modifiedUnits().size()>(2500 - this.minFreeUnitsFaction_BauernHome)) {
-							bauern.doNotConfirmOrders("!!! Bauernhome: nicht mehr genügend Einheiten frei!!! bei " + f.toString());
-							this.doNotConfirmOrders("!!! Bauernhome: nicht mehr genügend Einheiten frei!!! bei " + f.toString());
-							return true;
-						}
-					}
-					
-					
-					
+
 					MatPoolRequest MPR = new MatPoolRequest(bauern,silber_benoetigt,"Silber",1000,"Rekrutier Silber für Bauernwanderung");
 					bauern.addMatPoolRequest(MPR);
 					this.addComment("BauernHome: Rekrutierung übernimmt: " + bauern.scriptUnit.toString());

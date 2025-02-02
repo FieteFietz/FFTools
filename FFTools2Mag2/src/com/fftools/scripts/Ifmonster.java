@@ -3,7 +3,8 @@ package com.fftools.scripts;
 import com.fftools.utils.FFToolsRegions;
 
 
-public class Ifnotenemy extends Script{
+public class Ifmonster extends Script{
+	
 	
 	private int[] runners = {14,15,16};
 	private boolean scriptCalled = false;
@@ -13,7 +14,7 @@ public class Ifnotenemy extends Script{
 	 * Drinne Lassen fuer die Instanzierung des Objectes
 	 */
 	
-	public Ifnotenemy() {
+	public Ifmonster() {
 		super.setRunAt(this.runners);
 	}
 	
@@ -37,65 +38,42 @@ public class Ifnotenemy extends Script{
 		
 		this.scriptCalled=true;
 		
-
-		
 		if (super.getArgCount()<1) {
 			// falsche Anzahl Paras
-			super.scriptUnit.doNotConfirmOrders("Falscher Aufruf von IfNotEnenemy: zu geringe Anzahl Parameter.");
-			addOutLine("X....Falscher Aufruf von IfNotEnemy: zu geringe Anzahl Parameter: " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
+			super.scriptUnit.doNotConfirmOrders("Falscher Aufruf von IfMonster: zu geringe Anzahl Parameter.");
+			super.addComment("Unit wurde durch IfMonster NICHT bestaetigt", true);
+			addOutLine("X....Falscher Aufruf von IfMonster: zu geringe Anzahl Parameter: " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 		}
 		
 		if (super.getArgCount()>0) {
 			// nächsten Parameter anschaunen..entweder eressea-befgehl = irgendetwas
 			// oder schlüsselwort script...
-			// 20190908: guardingonly
+			
+			
 			String keyWord = super.getArgAt(0);
-			boolean guardingOnly=false;
-			boolean armedOnly = false;
+			boolean includingFactionDisguised=false;
+		
+			
 			int argStartCount=1;
-			
-			if (keyWord.equalsIgnoreCase("guardingonly")) {
-				guardingOnly=true;
-				this.addComment("ifNotEnemy: nur bewachende feindliche Einheiten sollen berücksichtigt werden (guardingOnly)");
+			if (keyWord.equalsIgnoreCase("includingFactionDisguised")) {
+				includingFactionDisguised=true;
+				this.addComment("ifMonster: auch parteigetarnte Einheiten, deren Fraktion uns unbekannt ist, gelten als Monster... (includingFactionDisguised)");
 				argStartCount=2;
 			}
 			
-			if (keyWord.equalsIgnoreCase("armedonly")) {
-				armedOnly=true;
-				this.addComment("ifNotEnemy: nur bewaffnete feindliche Einheiten sollen berücksichtigt werden (armedOnly)");
-				argStartCount=2;
-			}
 			
 			
 			if (argStartCount==2) {	
 				keyWord = super.getArgAt(1);
 			}
 			
-			if (keyWord.equalsIgnoreCase("guardingonly")) {
-				guardingOnly=true;
-				this.addComment("ifNotEnemy: nur bewachende feindliche Einheiten sollen berücksichtigt werden (guardingOnly)");
-				argStartCount=3;
-			}
 			
-			if (keyWord.equalsIgnoreCase("armedonly")) {
-				armedOnly=true;
-				this.addComment("ifNotEnemy: nur bewaffnete feindliche Einheiten sollen berücksichtigt werden (armedOnly)");
-				argStartCount=3;
-			}
-			
-			
-			
-			
-			if (argStartCount==3) {	
-				keyWord = super.getArgAt(2);
-			}
 			
 			
 
-			// String enemyUnit = FFToolsRegions.isEnemyInRegion(this.scriptUnit.getUnit().getRegion(),this.scriptUnit);
-			String enemyUnit = FFToolsRegions.isEnemyInRegion(this.scriptUnit.getUnit().getRegion(),null,guardingOnly,armedOnly); 
-			if (enemyUnit==""){
-				this.addComment("IfNotEnemy: no Enemy detected.");
+			String enemyUnit = FFToolsRegions.isMonsterInRegion(this.scriptUnit.getUnit().getRegion(),this.scriptUnit,includingFactionDisguised);
+			if (enemyUnit!=""){
+				this.addComment("IfMonster: Monster detected: " + enemyUnit);
 				if (keyWord.equalsIgnoreCase("script")) {
 					if (super.getArgCount()>argStartCount) {
 						// ok, in dieser Region soll ein script aufgerufen werden
@@ -107,12 +85,11 @@ public class Ifnotenemy extends Script{
 						}
 						// Trim
 						newOrderLine = newOrderLine.trim();
-						this.addComment("debug: script " + super.getArgAt(argStartCount) + " wird aufgerufen, Parameter: " + newOrderLine);
 						super.scriptUnit.findScriptClass(super.getArgAt(argStartCount), newOrderLine,true);
 					} else {
 						// die befehlszeile endet mit dem keyWord script
 						super.scriptUnit.doNotConfirmOrders("Unerwartetes Ende der Befehlszeile (script)");
-						addOutLine("X....Unerwartetes Ende der Befehlszeile (IfNotEnemy,script): " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
+						addOutLine("X....Unerwartetes Ende der Befehlszeile (IfMonster,script): " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
 					}
 				} else {
 					// kein script Befehl...alles was jetzt kommt als Order verpacken...
@@ -125,13 +102,13 @@ public class Ifnotenemy extends Script{
 					newOrderLine = newOrderLine.trim();
 					if (newOrderLine.length()>0){
 						// nun denn ... fertig und irgendetwas zu schreiben
-						newOrderLine = newOrderLine.concat(" ;script ifNotEnemy");
+						newOrderLine = newOrderLine.concat(" ;script ifMonster");
 						super.addOrder(newOrderLine,true);
-						super.addComment("Unit wurde durch IfNotEnemy befehligt", true);
+						super.addComment("Unit wurde durch IfMonster befehligt", true);
 					}
 				}
 			} else {
-				this.addComment("IfNotEnemy: enemy presence found in this region: " + enemyUnit);
+				this.addComment("IfMonster: no presence of monsters found in this region.");
 			}
 		}
 	}

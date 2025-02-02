@@ -85,6 +85,7 @@ public class Ifenemy extends Script{
 				argStartCount=3;
 			}
 			
+			
 			if (argStartCount==3) {	
 				keyWord = super.getArgAt(2);
 			}
@@ -92,9 +93,9 @@ public class Ifenemy extends Script{
 			
 			
 			
-			
 			// String enemyUnit = FFToolsRegions.isEnemyInRegion(this.scriptUnit.getUnit().getRegion(),this.scriptUnit);
-			String enemyUnit = FFToolsRegions.isEnemyInRegion(this.scriptUnit.getUnit().getRegion(),null,guardingOnly,armedOnly); 
+			// String enemyUnit = FFToolsRegions.isEnemyInRegion(this.scriptUnit.getUnit().getRegion(),null,guardingOnly,armedOnly,includeFactionHidden);
+			String enemyUnit = FFToolsRegions.isEnemyInRegion(this.scriptUnit.getUnit().getRegion(),this.scriptUnit,guardingOnly,armedOnly);
 			if (enemyUnit!=""){
 				this.addComment("IfEnemy: Enemy detected: " + enemyUnit);
 				if (keyWord.equalsIgnoreCase("script")) {
