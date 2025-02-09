@@ -284,6 +284,13 @@ public class Transport extends TransportScript{
 		// später Einschub
 		this.getTradeArea().addTransporter(this.transporter);
 		
+		// Fliehe
+		if (reportSettings.getOptionBoolean("TransportAllwaysFlee")) {
+			if (this.scriptUnit.setFliehe()) {
+				this.addComment("Kmapfstatus gesetzt (scripterSetting: TransportAllwaysFlee)");
+			}
+		}
+		
 	}
 	
 	/**

@@ -19,6 +19,7 @@ import com.fftools.utils.FFToolsRegions;
 import magellan.library.CoordinateID;
 import magellan.library.Ship;
 import magellan.library.Unit;
+import magellan.library.rules.ShipType;
 import magellan.library.utils.Direction;
 import magellan.library.utils.Regions;
 
@@ -69,7 +70,14 @@ public class SeeWerftManager_SWM implements OverlordRun,OverlordInfo {
 		outText.addOutLine("SeeWerftManager SWM Start - ermittle zu reparierende Schiffe. (Reparaturschiffe: " + this.availableReparaturSchiffe.size() + ", Werften: " + this.availableSeeWerften.size() + ", SWPs: " + this.pools.keySet().size() + ")" ,true);
 		for (Ship s:this.overLord.getScriptMain().gd_ScriptMain.getShips()) {
 			int neededBP = neededBaupunkte(s);
-			if (neededBP>0) {
+			// AF 20250209: Boote auslassen, denn die fahren zu oft in einen Berg und könnten auch zwischen 2 Regionen ohne Hafen
+			// pendeln und nie repariert werden - boote weg lassen
+			ShipType ST = s.getShipType();
+			boolean correctShiptype = true;
+			if (ST.getName().equalsIgnoreCase("Boot")){
+				correctShiptype=false;
+			}
+			if (neededBP>0 && correctShiptype) {
 				Unit u = s.getModifiedOwnerUnit();
 				if (u!=null) {
 					ScriptUnit su = this.overLord.getScriptMain().getScriptUnit(u);
@@ -349,6 +357,65 @@ public class SeeWerftManager_SWM implements OverlordRun,OverlordInfo {
 				SWP.addShip(sh);
 			}
 		}
+	}
+	
+	
+	public void addShip2Repair(ScriptUnit kapitän) {
+		
+		Unit u = kapitän.getUnit();
+		Ship s = u.getModifiedShip();
+		
+		// check ship
+		if (s==null) {
+			kapitän.addComment("!!! es konnte kein Schiff zur Reparaturliste hinzugefügt werden - nicht auf einem Schiff?");
+			return;
+		}
+		
+		// check Kapitän
+		if (s.getModifiedOwnerUnit()==null || !s.getModifiedOwnerUnit().equals(u)) {
+			kapitän.addComment("!!! es konnte kein Schiff zur Reparaturliste hinzugefügt werden - nicht der Kapitän?");
+			return;
+		}
+		
+		
+		int neededBP = neededBaupunkte(s);
+		// check Baupunkte
+		if (neededBP<=0) {
+			kapitän.addComment("Schiff nicht zur Reparaturliste hinzugefügt - kein Schaden festgestellt");
+			return;
+		}
+		
+		
+		
+		// SailTo
+		Object o = kapitän.getScript(Sailto.class);
+		
+		if (o!=null) {
+			Sailto st = (Sailto) o;
+			// targetRegionCoord
+			if (st.nextShipStop!=null) {
+				// bingo: wir haben einen nächsten Stop
+				Ship2Repair pS = new Ship2Repair();
+				pS.captn = kapitän;
+				pS.nextShipStop = st.nextShipStop.getCoordinate();
+				pS.s = s;
+				pS.repairsNeeded = neededBP;
+				ships2Repair_list.add(pS);
+				kapitän.addComment("SWM: auf die Liste zu reparierender Schiffe gesetzt.");
+			}
+		} else {
+			// kein SailTo - wir gehen von keiner Bewegung aus
+			Ship2Repair pS = new Ship2Repair();
+			pS.captn = kapitän;
+			pS.nextShipStop = u.getRegion().getCoordinate();
+			pS.s = s;
+			pS.repairsNeeded = neededBP;
+			ships2Repair_list.add(pS);
+			kapitän.addComment("SWM: ich gehe davon aus, dass dieses Schiff *nicht* bewegt wird!. (kein SailTo gefunden)");
+			kapitän.addComment("SWM: auf die Liste zu reparierender Schiffe gesetzt.");
+		}
+		
+		
 	}
 	
 

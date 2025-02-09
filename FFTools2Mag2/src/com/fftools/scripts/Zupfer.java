@@ -60,6 +60,16 @@ public class Zupfer extends MatPoolScript{
 	 */
 	private void start(){
 		super.addVersionInfo();
+		
+		// Fliehe
+		if (reportSettings.getOptionBoolean("ZupferAllwaysFlee")) {
+			if (this.scriptUnit.setFliehe()) {
+				this.addComment("Kmapfstatus gesetzt (scripterSetting: ZupferAllwaysFlee)");
+			}
+		}
+		
+		
+		
 		// Eigene Talentstufe ermitteln
 		int skillLevel = 0;
 		SkillType skillType = this.gd_Script.getRules().getSkillType("Kräuterkunde", false);

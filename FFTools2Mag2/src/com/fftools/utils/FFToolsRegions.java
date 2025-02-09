@@ -925,7 +925,7 @@ public class FFToolsRegions {
 		
 		
 		for (Unit u : r.units()) {
-			if (su!=null) su.addComment("isEnemyInRegion: checking " + u.toString(),false);
+			// if (su!=null) su.addComment("isEnemyInRegion: checking " + u.toString(),false);
 			// wir kennen den Kampfstatus - kann nicht feindlich sein
 			if (u.getCombatStatus() != -1) {
 				if (su!=null) su.addComment("isEnemyInRegion: own unit ("  + u.getCombatStatus() + ")",false);
@@ -963,7 +963,7 @@ public class FFToolsRegions {
 				if (su!=null) su.addComment("isEnemyInRegion: not trusted faction: " + actF,false);
 				break;
 			} else {
-				if (su!=null) su.addComment("isEnemyInRegion: a trusted faction: " + actF,false);
+				// if (su!=null) su.addComment("isEnemyInRegion: a trusted faction: " + actF,false);
 			}
 		}
 		if (su!=null) su.addComment("isEnemyInRegion: returning=" + erg,false);
@@ -984,10 +984,10 @@ public class FFToolsRegions {
 		
 		
 		for (Unit u : r.units()) {
-			if (su!=null) su.addComment("isMonsterInRegion: checking " + u.toString(),false);
+			// if (su!=null) su.addComment("isMonsterInRegion: checking " + u.toString(),false);
 			// wir kennen den Kampfstatus - kann nicht feindlich sein
 			if (u.getCombatStatus() != -1) {
-				if (su!=null) su.addComment("isMonsterInRegion: own unit ("  + u.getCombatStatus() + ")",false);
+				// if (su!=null) su.addComment("isMonsterInRegion: own unit ("  + u.getCombatStatus() + ")",false);
 				continue;
 			}
 			

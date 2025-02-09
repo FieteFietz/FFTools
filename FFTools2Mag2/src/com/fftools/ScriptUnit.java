@@ -2239,4 +2239,13 @@ public class ScriptUnit {
 	}
 	
 	
+	public boolean setFliehe() {
+		Unit u = this.getUnit();
+		if (u.getCombatStatus()!=EresseaConstants.CS_FLEE) {
+			this.addComment("Fliehe command wird gesetzt");
+			this.addOrder("KÄMPFE FLIEHE ;gesetzt", true);
+			return true;
+		}
+		return false;
+	}
 }

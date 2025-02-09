@@ -356,6 +356,7 @@ public class Depot extends TransportScript{
 								
 								// temp anlegen
 								// neue Unit ID
+								int oldUnitCount = f.modifiedUnits().size();
 								Unit parentUnit = this.scriptUnit.getUnit();
 								UnitID id = UnitID.createTempID(this.gd_Script, this.scriptUnit.getScriptMain().getSettings(), parentUnit);
 								// Die tempUnit anlegen
@@ -386,6 +387,8 @@ public class Depot extends TransportScript{
 								
 								MatPoolRequest MPR = new MatPoolRequest(L,silber_benoetigt,"Silber",1000,"Rekrutier Silber für Bauernwanderung");
 								L.addMatPoolRequest(MPR);
+								
+								this.addComment("Bauernhome - Anzahl Units vorher: " + oldUnitCount + ", nun: " + f.modifiedUnits().size());
 							}
 						}
 						
