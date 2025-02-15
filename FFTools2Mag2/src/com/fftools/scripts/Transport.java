@@ -285,9 +285,9 @@ public class Transport extends TransportScript{
 		this.getTradeArea().addTransporter(this.transporter);
 		
 		// Fliehe
-		if (reportSettings.getOptionBoolean("TransportAllwaysFlee")) {
+		if (reportSettings.getOptionBoolean("TransportAlwaysFlee")) {
 			if (this.scriptUnit.setFliehe()) {
-				this.addComment("Kmapfstatus gesetzt (scripterSetting: TransportAllwaysFlee)");
+				this.addComment("Kmapfstatus gesetzt (scripterSetting: TransportAlwaysFlee)");
 			}
 		}
 		

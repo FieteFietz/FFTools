@@ -62,9 +62,9 @@ public class Zupfer extends MatPoolScript{
 		super.addVersionInfo();
 		
 		// Fliehe
-		if (reportSettings.getOptionBoolean("ZupferAllwaysFlee")) {
+		if (reportSettings.getOptionBoolean("ZupferAlwaysFlee")) {
 			if (this.scriptUnit.setFliehe()) {
-				this.addComment("Kmapfstatus gesetzt (scripterSetting: ZupferAllwaysFlee)");
+				this.addComment("Kmapfstatus gesetzt (scripterSetting: ZupferAlwaysFlee)");
 			}
 		}
 		

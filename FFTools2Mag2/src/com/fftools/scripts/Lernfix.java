@@ -76,6 +76,8 @@ public class Lernfix extends MatPoolScript{
 			this.addComment("Lernfix nicht aktiviert, da keine Personen in der Einheit sind");
 			return;
 		}
+		
+		
 		// Pool holen, man das ist umständlich....
 		ausbildungsPool = super.scriptUnit.getScriptMain().getOverlord().getAusbildungsManager().getAusbildungsPool(super.scriptUnit);
 		// reation abschicken... 
@@ -185,6 +187,34 @@ public class Lernfix extends MatPoolScript{
 					// this.scriptUnit.ordersHaveChanged();
 					// this.scriptUnit.setUnitOrders_adjusted(true);
 				}
+
+				// 20250215: Check Combat Status
+				String checkString="Lernplan%" + this.LernplanName + "%AlwaysAGGRESSIVE";
+				if (reportSettings.getOptionBoolean(checkString)) {
+					if (this.scriptUnit.setAGGRESSIVE()) {
+						this.addComment("Kampfstatus gesetzt (scripterSetting: Lernplan_AGGRESSIVE)");
+					}
+				}
+				checkString="Lernplan%" + this.LernplanName + "%AlwaysFRONT";
+				if (reportSettings.getOptionBoolean(checkString)) {
+					if (this.scriptUnit.setFRONT()) {
+						this.addComment("Kampfstatus gesetzt (scripterSetting: Lernplan_FRONT)");
+					}
+				}
+				checkString="Lernplan%" + this.LernplanName + "%AlwaysBACK";
+				if (reportSettings.getOptionBoolean(checkString)) {
+					if (this.scriptUnit.setBACK()) {
+						this.addComment("Kampfstatus gesetzt (scripterSetting: Lernplan_BACK)");
+					}
+				}
+				checkString="Lernplan%" + this.LernplanName + "%AlwaysFLEE";
+				if (reportSettings.getOptionBoolean(checkString)) {
+					if (this.scriptUnit.setFlee()) {
+						this.addComment("Kampfstatus gesetzt (scripterSetting: Lernplan_FLEE)");
+					}
+				}
+				
+				
 			} else {
 				// keine AR -> Lernplan beendet ?!
 				this.scriptUnit.doNotConfirmOrders("Lernplan liefert keine Aufgabe mehr");

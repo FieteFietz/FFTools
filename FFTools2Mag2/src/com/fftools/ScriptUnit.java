@@ -523,7 +523,7 @@ public class ScriptUnit {
 			tDiffX =0;
 			tDiffX = timeX - time1;
 			this.getOverlord().Zeitsumme7+=tDiffX;
-			boolean b2 = isAllwaysRunScript(sc);
+			boolean b2 = isAlwaysRunScript(sc);
 			timeX=System.currentTimeMillis();
 			tDiffX =0;
 			tDiffX = timeX - time1;
@@ -571,7 +571,7 @@ public class ScriptUnit {
 	 * @param s
 	 * @return
 	 */
-	private boolean isAllwaysRunScript(Script s){
+	private boolean isAlwaysRunScript(Script s){
 		boolean erg=false;
 		if (s.getClass().equals(Setlernplan.class)){
 			return true;
@@ -2242,10 +2242,46 @@ public class ScriptUnit {
 	public boolean setFliehe() {
 		Unit u = this.getUnit();
 		if (u.getCombatStatus()!=EresseaConstants.CS_FLEE) {
-			this.addComment("Fliehe command wird gesetzt");
+			this.addComment("KÄMPFE Fliehe command wird gesetzt");
 			this.addOrder("KÄMPFE FLIEHE ;gesetzt", true);
 			return true;
 		}
 		return false;
 	}
+	
+	public boolean setFlee() {
+		return this.setFliehe();
+	}
+	
+	
+	public boolean setAGGRESSIVE() {
+		Unit u = this.getUnit();
+		if (u.getCombatStatus()!=EresseaConstants.CS_AGGRESSIVE) {
+			this.addComment("KÄMPFE AGGRESSIV command wird gesetzt");
+			this.addOrder("KÄMPFE AGGRESSIV ;gesetzt", true);
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean setFRONT() {
+		Unit u = this.getUnit();
+		if (u.getCombatStatus()!=EresseaConstants.CS_FRONT) {
+			this.addComment("KÄMPFE VORNE command wird gesetzt");
+			this.addOrder("KÄMPFE ;gesetzt (VORNE)", true);
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean setBACK() {
+		Unit u = this.getUnit();
+		if (u.getCombatStatus()!=EresseaConstants.CS_REAR) {
+			this.addComment("KÄMPFE HINTEN BACK / REAR command wird gesetzt");
+			this.addOrder("KÄMPFE HINTEN ;gesetzt", true);
+			return true;
+		}
+		return false;
+	}
+
 }
