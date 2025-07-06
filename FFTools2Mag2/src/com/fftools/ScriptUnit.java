@@ -144,9 +144,12 @@ public class ScriptUnit {
 	private HashMap<ItemType, Item> modifiedItemsMatPool2 = null;
 	
 	
-	private boolean isDepotUnit = false;
-	private boolean setDepotStatus = false;
-	
+	private boolean isDepotUnit = false; // wird bei Aufruf von // script Depot gesetzt
+
+	public void setDepotUnit(boolean isDepotUnit) {
+		this.isDepotUnit = isDepotUnit;
+	}
+
 	private boolean isInClientSelectedRegions = false;
 	
 	public boolean isInClientSelectedRegions() {
@@ -697,6 +700,8 @@ public class ScriptUnit {
 		    	 // es kam nuescht hinter script
 		    	 // Fehlermeldung
 		    	 outText.addOutLine("Kein Scriptbefehl erkannt");
+		    	 // FF 09.03.2025: neu: das ist nicht gewollt  einheit unbestätigt lassen
+		    	 this.doNotConfirmOrders("kein Scriptbefehl hinter dem Schlüsselwort script gefunden");
 		     }
 		}
 		
@@ -1061,28 +1066,8 @@ public class ScriptUnit {
 
 		return false;
 	}
-	
-	/**
-	 * Überprüft, ob angegebe Unit als Depot erkannt wird
-	 * 
-	 * @param u Die Unit
-	 * @return wahr, wenn unit als gescriptet erkannt
-	 */
-	public static boolean isDepot(Unit u){
-		// orders nach // script Depot einträgen durchsuchen
-		for(Iterator<Order> iter = u.getOrders2().iterator(); iter.hasNext();) {
-			Order o = (Order) iter.next();
-			String s = o.getText();
-			if (s.toLowerCase().startsWith("// script depot")) { return true;}
-		}
-		return false;
-	}
-	
+
 	public boolean isDepot(){
-		if (!this.setDepotStatus){
-			this.isDepotUnit=ScriptUnit.isDepot(this.unit);
-			this.setDepotStatus = true;
-		}
 		return this.isDepotUnit; 
 	}
 	
@@ -1209,18 +1194,28 @@ public class ScriptUnit {
 	   		 t = Class.forName("com.fftools.scripts." + scriptName);
 	   	 } catch (ClassNotFoundException e) {
 	   		 outText.addOutLine("Klasse nicht gefunden: " + scriptName + ": " + this.unit.toString(true) + " in " + this.unit.getRegion().getName());
+	   		 // 09.03.2025 neu: unit nicht mehr bestätigen
+	   		 this.doNotConfirmOrders("Script(-Klasse) nicht gefunden: " + scriptName);
 	   	 } catch (ExceptionInInitializerError e) {
 	   		 outText.addOutLine("Klasse nicht initialisiert: " + scriptName + ": " + this.unit.toString(true) + " in " + this.unit.getRegion().getName());
+	   	     // 09.03.2025 neu: unit nicht mehr bestätigen
+	   		 this.doNotConfirmOrders("Script(-Klasse) nicht initialisiert: " + scriptName);
 	   	 } catch (LinkageError e) {
 	   		 outText.addOutLine("Klasse nicht gelinkt: " + scriptName + ": " + this.unit.toString(true) + " in " + this.unit.getRegion().getName());
+	   	     // 09.03.2025 neu: unit nicht mehr bestätigen
+	   		 this.doNotConfirmOrders("Script(-Klasse) nicht verlinkt: " + scriptName);
 	   	 }
 	   	 if (t!=null){
 	   		 try {
 	   			 o = t.newInstance();
 	   		 } catch (IllegalAccessException e) {
 	   			 outText.addOutLine("Konstruktor der Klasse nicht verfuegbar: " + scriptName + ": " + this.unit.toString(true) + " in " + this.unit.getRegion().getName());
+	   		     // 09.03.2025 neu: unit nicht mehr bestätigen
+		   		 this.doNotConfirmOrders("Script(-Klasse) ohne Konstruktor: " + scriptName);
 	   		 } catch (InstantiationException e) {
 	   			 outText.addOutLine("Klasse konnte nicht instanziert werden: " + scriptName + ": " + this.unit.toString(true) + " in " + this.unit.getRegion().getName());
+	   		     // 09.03.2025 neu: unit nicht mehr bestätigen
+		   		 this.doNotConfirmOrders("Script(-Klasse) konnte nicht instanziert werden: " + scriptName);
 	   		 }
 	   	 }
 	   	 if (o!=null) {

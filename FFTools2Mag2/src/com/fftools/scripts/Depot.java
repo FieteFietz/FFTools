@@ -95,6 +95,9 @@ public class Depot extends TransportScript{
 	
 	public void runDepot(int scriptDurchlauf){
 				
+		// markierung dieser Einheit als Depot: neu 22.06.2025 FF
+		this.scriptUnit.setDepotUnit(true);
+		
 		// "registrierung" beim TransportManager, damit der später nicht
 		// seine Depots = Lieferanten zusammensuchen muss
 		this.getOverlord().getTransportManager().addDepot(this.scriptUnit);
@@ -296,7 +299,7 @@ public class Depot extends TransportScript{
 					int actPersonen = r.getModifiedPeasants();
 					int maxPersonen = Utils.getIntValue(this.gd_Script.getGameSpecificRules().getMaxWorkers(r), 0);
 					
-					// Bauernwachstum prognistizieren
+					// Bauernwachstum prognostizieren
 					int Bauernwachstum = (int) Math.ceil(actPersonen * 0.001);
 					actPersonen += Bauernwachstum;
 					int todoRekrutieren = actPersonen - maxPersonen;
@@ -304,94 +307,97 @@ public class Depot extends TransportScript{
 						todoRekrutieren = r.modifiedRecruit();
 					}
 					if (actPersonen>maxPersonen) {
-						this.addComment("Bauernhome: Bauernprognose " + actPersonen + " ist größer als RegionsMax " + maxPersonen + ", versende "  + todoRekrutieren + " Bauern");
-						
-						if (this.getUnit().isStarving()) {
-							this.doNotConfirmOrders("!!! Das Depot hungert: überschüssige Bauern können nicht versendet werden!!!");
+						if (todoRekrutieren<=0) {
+							this.addComment("Bauernhome: Bauernprognose " + actPersonen + " ist größer als RegionsMax " + maxPersonen + ", allerdings keine Rekruten mehr verfügbar (rekrutiert andere Einheit?");
 						} else {
-							Race ra = super.scriptUnit.getUnit().getDisguiseRace();
-							if (ra==null){
-								ra = super.scriptUnit.getUnit().getRace();
-							}
+							this.addComment("Bauernhome: Bauernprognose " + actPersonen + " ist größer als RegionsMax " + maxPersonen + ", versende "  + todoRekrutieren + " Bauern");
 							
-							// bei Orks verdoppeln
-							
-							Race orkRace = this.gd_Script.getRules().getRace("Orks",false);
-							if (orkRace==null){
-								this.doNotConfirmOrders("Ork-Rasse nicht in den Regeln gefunden - FFTools braucht ein Update");
+							if (this.getUnit().isStarving()) {
+								this.doNotConfirmOrders("!!! Das Depot hungert: überschüssige Bauern können nicht versendet werden!!!");
 							} else {
-								if (ra.equals(orkRace)){
-									todoRekrutieren = todoRekrutieren*2;
-									this.addComment("Rekrutieren: Orks erkannt. Maximal mögliche Rekruten verdoppelt auf:" + todoRekrutieren);
-									
+								Race ra = super.scriptUnit.getUnit().getDisguiseRace();
+								if (ra==null){
+									ra = super.scriptUnit.getUnit().getRace();
 								}
-							}
-							
-							
-							int silber_benoetigt = todoRekrutieren * ra.getRecruitmentCosts();
-							ItemType silverType=this.scriptUnit.getScriptMain().gd_ScriptMain.getRules().getItemType("Silber",false);
-							Item i = this.scriptUnit.getModifiedItem(silverType);
-							
-							if (i==null) {
-								this.doNotConfirmOrders("!!! BauernHome: Depot hat gar kein Silber ??!");
-								return;
-							}
-							if (i.getAmount()<silber_benoetigt) {
-								this.doNotConfirmOrders("!!! BauernHome: Depot hat zu wenig Silber ??! (" + i.getAmount() + "/" + silber_benoetigt + " Silber)");
-								return;
-							}
-						
-						
-							if (!BauernMitreise(todoRekrutieren)) {
 								
-								// Hat die Fraktion noch genügend Einheiten frei
-								Faction f = this.getUnit().getFaction();
-								if (f.modifiedUnits()!=null) {
-									if (f.modifiedUnits().size()>(2500 - this.minFreeUnitsFaction_BauernHome)) {
-										this.doNotConfirmOrders("!!! Bauernhome: nicht mehr genügend Einheiten frei!!! (aktuell neue Einheitenanzahl: " + f.modifiedUnits().size() + ", Reserve " + this.minFreeUnitsFaction_BauernHome + " unterschritten)");
-										return;
+								// bei Orks verdoppeln
+								
+								Race orkRace = this.gd_Script.getRules().getRace("Orks",false);
+								if (orkRace==null){
+									this.doNotConfirmOrders("Ork-Rasse nicht in den Regeln gefunden - FFTools braucht ein Update");
+								} else {
+									if (ra.equals(orkRace)){
+										todoRekrutieren = todoRekrutieren*2;
+										this.addComment("Rekrutieren: Orks erkannt. Maximal mögliche Rekruten verdoppelt auf:" + todoRekrutieren);
+										
 									}
 								}
 								
 								
-								// temp anlegen
-								// neue Unit ID
-								int oldUnitCount = f.modifiedUnits().size();
-								Unit parentUnit = this.scriptUnit.getUnit();
-								UnitID id = UnitID.createTempID(this.gd_Script, this.scriptUnit.getScriptMain().getSettings(), parentUnit);
-								// Die tempUnit anlegen
-								TempUnit tempUnit = parentUnit.createTemp(this.gd_Script,id);
-								tempUnit.addOrder(Rekrutieren.scriptCreatedTempMark);
-								// Kommandos setzen
-								// Kommandos durchlaufen
+								int silber_benoetigt = todoRekrutieren * ra.getRecruitmentCosts();
+								ItemType silverType=this.scriptUnit.getScriptMain().gd_ScriptMain.getRules().getItemType("Silber",false);
+								Item i = this.scriptUnit.getModifiedItem(silverType);
 								
-								tempUnit.addOrder("BENENNE Einheit \"Bauernwanderung\"");
-								String RekrutierString = "Rekrutieren " + todoRekrutieren + " ;Bauernwanderung"; 
-								tempUnit.addOrder(RekrutierString);
-								tempUnit.addOrder("// script Bauern Home=" + BauernHome);
-								tempUnit.addOrder("// aus " + this.region().toString());
-								tempUnit.addOrder("// setTag eTag1 Bauernwanderung");
-								tempUnit.addOrder("KÄMPFE FLIEHE ;Bauernwanderung");
-								tempUnit.setOrdersConfirmed(true);
-								
-								ScriptUnit su = this.scriptUnit.getScriptMain().addUnitLater(tempUnit);
-								GotoInfo GI = FFToolsRegions.makeOrderNACH(su, this.region().getCoordinate(), actDest,true,"BauernHome");
-								su.specialProtectedOrders.add(RekrutierString);
-								su.specialProtectedOrders.add("NACH " + GI.getPath());
-								
-								Lohn L = new Lohn();
-								L.setScriptUnit(su);
-								L.setGameData(this.gd_Script);
-								L.setClient(this.c);
-								su.addAScript(L);
-								
-								MatPoolRequest MPR = new MatPoolRequest(L,silber_benoetigt,"Silber",1000,"Rekrutier Silber für Bauernwanderung");
-								L.addMatPoolRequest(MPR);
-								
-								this.addComment("Bauernhome - Anzahl Units vorher: " + oldUnitCount + ", nun: " + f.modifiedUnits().size());
+								if (i==null) {
+									this.doNotConfirmOrders("!!! BauernHome: Depot hat gar kein Silber ??!");
+									return;
+								}
+								if (i.getAmount()<silber_benoetigt) {
+									this.doNotConfirmOrders("!!! BauernHome: Depot hat zu wenig Silber ??! (" + i.getAmount() + "/" + silber_benoetigt + " Silber)");
+									return;
+								}
+							
+							
+								if (!BauernMitreise(todoRekrutieren)) {
+									
+									// Hat die Fraktion noch genügend Einheiten frei
+									Faction f = this.getUnit().getFaction();
+									if (f.modifiedUnits()!=null) {
+										if (f.modifiedUnits().size()>(2500 - this.minFreeUnitsFaction_BauernHome)) {
+											this.doNotConfirmOrders("!!! Bauernhome: nicht mehr genügend Einheiten frei!!! (aktuell neue Einheitenanzahl: " + f.modifiedUnits().size() + ", Reserve " + this.minFreeUnitsFaction_BauernHome + " unterschritten)");
+											return;
+										}
+									}
+									
+									
+									// temp anlegen
+									// neue Unit ID
+									int oldUnitCount = f.modifiedUnits().size();
+									Unit parentUnit = this.scriptUnit.getUnit();
+									UnitID id = UnitID.createTempID(this.gd_Script, this.scriptUnit.getScriptMain().getSettings(), parentUnit);
+									// Die tempUnit anlegen
+									TempUnit tempUnit = parentUnit.createTemp(this.gd_Script,id);
+									tempUnit.addOrder(Rekrutieren.scriptCreatedTempMark);
+									// Kommandos setzen
+									// Kommandos durchlaufen
+									
+									tempUnit.addOrder("BENENNE Einheit \"Bauernwanderung\"");
+									String RekrutierString = "Rekrutieren " + todoRekrutieren + " ;Bauernwanderung"; 
+									tempUnit.addOrder(RekrutierString);
+									tempUnit.addOrder("// script Bauern Home=" + BauernHome);
+									tempUnit.addOrder("// aus " + this.region().toString());
+									tempUnit.addOrder("// setTag eTag1 Bauernwanderung");
+									tempUnit.addOrder("KÄMPFE FLIEHE ;Bauernwanderung");
+									tempUnit.setOrdersConfirmed(true);
+									
+									ScriptUnit su = this.scriptUnit.getScriptMain().addUnitLater(tempUnit);
+									GotoInfo GI = FFToolsRegions.makeOrderNACH(su, this.region().getCoordinate(), actDest,true,"BauernHome");
+									su.specialProtectedOrders.add(RekrutierString);
+									su.specialProtectedOrders.add("NACH " + GI.getPath());
+									
+									Lohn L = new Lohn();
+									L.setScriptUnit(su);
+									L.setGameData(this.gd_Script);
+									L.setClient(this.c);
+									su.addAScript(L);
+									
+									MatPoolRequest MPR = new MatPoolRequest(L,silber_benoetigt,"Silber",1000,"Rekrutier Silber für Bauernwanderung");
+									L.addMatPoolRequest(MPR);
+									
+									this.addComment("Bauernhome - Anzahl Units vorher: " + oldUnitCount + ", nun: " + f.modifiedUnits().size());
+								}
 							}
 						}
-						
 					} else {
 						this.addComment("Bauernhome: Bauernprognose " + actPersonen + " ist kleiner als RegionsMax " + maxPersonen + " Bauern");
 					}  // actPersonen>maxPersonen
@@ -474,7 +480,9 @@ public class Depot extends TransportScript{
 		if (r!=null && !(r.getRegionType().isOcean()) && this.mitBauernCheck) {
 			// 20200419: nicht bei Insekten im Winter, es sei denn, in einer Wüste
 			boolean insektenImWinter=false;
-			if (this.scriptUnit.isInsekt() && FFToolsGameData.isNextTurnWinter(this.getOverlord().getScriptMain().gd_ScriptMain)) {
+			// if (this.scriptUnit.isInsekt() && FFToolsGameData.isNextTurnWinter(this.getOverlord().getScriptMain().gd_ScriptMain)) {
+			// neu 20250216: es gilt nicht nächste Woche, es gilt aktuelle Woche
+			if (this.scriptUnit.isInsekt() && FFToolsGameData.isThisTurnWinter(this.getOverlord().getScriptMain().gd_ScriptMain)) {
 				insektenImWinter = true;
 			}
 			if (insektenImWinter) {
@@ -485,7 +493,8 @@ public class Depot extends TransportScript{
 			}
 
 			if (insektenImWinter) {
-				this.addComment("Bauerncheck: wird nicht durchgeführt (Insekten erkannt und nächste Woche ist Winter, und nicht in einer Wüste)");
+				// this.addComment("Bauerncheck: wird nicht durchgeführt (Insekten erkannt und nächste Woche ist Winter, und nicht in einer Wüste)");
+				this.addComment("Bauerncheck: wird nicht durchgeführt (Insekten erkannt und diese Woche ist Winter, und nicht in einer Wüste)");
 			} else {
 				// Bauerncheck durchführen
 				int actPersonen = r.getModifiedPeasants();

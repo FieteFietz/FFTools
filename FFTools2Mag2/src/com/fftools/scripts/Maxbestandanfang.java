@@ -61,7 +61,7 @@ public class Maxbestandanfang extends Script{
 			this.addComment("maxBestandAnfang - Maximallmenge pro Person erkannt: " + mengeJe);
 		}
 		
-		if (menge<=0 && mengeJe<=0) {
+		if (menge<0 && mengeJe<=0) {
 			this.doNotConfirmOrders("!!! maxBestandAnfang: weder Menge noch MengeJe angegeben - Abbruch!");
 			OK=false;
 		}
@@ -111,7 +111,7 @@ public class Maxbestandanfang extends Script{
 			}
 			
 			
-			if (menge>0) {
+			if (menge>=0) {
 				if (vorhanden <=menge) {
 					addComment("maxBestandAnfang - " + menge + " (" + ware + ") unterschritten, Befehl wird ausgeführt.");
 					runMyScript=true;

@@ -8,7 +8,8 @@ import magellan.library.Unit;
 
 public class Ifnotunit extends Script{
 	
-	private static final int Durchlauf = 17;
+	private int[] runners = {14,15,16};
+	private boolean scriptCalled = false;
 	
 	
 	/**
@@ -17,7 +18,7 @@ public class Ifnotunit extends Script{
 	 */
 	
 	public Ifnotunit() {
-		super.setRunAt(Durchlauf);
+		super.setRunAt(this.runners);
 	}
 	
 	
@@ -34,7 +35,11 @@ public class Ifnotunit extends Script{
 	
 	public void runScript(int scriptDurchlauf){
 		
-		if (scriptDurchlauf!=Durchlauf){return;}
+		if (this.scriptCalled) {
+			return;
+		}
+		
+		this.scriptCalled=true;
 		
 		// hier code fuer Script
 		
@@ -96,6 +101,7 @@ public class Ifnotunit extends Script{
 							newOrderLine = newOrderLine.concat(super.getArgAt(i) + " ");
 						}
 						super.scriptUnit.findScriptClass(super.getArgAt(2), newOrderLine,true);
+						super.addComment("Unit " + unitDesc + " nicht gefunden. Aktiviere script mit: " + super.getArgAt(2) + " " + newOrderLine, true);
 					} else {
 						// die befehlszeile endet mit dem keyWord script
 						super.scriptUnit.doNotConfirmOrders("Unerwartetes Ende der Befehlszeile (script IfNotUnit)");
@@ -112,7 +118,7 @@ public class Ifnotunit extends Script{
 						// nun denn ... fertig und irgendetwas zu schreiben
 						newOrderLine = newOrderLine.concat(" ;script IfNotUnit");
 						super.addOrder(newOrderLine,true);
-						super.addComment("Unit wurde durch IfNotUnit bestaetigt", true);
+						super.addComment("Unit wurde durch IfNotUnit bestätigt (" + unitDesc + " nicht gefunden)", true);
 					}
 				}
 			} else {

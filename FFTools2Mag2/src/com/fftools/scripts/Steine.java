@@ -51,6 +51,8 @@ public class Steine extends MatPoolScript{
 	
 	private String LernfixOrder = "Talent=Steinbau";
 	
+	private ArrayList<String> LernFixArguments = new ArrayList<String>();
+	
 	public Steine() {
 		super.setRunAt(this.runners);
 	}
@@ -98,6 +100,24 @@ public class Steine extends MatPoolScript{
 		}
 		
 		this.Steinbruch = OP.getOptionBoolean("Steinbruch", this.Steinbruch);
+		
+		// ggf Optionen für Lernfix abfragen
+		if (!OP.getOptionBoolean("aka", true)) {
+			this.LernFixArguments.add("aka=nein");
+		}
+		if (OP.getOptionInt("Ziel", -1)>0) {
+			this.LernFixArguments.add("Ziel=" + OP.getOptionInt("Ziel", 1));
+		}
+		if (OP.getOptionString("Lehrer").length()>1) {
+			this.LernFixArguments.add("Lehrer=" + OP.getOptionString("Lehrer"));
+		}
+		if (OP.getOptionString("Teacher").length()>1) {
+			this.LernFixArguments.add("Teacher=" + OP.getOptionString("Teacher"));
+		}
+		// wenn Lernplan gesetzt wird, diesen Nutzen
+		if (OP.getOptionString("Lernplan").length()>1) {
+			this.LernfixOrder = "Lernplan=" + OP.getOptionString("Lernplan"); 
+		}
 		
 		// Eigene Talentstufe ermitteln
 		int skillLevel = 0;
@@ -235,6 +255,12 @@ public class Steine extends MatPoolScript{
 		Script L = new Lernfix();
 		ArrayList<String> order = new ArrayList<String>();
 		order.add(this.LernfixOrder);
+		
+		if (this.LernFixArguments!=null && this.LernFixArguments.size()>0) {
+			order.addAll(this.LernFixArguments);
+			this.scriptUnit.addComment("weitere Lernfix Parameter: " + String.join(" ", this.LernFixArguments));
+		}
+		
 		L.setArguments(order);
 		L.setScriptUnit(this.scriptUnit);
 		L.setGameData(this.scriptUnit.getScriptMain().gd_ScriptMain);

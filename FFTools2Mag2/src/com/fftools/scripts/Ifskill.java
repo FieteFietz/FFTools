@@ -93,7 +93,7 @@ public class Ifskill extends Script{
 						return;
 					}
 				} else {
-					if (skill.getLevel()>=SkillLevelInt) {
+					if (skill.getLevel()==SkillLevelInt) {
 						skillOK=true;
 						this.addComment("IfSkill: Talent " + TalentName + " hat Level " + skill.getLevel() + " und die Bedingung (=" + SkillLevelInt + ") ist erfüllt" );
 					} else {

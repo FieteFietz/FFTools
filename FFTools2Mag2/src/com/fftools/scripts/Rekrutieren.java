@@ -91,11 +91,29 @@ public class Rekrutieren extends MatPoolScript{
 			return;
 		}
 		
+		/*
+		 * alt: wir geben diese Runde befehle für nächste Runde, müssen also Jahreszeit nächste Runde prüfen
 		if (this.scriptUnit.isInsekt() && FFToolsGameData.isNextTurnWinter(this.getOverlord().getScriptMain().gd_ScriptMain)) {
 			if (this.region().getRegionType().getName().equalsIgnoreCase("Wüste")) {
 				this.addComment("Rekrutieren: wie gut, dass hier so viel warmer Sand ist! (Insekten im Winter in der Wüste");
 			} else {
 				this.addComment("Nächste Runde ist Winter...ich kann (vermutlich) nicht rekrutieren! (Insekt)");
+				if (FFToolsGameData.hasNestwaermeEffekt(this.scriptUnit)) {
+					this.addComment("Nestwärme erkannt!...ich kann doch rekrutieren!");
+				} else {
+					this.addComment("Keine Nestwärme erkannt - ich bin ein frierendes armes Insekt und habe auf nix Lust");
+					return;
+				}
+			}
+		}
+		*/
+
+		// neu 20250216: es gilt, was im Report steht - also aktuelle runde
+		if (this.scriptUnit.isInsekt() && FFToolsGameData.isThisTurnWinter(this.getOverlord().getScriptMain().gd_ScriptMain)) {
+			if (this.region().getRegionType().getName().equalsIgnoreCase("Wüste")) {
+				this.addComment("Rekrutieren: wie gut, dass hier so viel warmer Sand ist! (Insekten im Winter in der Wüste");
+			} else {
+				this.addComment("Diese Runde ist Winter...ich kann (vermutlich) nicht rekrutieren! (Insekt)");
 				if (FFToolsGameData.hasNestwaermeEffekt(this.scriptUnit)) {
 					this.addComment("Nestwärme erkannt!...ich kann doch rekrutieren!");
 				} else {
@@ -185,6 +203,39 @@ public class Rekrutieren extends MatPoolScript{
 			this.anzahlGeplant=0;
 			this.doNotConfirmOrders("!!!Rekrutieren: maxPersonen erreicht -> Einheit rekrutiert nicht und verbleibt unbestätigt");
 		}
+		
+		// 20250502 FF Kleingeldprinz
+		/*
+		 * Moin. Ist irgendwann geplant, den Befehl rekrutieren noch irgendwann anzupassen? Ich wünsche mir (wenn das Leben ein Wunschkonzert wäre), dass man folgendes eingibt:
+			// script Rekrutieren max ziel=100
+			Wenn die Region z.B. 33 Rekruten pro Runde zulassen würde, würde FFTools folgendes machen:
+			Runde 1: 33 Rekrutieren
+			Runde 2, 33 Rekrutieren
+			Runde 3, 33 Rekrutieren (nun haben wir insgesamt schon 99 Personen in der Einheit)
+			Runde 4, 1 Rekrutieren, da das Ziel ja 100 ist.
+			Was FFtools bisher macht, ist jetzt noch einmal 33 zu Rekrutieren. Aber ein hinarbeiten auf eine echte Zielgröße wäre echt supercool 
+		 */
+		
+		int ziel = OP.getOptionInt("ziel", 0);
+		if (ziel>0 && this.anzahlGeplant>0) {
+			if (this.anzahlGeplant + this.getUnit().getPersons()>ziel) {
+				this.addComment("Geplante Anzahl Rekruten (" + this.anzahlGeplant + ") führt zum Überschreiten des Ziels (" + ziel + ")");
+				this.anzahlGeplant = ziel - this.getUnit().getPersons();
+				if (this.anzahlGeplant<0) {
+					this.anzahlGeplant=0;
+				}
+				this.addComment("Anzahl Rekruten angepasst auf: " + this.anzahlGeplant);
+				if (this.anzahlGeplant==0) {
+					this.addComment("!!!Rekrutieren: Ziel bereits erreicht -> Einheit rekrutiert nicht und verbleibt unbestätigt");
+					this.doNotConfirmOrders("!!!Rekrutieren: Ziel bereits erreicht -> Einheit rekrutiert nicht und verbleibt unbestätigt");
+				} else {
+					this.addComment("Rekrutieren: Ziel wird erreicht -> Einheit verbleibt unbestätigt");
+					this.doNotConfirmOrders("Rekrutieren: Ziel wird erreicht -> Einheit verbleibt unbestätigt");
+				}
+			}
+		}
+		
+		
 		
 		// 20240428 FF EON Also Unterhalten, bei genug Silbervorrat Unterhaltung lernen bis 3, dann verwässern auf 2. 
 		// Das geht recht einfach mit 2/3 der aktuellen Personenzahl. Und das ganze wird wiederholt bis die Anzahl 
@@ -370,7 +421,9 @@ public class Rekrutieren extends MatPoolScript{
 				doRekrutiere(this.anzahlGeplant);
 			}
 		} else {
-			this.addComment("!!!Rekrutieren: überraschend keine Silberanforderung gefunden - Abbruch.");
+			if (this.anzahlGeplant>0) {
+				this.addComment("!!!Rekrutieren: überraschend keine Silberanforderung gefunden - Abbruch.");
+			}
 		}
 	}
 	
@@ -378,7 +431,9 @@ public class Rekrutieren extends MatPoolScript{
 	private void doRekrutiere(int anzahl) {
 		// order ergaenzen
 		// eigentlich erst, wenn wir Silber erhalten haben..also nach MatPool...
-		
+		if (anzahl<=0) {
+			return;
+		}
 		super.addOrder("REKRUTIEREN " + anzahl, true);
 		
 		// ?? sonderfall ??

@@ -409,6 +409,73 @@ public void runScript(int scriptDurchlauf){
 			this.actTyp = Bauen.BURG;
 		}
 		
+		String s = "";
+
+		// Prioritäten
+		// prioAnpassungen..Defaults setzen
+		this.prioAdaption();
+		// komplette Prio wird gesetzt
+		int i = OP.getOptionInt("prio",-1);
+		if (i!=-1){
+			if (i>0 && i<10000){
+				this.prioEisen = i;
+				this.prioHolz = i;
+				this.prioSilber = i;
+				this.prioSteine = i;
+			} else {
+				statusInfo+="Fehler: Prio nicht erkannt: " + i;
+				this.doNotConfirmOrders("Bauen: Prio nicht erkannt: " + i);
+			}
+		} 
+		// Silberprio
+		i = OP.getOptionInt("silberprio",-1);
+		if (i!=-1){
+			if (i>0 && i<10000){
+				this.prioSilber = i;
+			} else {
+				this.doNotConfirmOrders("Bauen: SilberPrio nicht erkannt: " + i);
+			}
+		}
+		// Eisenprio
+		i = OP.getOptionInt("eisenprio",-1);
+		if (i!=-1){
+			if (i>0 && i<10000){
+				this.prioEisen = i;
+			} else {
+				this.doNotConfirmOrders("Bauen: EisenPrio nicht erkannt: " + i);
+			}
+		}
+		// Holzprio
+		i = OP.getOptionInt("holzprio",-1);
+		if (i!=-1){
+			if (i>0 && i<10000){
+				this.prioHolz = i;
+			} else {
+				this.doNotConfirmOrders("Bauen: HolzPrio nicht erkannt: " + i);
+			}
+		}
+		// Steinprio
+		i = OP.getOptionInt("steinprio",-1);
+		if (i!=-1){
+			if (i>0 && i<10000){
+				this.prioSteine = i;
+			} else {
+				this.doNotConfirmOrders("Bauen: SteinPrio nicht erkannt: " + i);
+			}
+		}
+		
+		// Transporterspecs für Steine
+		this.steinSpec = OP.getOptionString("steinspec");
+		
+		// min Auslastung
+		this.minAuslastung = OP.getOptionInt("minAuslastung",this.minAuslastung);
+		
+		// lernTalent
+		// this.lernTalent = OP.getOptionString("Talent");
+		if (OP.getOptionString("Talent").length()>2){
+			this.lernTalent = OP.getOptionString("Talent");
+		}
+		
 		
 		if (this.isAutomode()){
 			return;
@@ -421,17 +488,21 @@ public void runScript(int scriptDurchlauf){
 		this.parseOK = false;
 
 		if (this.actTyp == Bauen.BUILDING){
-			// Typ muss GebäudeType enthalten
-			String s = OP.getOptionString("Typ");
-			if (s.length()<2){
-				s = OP.getOptionString("Type");
-			}
-			this.buildingType = this.gd_Script.getRules().getBuildingType(s,false);
-			if (this.buildingType==null){
-				// Abbruch
-				statusInfo+="Fehler: unbekanntes Gebäude: " + s;
-				this.doNotConfirmOrders("Bauen: unbekanntes Gebäude: " + s);
-				return;
+			
+			s = OP.getOptionString("Typ");
+			if (this.actTyp == Bauen.BUILDING){
+				// Typ muss GebäudeType enthalten
+				
+				if (s.length()<2){
+					s = OP.getOptionString("Type");
+				}
+				this.buildingType = this.gd_Script.getRules().getBuildingType(s,false);
+				if (this.buildingType==null){
+					// Abbruch
+					statusInfo+="Fehler: unbekanntes Gebäude: " + s;
+					this.doNotConfirmOrders("Bauen: unbekanntes Gebäude: " + s);
+					return;
+				}
 			}
 			
 			// wenn keine maxGrösse angegeben im Type wird grösse erwartet
@@ -440,7 +511,7 @@ public void runScript(int scriptDurchlauf){
 				this.targetSize = this.buildingType.getMaxSize();
 			} else {
 				// Grösse MUSS angegeben werden
-				int i = OP.getOptionInt("ziel",0);
+				i = OP.getOptionInt("ziel",0);
 				if (i==0){
 					i = OP.getOptionInt("size",0);
 				}
@@ -472,7 +543,7 @@ public void runScript(int scriptDurchlauf){
 		}
 		if (this.actTyp == Bauen.BURG){
 			// Grösse MUSS angegeben sein.
-			int i = OP.getOptionInt("ziel",0);
+			i = OP.getOptionInt("ziel",0);
 			if (i==0){
 				i = OP.getOptionInt("size",0);
 			}
@@ -489,7 +560,7 @@ public void runScript(int scriptDurchlauf){
 		
 		if (this.actTyp== Bauen.STRASSE){
 			// Richtung MUSS angegeben sein.
-			String s = OP.getOptionString("Richtung");
+			s = OP.getOptionString("Richtung");
 			if (s.length()<1){
 				s = OP.getOptionString("Ziel");
 			}
@@ -570,75 +641,12 @@ public void runScript(int scriptDurchlauf){
 			}
 		}
 		
-		// Prioritäten
-		// prioAnpassungen..Defaults setzen
-		this.prioAdaption();
-		// komplette Prio wird gesetzt
-		int i = OP.getOptionInt("prio",-1);
-		if (i!=-1){
-			if (i>0 && i<10000){
-				this.prioEisen = i;
-				this.prioHolz = i;
-				this.prioSilber = i;
-				this.prioSteine = i;
-			} else {
-				statusInfo+="Fehler: Prio nicht erkannt: " + i;
-				this.doNotConfirmOrders("Bauen: Prio nicht erkannt: " + i);
-			}
-		} 
-		// Silberprio
-		i = OP.getOptionInt("silberprio",-1);
-		if (i!=-1){
-			if (i>0 && i<10000){
-				this.prioSilber = i;
-			} else {
-				this.doNotConfirmOrders("Bauen: SilberPrio nicht erkannt: " + i);
-			}
-		}
-		// Eisenprio
-		i = OP.getOptionInt("eisenprio",-1);
-		if (i!=-1){
-			if (i>0 && i<10000){
-				this.prioEisen = i;
-			} else {
-				this.doNotConfirmOrders("Bauen: EisenPrio nicht erkannt: " + i);
-			}
-		}
-		// Holzprio
-		i = OP.getOptionInt("holzprio",-1);
-		if (i!=-1){
-			if (i>0 && i<10000){
-				this.prioHolz = i;
-			} else {
-				this.doNotConfirmOrders("Bauen: HolzPrio nicht erkannt: " + i);
-			}
-		}
-		// Steinprio
-		i = OP.getOptionInt("steinprio",-1);
-		if (i!=-1){
-			if (i>0 && i<10000){
-				this.prioSteine = i;
-			} else {
-				this.doNotConfirmOrders("Bauen: SteinPrio nicht erkannt: " + i);
-			}
-		}
 		
-		// Transporterspecs für Steine
-		this.steinSpec = OP.getOptionString("steinspec");
-		
-		// min Auslastung
-		this.minAuslastung = OP.getOptionInt("minAuslastung",this.minAuslastung);
-		
-		// lernTalent
-		// this.lernTalent = OP.getOptionString("Talent");
-		if (OP.getOptionString("Talent").length()>2){
-			this.lernTalent = OP.getOptionString("Talent");
-		}
 		
 		
 		
 		// Burg + Building können eine Nummer mitbekommen haben....checken
-		String s = OP.getOptionString("nummer");
+		s = OP.getOptionString("nummer");
 		if (s.length()>0 && (this.actTyp==Bauen.BUILDING || this.actTyp==Bauen.BURG)){
 			// OK, wir haben eine Nummer
 			// schauen, ob wir da was finden
@@ -1204,7 +1212,7 @@ public void runScript(int scriptDurchlauf){
 			if (this.targetSize>1250){this.prioSteine=520;}
 			if (this.targetSize>6250){this.prioSteine=510;}
 		}
-		if (this.actTyp == Bauen.BUILDING){
+		if (this.buildingType!=null && this.actTyp == Bauen.BUILDING){
 			String s = this.buildingType.getName();
 			if (s.equalsIgnoreCase("Leuchtturm")){this.prioSteine = 590;}
 			if (s.equalsIgnoreCase("Magierturm")){this.prioSteine = 610;}

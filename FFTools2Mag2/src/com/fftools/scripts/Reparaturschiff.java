@@ -12,6 +12,7 @@ import com.fftools.pools.bau.SeeWerftManager_SWM;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.utils.FFToolsOptionParser;
 import com.fftools.utils.FFToolsRegions;
+import com.fftools.utils.FFToolsUnits;
 
 import magellan.library.CoordinateID;
 import magellan.library.Item;
@@ -378,6 +379,10 @@ public class Reparaturschiff extends Script implements Comparable<Reparaturschif
 			this.addComment("Reparaturschiff: Zielregion entspricht aktueller Region - Lerne");
 			this.Lernen();
 			return;
+		}
+		// FF 06.07.2025 - wir haben ein Schiff verloren, weil das gefehlt hat:
+		if (!FFToolsUnits.checkShipTalents(this)) {
+			this.doNotConfirmOrders("Talentcheck für das Schiff ist gescheitert!");
 		}
 		
 		

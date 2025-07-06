@@ -64,6 +64,10 @@ public class Unterhalten extends TransportScript{
 	
 	private int pers_gewicht = -1;
 	
+	private boolean NoConfirmIfLazy = false; // EON 15.06.2025
+	
+	private int minVerdienstProPerson=0; // EON 15.06.2025
+	
 	
 	
 	// Konstruktor
@@ -136,6 +140,12 @@ public void runScript(int scriptDurchlauf){
 		
 		this.pers_gewicht = OP.getOptionInt("pers_gewicht", this.pers_gewicht);
 		
+		this.NoConfirmIfLazy = OP.getOptionBoolean("NoConfirmIfLazy", NoConfirmIfLazy);
+		
+		this.minVerdienstProPerson = OP.getOptionInt("minVerdienstProPerson", this.minVerdienstProPerson);
+		if (this.minVerdienstProPerson>0) {
+			this.addComment("minVerdienstProPerson ist gesetzt auf: " + this.minVerdienstProPerson + " Silber");
+		}
 		
 		// FF: eventuell hier setting für die Region ansetzen....falls nötig
 		
@@ -252,8 +262,23 @@ public void runScript(int scriptDurchlauf){
 						
 						// postiv aber nicht ausgelastet!
 						super.addComment("Warnung: Einheit ist NICHT ausgelastet!");
-						super.addComment("" + Math.round((circusPoolRelation.getVerdienst()-circusPoolRelation.getDoUnterhaltung())/circusPoolRelation.getProKopfVerdienst()) + " Unterhalter überflüssig");		
-						super.addOrder("UNTERHALTEN " + circusPoolRelation.getDoUnterhaltung(), true);			
+						int lazy = Math.round((circusPoolRelation.getVerdienst()-circusPoolRelation.getDoUnterhaltung())/circusPoolRelation.getProKopfVerdienst());
+						super.addComment("" + lazy + " Unterhalter überflüssig");
+						if (this.NoConfirmIfLazy && lazy>0) {
+							super.scriptUnit.doNotConfirmOrders("!!! Faulheit -> unbestätigt (Parameter: NoConfirmIfLazy)");
+						}
+						super.addOrder("UNTERHALTEN " + circusPoolRelation.getDoUnterhaltung(), true);
+						
+						if (this.minVerdienstProPerson>0) {
+							// Verdienst pro Person ausrechnen
+							int VerdienstProPerson = Math.round(circusPoolRelation.getDoUnterhaltung() / this.getUnit().getModifiedPersons());
+							this.addComment("Verdienst pro Person: " + VerdienstProPerson + " Silber.");
+							if (VerdienstProPerson<this.minVerdienstProPerson) {
+								super.scriptUnit.doNotConfirmOrders("!!! Ineffizienz -> unbestätigt (Parameter: MinVerdienstProPerson | " + VerdienstProPerson + "<" + this.minVerdienstProPerson + ")");
+							}
+						}
+						
+						
 						this.setFinalOrderedUnterhaltung(circusPoolRelation.getDoUnterhaltung());
 						double auslastung = ((double)circusPoolRelation.getDoUnterhaltung()/(double)circusPoolRelation.getVerdienst());
 						
@@ -296,9 +321,23 @@ public void runScript(int scriptDurchlauf){
 							}
 						} else {
 							super.addComment("Warnung: Einheit ist NICHT ausgelastet!");
-							super.addComment("" + Math.round((circusPoolRelation.getVerdienst()-circusPoolRelation.getDoUnterhaltung())/circusPoolRelation.getProKopfVerdienst()) + " Unterhalter überflüssig");		
+							int lazy= Math.round((circusPoolRelation.getVerdienst()-circusPoolRelation.getDoUnterhaltung())/circusPoolRelation.getProKopfVerdienst());
+							super.addComment("" + lazy + " Unterhalter überflüssig");
+							if (this.NoConfirmIfLazy && lazy>0) {
+								super.scriptUnit.doNotConfirmOrders("!!! Faulheit -> unbestätigt (Parameter: NoConfirmIfLazy)");
+							}
 							super.addOrder("UNTERHALTEN " + circusPoolRelation.getDoUnterhaltung(), true);
 							this.setFinalOrderedUnterhaltung(circusPoolRelation.getDoUnterhaltung());
+							
+							
+							if (this.minVerdienstProPerson>0) {
+								// Verdienst pro Person ausrechnen
+								int VerdienstProPerson = Math.round(circusPoolRelation.getDoUnterhaltung() / this.getUnit().getModifiedPersons());
+								this.addComment("Verdienst pro Person: " + VerdienstProPerson + " Silber.");
+								if (VerdienstProPerson<this.minVerdienstProPerson) {
+									super.scriptUnit.doNotConfirmOrders("!!! Ineffizienz -> unbestätigt (Parameter: MinVerdienstProPerson | " + VerdienstProPerson + "<" + this.minVerdienstProPerson + ")");
+								}
+							}
 						}
 
 					} else {

@@ -34,6 +34,8 @@ public class Laen extends MatPoolScript{
 	
 	private String LernfixOrder = "Talent=Bergbau";
 	
+	private ArrayList<String> LernFixArguments = new ArrayList<String>();
+	
 	/**
 	 * soll der Bergbauer Eisen fördern, wenn er kann und kein Laen (mehr) verfügbar ist?
 	 */
@@ -101,6 +103,24 @@ public class Laen extends MatPoolScript{
 		
 		this.Eisen = OP.getOptionBoolean("Eisen", this.Eisen);
 		this.Bergwerk = OP.getOptionBoolean("Bergwerk", this.Bergwerk);
+		
+		// ggf Optionen für Lernfix abfragen
+		if (!OP.getOptionBoolean("aka", true)) {
+			this.LernFixArguments.add("aka=nein");
+		}
+		if (OP.getOptionInt("Ziel", -1)>0) {
+			this.LernFixArguments.add("Ziel=" + OP.getOptionInt("Ziel", 1));
+		}
+		if (OP.getOptionString("Lehrer").length()>1) {
+			this.LernFixArguments.add("Lehrer=" + OP.getOptionString("Lehrer"));
+		}
+		if (OP.getOptionString("Teacher").length()>1) {
+			this.LernFixArguments.add("Teacher=" + OP.getOptionString("Teacher"));
+		}
+		// wenn Lernplan gesetzt wird, diesen Nutzen
+		if (OP.getOptionString("Lernplan").length()>1) {
+			this.LernfixOrder = "Lernplan=" + OP.getOptionString("Lernplan"); 
+		}
 		
 		
 		
@@ -235,6 +255,12 @@ public class Laen extends MatPoolScript{
 		Script L = new Lernfix();
 		ArrayList<String> order = new ArrayList<String>();
 		order.add(this.LernfixOrder);
+		
+		if (this.LernFixArguments!=null && this.LernFixArguments.size()>0) {
+			order.addAll(this.LernFixArguments);
+			this.scriptUnit.addComment("weitere Lernfix Parameter: " + String.join(" ", this.LernFixArguments));
+		}
+				
 		L.setArguments(order);
 		L.setScriptUnit(this.scriptUnit);
 		L.setGameData(this.scriptUnit.getScriptMain().gd_ScriptMain);

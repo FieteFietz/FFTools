@@ -33,10 +33,11 @@ ifNotEnemy			14,15,16
 ifNotRegion			14,15,16
 ifNotRegionType		14,15,16
 ifNotSkill			14,15,16
+ifUnit				14,15,16
 ifRegion			14,15,16
 ifRegionType		14,15,16
 ifSkill				14,15,16
-ifUnit				1
+ifUnit				14,15,16
 Lehren				80
 Lernen				60
 					850 nach MP, Lernsilber?
@@ -117,10 +118,9 @@ Overlord SkriptinfosOverlord Skriptinfos
 10:Settrankorder
 12:Setkapa
 13->Manager:TradeAreaHandler
-14:Auramaxwarning, IfSkill (14,15,16), IfNotSkill (14,15,16), IfRegionType (14,15,16), IfNotRegionType (14,15,16)
-15:Ifregion (14,15,16), IfEnemy (14,15,16), IfNotEnemy (14,15,16), IfRegionType (14,15,16), IfNotRegionType (14,15,16)
-16:Setregionicon,Ifnotregion (14,15,16), IfRegionType (14,15,16), IfNotRegionType (14,15,16)
-17:Ifunit
+14:Auramaxwarning, IfSkill (14,15,16), IfNotSkill (14,15,16), IfRegionType (14,15,16), IfNotRegionType (14,15,16), If(Not)Unit (14,15,16)
+15:Ifregion (14,15,16), IfEnemy (14,15,16), IfNotEnemy (14,15,16), IfRegionType (14,15,16), IfNotRegionType (14,15,16), If(Not)Unit (14,15,16)
+16:Setregionicon,Ifnotregion (14,15,16), IfRegionType (14,15,16), IfNotRegionType (14,15,16), If(Not)Unit (14,15,16)
 18:Runde
 19:Ack
 20:Depot

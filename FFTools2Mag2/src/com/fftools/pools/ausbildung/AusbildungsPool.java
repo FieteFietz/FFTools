@@ -1663,6 +1663,7 @@ private MatPool matPool = null;
 	      		if (kandidat.getLernKosten(kandidat.getDefaultGratisTalent())==0){
 	      			// kandidat.getScriptUnit().addComment("AP: Autodidaktenhat GratisTalent und setzt dieses...");
 	      			kandidat.addSubject(kandidat.getDefaultGratisTalent().getSkillType(),kandidat.getDefaultGratisTalent());
+	      			kandidat.getScriptUnit().addComment("AP: Lernkosten nicht gedeckt, lerne " + kandidat.getDefaultGratisTalent().getSkillType().toString());
 	      		}
 	      		
 	       	}

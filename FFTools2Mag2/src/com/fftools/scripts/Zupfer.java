@@ -360,17 +360,19 @@ public class Zupfer extends MatPoolScript{
 		
 		// Jahreszeit / Monat / Woche herausfinden
 		
-		int RundenFromStart = Runde - 1;
+		int RundenFromStart = Runde-1;
 		int iWeek = (RundenFromStart % 3) + 1;
 		int iMonth = (RundenFromStart / 3) % 9;
 		// this.addComment("Datumsberechnung (aktuell): Runde " + Runde + ", Woche " + iWeek + ", Monat " + iMonth); 
 		
-		boolean nextTurnWinter = FFToolsGameData.isNextTurnWinter(this.getOverlord().getScriptMain().gd_ScriptMain);
+		// boolean nextTurnWinter = FFToolsGameData.isNextTurnWinter(this.getOverlord().getScriptMain().gd_ScriptMain);
+		// neu: 20250216: es gilt diese Woche, nicht nächste
+		boolean thisTurnWinter = FFToolsGameData.isThisTurnWinter(this.getOverlord().getScriptMain().gd_ScriptMain);
 		
-		if (nextTurnWinter) {
-			this.addComment("Nächste Woche ist Winter!!! Kräuter wachsen im Winter nicht, somit ernten wir nicht.");
+		if (thisTurnWinter) {
+			this.addComment("Diese Woche ist Winter!!! Kräuter wachsen im Winter nicht, somit ernten wir nicht.");
 		} else {
-			this.addComment("Nächste Woche ist kein Winter - normales Kräuterwachstum, wir können ernten.");
+			this.addComment("Diese Woche ist kein Winter - normales Kräuterwachstum, wir können ernten.");
 		}
 		if (skillLevel<unitMinLevel){
 			// Lernen
@@ -400,7 +402,7 @@ public class Zupfer extends MatPoolScript{
 			// Wintercheck
 			boolean hasWinterpausenOrder = false;
 			String LernTalentName = "Kräuterkunde";
-			if (nextTurnWinter) {
+			if (thisTurnWinter) {
 				String ZupferWinterOption = reportSettings.getOptionString("ZupferWinterOption", this.region());
 				if (ZupferWinterOption==null) {
 					// defaultwert
@@ -515,14 +517,14 @@ public class Zupfer extends MatPoolScript{
 				
 				if (ZupferWinterOption.equalsIgnoreCase("LernenForschen")) {
 					// immer Lernen, in der letzten Winterwoche Forschen
-					boolean vorletzteWinterwoche = false;
-					if (iMonth==3 && iWeek==2) {
-						// 2. Woche Schneebann
-						vorletzteWinterwoche=true;
+					boolean letzteWinterwoche = false;
+					if (iMonth==3 && iWeek==3) {
+						// 3. Woche Schneebann
+						letzteWinterwoche=true;
 					}
 					
 					
-					if (skillLevel<7 || !vorletzteWinterwoche) {
+					if (skillLevel<7 || !letzteWinterwoche) {
 						if (skillLevel<7) {
 							this.addComment("ZupferWinterOption *LernenForschen* bewirkt Lernen von Kräuterkunde, da noch nicht T7");
 							// Lernen
@@ -615,7 +617,7 @@ public class Zupfer extends MatPoolScript{
 						}
 					} else {
 						
-						this.addComment("ZupferWinterOption *LernenForschen* bewirkt Forschen, in 2 Wochen ist der Winter vorbei.");
+						this.addComment("ZupferWinterOption *LernenForschen* bewirkt Forschen, in 1 Woche ist der Winter vorbei.");
 						this.addOrder("FORSCHE KRÄUTER", true);
 					}
 					hasWinterpausenOrder=true;

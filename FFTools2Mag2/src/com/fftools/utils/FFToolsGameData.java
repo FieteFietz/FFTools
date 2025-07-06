@@ -431,4 +431,15 @@ public class FFToolsGameData {
 		return false;
 	}
 	
+	public static boolean isThisTurnWinter(GameData data) {	
+		int Runde=data.getDate().getDate();
+		int RundenFromStart = Runde - 1;
+		int iMonth = (RundenFromStart / 3) % 9;
+		if (iMonth==1 || iMonth==2 || iMonth==3) {
+			// Herdfeuer oder Eiswind oder Schneebann
+			return true;
+		}
+		return false;
+	}
+	
 }

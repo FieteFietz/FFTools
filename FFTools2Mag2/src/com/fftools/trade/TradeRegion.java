@@ -148,9 +148,13 @@ public class TradeRegion {
 	public Unit getDepot(){
 		for (Iterator<Unit> iter = region.units().iterator();iter.hasNext();){
 			Unit u = (Unit)iter.next();
-			if (ScriptUnit.isDepot(u)){
-				return u;
+			ScriptUnit su = ovi.getScriptMain().getScriptUnit(u);
+			if (su!=null) {
+				if (su.isDepot()) {
+					return u;
+				}
 			}
+			
 		}
 		return null;
 	}

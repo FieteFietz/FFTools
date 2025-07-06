@@ -132,7 +132,6 @@ public class Request extends MatPoolScript{
 		}
 		
 		
-		
 		// soweit gekommen..wohl alles schön
 		
 		int kapaPolicy = MatPoolRequest.KAPA_unbenutzt;
@@ -166,7 +165,15 @@ public class Request extends MatPoolScript{
 			kapaUser=benutzerWeight;
 		}
 		
+		int prioTM = OP.getOptionInt("prioTM", Prio);
+		if (prioTM<=1) {
+			this.doNotConfirmOrders("Fehler bei prioTM-Angabe");
+		} 
+		
 		MatPoolRequest m = new MatPoolRequest(this,anzahl,itemName,Prio,"Request",kapaPolicy,kapaUser);
+		if (prioTM!=Prio) {
+			m.setPrioTM(prioTM);
+		}
 		
 		// Specs
 		String specsString = OP.getOptionString("Spec");

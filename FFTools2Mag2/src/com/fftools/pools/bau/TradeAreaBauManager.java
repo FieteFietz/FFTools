@@ -234,7 +234,10 @@ public class TradeAreaBauManager {
 						istGeeignet=true;
 						// Insektenprüfung
 						if (b.getUnit().getRegion().getRegionType().getName().equalsIgnoreCase("Gletscher") && arbeiter.scriptUnit.isInsekt()) {
+							arbeiter.addComment("Nicht geeignet für Gletscher (Insekt)");
 							istGeeignet=false;
+						} else {
+							arbeiter.addComment("Geeignet für Gletscher (kein Insekt)");
 						}
 						if (istGeeignet) {
 							availableBauarbeiter.add(arbeiter);
@@ -289,11 +292,21 @@ public class TradeAreaBauManager {
 		String actTalentName = "Burgenbau";
 		
 		// noch verfügbare Bauarbeiter zusammensuchen
+		boolean istGeeignet=false;
 		availableBauarbeiter.clear();
 		for (Bauen arbeiter:autoBauer){
 			if (!arbeiter.hasPlan() && arbeiter.scriptUnit.getSkillLevel(actTalentName)>=level_needed && arbeiter.region().equals(b.region())){
-				availableBauarbeiter.add(arbeiter);
-				b.addComment("Debug: Suche nach Unterstützer in der Region: " + arbeiter.unitDesc() + " kommt in Frage.");
+				// Insektenprüfung
+				if (b.getUnit().getRegion().getRegionType().getName().equalsIgnoreCase("Gletscher") && arbeiter.scriptUnit.isInsekt()) {
+					// arbeiter.addComment("checkForIddleSupporterInRegion: Nicht geeignet für Gletscher (Insekt)");
+					istGeeignet=false;
+				} else {
+					// arbeiter.addComment("checkForIddleSupporterInRegion: Geeignet für Gletscher (kein Insekt)");
+				}
+				if (istGeeignet) {
+					availableBauarbeiter.add(arbeiter);
+					// b.addComment("Debug: Suche nach Unterstützer in der Region: " + arbeiter.unitDesc() + " kommt in Frage.");
+				}
 			}
 		}
 		
@@ -341,12 +354,23 @@ public class TradeAreaBauManager {
 		
 		
 		// noch verfügbare Bauarbeiter zusammensuchen
+		boolean istGeeignet=true;
 		availableBauarbeiter.clear();
 		for (Bauen arbeiter:autoBauer){
 			if (arbeiter.hasPlan() && arbeiter.isOriginatedFromBauMAnger() && arbeiter.getBauBefehl()=="" && arbeiter.scriptUnit.getSkillLevel(actTalentName)>=level_needed && arbeiter.region().equals(b.region())){
 				if (!(arbeiter.scriptUnit.equals(b.scriptUnit)) && !(arbeiter.isHasGotoOrder())){
-					availableBauarbeiter.add(arbeiter);
-					// b.addComment("DEBUG:Bauunterstützersuche: verfügbar " + arbeiter.unitDesc() + " mit Baubefehl: " + arbeiter.getBauBefehl() + "!? (" + b.scriptUnit.getMainDurchlauf() + ")");
+					istGeeignet=true;
+					// Insektenprüfung
+					if (b.getUnit().getRegion().getRegionType().getName().equalsIgnoreCase("Gletscher") && arbeiter.scriptUnit.isInsekt()) {
+						// arbeiter.addComment("checkForWaitingSupporterInRegion: Nicht geeignet für Gletscher (Insekt)");
+						istGeeignet=false;
+					} else {
+						// arbeiter.addComment("checkForWaitingSupporterInRegion: Geeignet für Gletscher (kein Insekt)");
+					}
+					if (istGeeignet) {
+						availableBauarbeiter.add(arbeiter);
+						// b.addComment("DEBUG:Bauunterstützersuche: verfügbar " + arbeiter.unitDesc() + " mit Baubefehl: " + arbeiter.getBauBefehl() + "!? (" + b.scriptUnit.getMainDurchlauf() + ")");
+					}
 				}
 			}
 		}
@@ -396,10 +420,21 @@ public class TradeAreaBauManager {
 		
 		
 		// noch verfügbare Bauarbeiter zusammensuchen
+		boolean istGeeignet=true;
 		availableBauarbeiter.clear();
 		for (Bauen arbeiter:autoBauer){
 			if (!arbeiter.hasPlan() && arbeiter.scriptUnit.getSkillLevel(actTalentName)>=level_needed && !arbeiter.region().equals(b.region())){
-				availableBauarbeiter.add(arbeiter);
+				istGeeignet=true;
+				// Insektenprüfung
+				if (b.getUnit().getRegion().getRegionType().getName().equalsIgnoreCase("Gletscher") && arbeiter.scriptUnit.isInsekt()) {
+					// arbeiter.addComment("checkForIddleSupporterInTA: Nicht geeignet für Gletscher (Insekt)");
+					istGeeignet=false;
+				} else {
+					// arbeiter.addComment("checkForIddleSupporterInTA: Geeignet für Gletscher (kein Insekt)");
+				}
+				if (istGeeignet) {
+					availableBauarbeiter.add(arbeiter);
+				}
 			}
 		}
 		
