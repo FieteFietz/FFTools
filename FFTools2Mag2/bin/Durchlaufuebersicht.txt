@@ -46,7 +46,7 @@ Liefere				160
 Lohn				34 Anforderung
 					420 Check
 Lumberjack			51 (vor Lernfix), 205 (nach MatPool)
-Material			3
+Material			25
 maxBestandAnfang	14,15,16
 minBestandAnfang	14,15,16
 MyMonster			50
@@ -68,7 +68,7 @@ SetKapa				2
 SetLernPLan			0
 SetTAC 				9     
 					38
-SetTrankOrder		0
+SetTrankOrder		17
 Trankeffekt			10
 					162 (Check)
 Transport			5  Register + Request Pferde + Wagen
@@ -111,113 +111,114 @@ Werftmanager		60
 					
 					
 ------------------------------------------w o r k -------------------
-20.01.2020: (0.96)
-Overlord SkriptinfosOverlord Skriptinfos
-1:Setauthcode
-5:Setlernplan
-10:Settrankorder
-12:Setkapa
-13->Manager:TradeAreaHandler
-14:Auramaxwarning, IfSkill (14,15,16), IfNotSkill (14,15,16), IfRegionType (14,15,16), IfNotRegionType (14,15,16), If(Not)Unit (14,15,16)
-15:Ifregion (14,15,16), IfEnemy (14,15,16), IfNotEnemy (14,15,16), IfRegionType (14,15,16), IfNotRegionType (14,15,16), If(Not)Unit (14,15,16)
-16:Setregionicon,Ifnotregion (14,15,16), IfRegionType (14,15,16), IfNotRegionType (14,15,16), If(Not)Unit (14,15,16)
-18:Runde
-19:Ack
-20:Depot
-21:Trankeffekt
-22:Gibnix
-23:Bauern
-25:Enterbuilding
-26:Rekrutieren
-27->Manager:MatPoolManager
-28:Rekrutieren
-29:Pferde, Depot (Bauern)
-30:Material
-32:Handeln
-33:Settradeareaconnection
-34:Lohn
-40:Route
-42:Sailto
-44:Goto
-50:Transport,Mymonster
-51:Zupfer,Steine,Eisen,Lumberjack,Laen
-52:Gebaeudeunterhalt
-53:SeeWerft
-55->Manager:PferdeManager
-57->Manager:MatPoolManager
-58:Seeschlangenjagd (Attacker)
-59->Manager:SJM
-59:Unterhalten,Bauen
-60:Lernen
-
-62:SeeWerft
-
-64:Reparaturschiff
-65->Manager: SWM (Seewerftmanager) 
-
-68:Lernfix
-72:Gebaeudeunterhalt
-74->Manager:CircusPoolManager
-78:Unterhalten
-79->Manager:CircusPoolManager
-80->Manager:AusbildungsManager
-82:Lehren
-90:Burgenbau,Strassenbau
-92:Bauauftrag
-100->Manager:BauManager
-102:Bauen
-104:Usetradeareaconnection
-105->Manager:TradeAreaHandler
-106:Alchemist
-108:Request
-110:Ontradeareaconnection
-112:Treiben
-120:Ontradeareaconnection
-125->Manager:TradeAreaHandler
-161:Checkhelpstatus
-190:Vorrat
-200->Manager:MatPoolManager
-205:Steine,Eisen,Lumberjack
-210:Treiben,Werft
-220:Islandinfo
-220->Manager:WerftManager
-250->Manager:TreiberPoolManager
-260:Treiben
-300:Transport
-310:Pferde
-320:Vorrat
-330:Settradeareaconnection
-
-345->Manager:AlchemistManager
-350:Forester,Schmieden
-360:Handeln
-400->Manager:MatPoolManager
-410:Request
-420:Lohn
-430:Forester,Schmieden
-440:Bauen
-450->Manager:BauManager
-500->Manager:TransportManager
-520:Transport
-550->Manager:AusbildungsManager
-600->Manager:MatPoolManager
-650->Manager:AusbildungsManager,WerftManager
-662:Akademie
-664->Manager:AkademieManager
-666->Manager:AkademieManager
-700->Manager:MatPoolManager
-710:Trankeffekt
-725:Bewachen
-730:Liefere
-800:Depot
-810:Handeln
-850:Lernen
-855:Werft
-860:Requestinfo
-862:Beschreibung
-864->Manager:TradeAreaHandler
-900:Statistik
-
+03.11.2020: (1.006)
+2025-11-02 23:47:08:Overlord Skriptinfos
+2025-11-02 23:47:08:1:Setauthcode
+2025-11-02 23:47:08:5:Setlernplan
+2025-11-02 23:47:08:12:Setkapa
+2025-11-02 23:47:08:13->Manager:TradeAreaHandler
+2025-11-02 23:47:08:14:Ifregion,Ifnotregion,Auramaxwarning,Ifregiontype,Ifunit
+2025-11-02 23:47:08:15:Ifregion,Ifnotregion,Ifregiontype,Ifunit
+2025-11-02 23:47:08:16:Setregionicon,Ifregion,Ifnotregion,Ifregiontype,Ifunit
+2025-11-02 23:47:08:17:Settrankorder
+2025-11-02 23:47:08:18:Runde
+2025-11-02 23:47:08:19:Ack
+2025-11-02 23:47:08:20:Depot
+2025-11-02 23:47:08:21:Trankeffekt
+2025-11-02 23:47:08:23:Bauern
+2025-11-02 23:47:08:25:Material,Enterbuilding
+2025-11-02 23:47:08:26:Rekrutieren
+2025-11-02 23:47:08:27->Manager:MatPoolManager
+2025-11-02 23:47:08:28:Rekrutieren
+2025-11-02 23:47:08:29:Depot,Pferde
+2025-11-02 23:47:08:32:Handeln
+2025-11-02 23:47:08:32->Manager:TradeAreaHandler
+2025-11-02 23:47:08:33:Settradeareaconnection
+2025-11-02 23:47:08:34:Lohn
+2025-11-02 23:47:08:36:Jagemonster
+2025-11-02 23:47:08:37->Manager:MonsterJagdManager_MJM
+2025-11-02 23:47:08:38:Jagemonster
+2025-11-02 23:47:08:40:Route
+2025-11-02 23:47:08:42:Sailto
+2025-11-02 23:47:08:44:Goto
+2025-11-02 23:47:08:50:Transport
+2025-11-02 23:47:08:51:Zupfer,Steine,Eisen,Lumberjack,Laen
+2025-11-02 23:47:08:52:Gebaeudeunterhalt,Request
+2025-11-02 23:47:08:53:Seewerft
+2025-11-02 23:47:08:54:Alchemist
+2025-11-02 23:47:08:55->Manager:PferdeManager
+2025-11-02 23:47:08:56:Unterhalten,Bauen
+2025-11-02 23:47:08:57->Manager:MatPoolManager
+2025-11-02 23:47:08:58:Seeschlangenjagd
+2025-11-02 23:47:08:59->Manager:AlchemistManager,SeeschlangenJagdManager_SJM
+2025-11-02 23:47:08:60:Lernen,Pferde
+2025-11-02 23:47:08:62:Seewerft
+2025-11-02 23:47:08:64:Requestshiprepair,Reparaturschiff
+2025-11-02 23:47:08:65:Seeschlangenjagd
+2025-11-02 23:47:08:65->Manager:SeeWerftManager_SWM
+2025-11-02 23:47:08:68:Lernfix
+2025-11-02 23:47:08:70:Gebaeudeunterhalt
+2025-11-02 23:47:08:74->Manager:CircusPoolManager
+2025-11-02 23:47:08:78:Unterhalten
+2025-11-02 23:47:08:79->Manager:CircusPoolManager
+2025-11-02 23:47:08:80->Manager:AusbildungsManager
+2025-11-02 23:47:08:90:Burgenbau,Strassenbau
+2025-11-02 23:47:08:92:Bauauftrag
+2025-11-02 23:47:08:100->Manager:BauManager
+2025-11-02 23:47:08:102:Bauen
+2025-11-02 23:47:08:104:Usetradeareaconnection
+2025-11-02 23:47:08:105->Manager:TradeAreaHandler
+2025-11-02 23:47:08:110:Ontradeareaconnection
+2025-11-02 23:47:08:112:Treiben
+2025-11-02 23:47:08:120:Ontradeareaconnection
+2025-11-02 23:47:08:125->Manager:TradeAreaHandler
+2025-11-02 23:47:08:161:Checkhelpstatus
+2025-11-02 23:47:08:190:Vorrat
+2025-11-02 23:47:08:200->Manager:MatPoolManager
+2025-11-02 23:47:08:205:Steine,Eisen,Lumberjack,Laen
+2025-11-02 23:47:08:210:Treiben,Werft
+2025-11-02 23:47:08:212:Werftsegler
+2025-11-02 23:47:08:214:Goto
+2025-11-02 23:47:08:215:Jagemonster
+2025-11-02 23:47:08:220:Islandinfo
+2025-11-02 23:47:08:220->Manager:WerftManager
+2025-11-02 23:47:08:225->Manager:WerftManager
+2025-11-02 23:47:08:250->Manager:TreiberPoolManager
+2025-11-02 23:47:08:260:Treiben
+2025-11-02 23:47:08:300:Transport
+2025-11-02 23:47:08:320:Vorrat
+2025-11-02 23:47:08:330:Settradeareaconnection
+2025-11-02 23:47:08:350:Forester,Schmieden
+2025-11-02 23:47:08:360:Handeln
+2025-11-02 23:47:08:400->Manager:MatPoolManager
+2025-11-02 23:47:08:410:Request
+2025-11-02 23:47:08:420:Lohn
+2025-11-02 23:47:08:430:Forester,Schmieden
+2025-11-02 23:47:08:440:Bauen
+2025-11-02 23:47:08:450->Manager:BauManager
+2025-11-02 23:47:08:500->Manager:TransportManager
+2025-11-02 23:47:08:510:Materialhub
+2025-11-02 23:47:08:520:Transport
+2025-11-02 23:47:08:550->Manager:AusbildungsManager
+2025-11-02 23:47:08:600->Manager:MatPoolManager
+2025-11-02 23:47:08:650->Manager:AusbildungsManager,WerftManager
+2025-11-02 23:47:08:662:Akademie
+2025-11-02 23:47:08:664->Manager:AkademieManager
+2025-11-02 23:47:08:666->Manager:AkademieManager
+2025-11-02 23:47:08:700->Manager:MatPoolManager
+2025-11-02 23:47:08:710:Trankeffekt
+2025-11-02 23:47:08:725:Bewachen
+2025-11-02 23:47:08:730:Liefere
+2025-11-02 23:47:08:730->Manager:WerftManager
+2025-11-02 23:47:08:800:Depot
+2025-11-02 23:47:08:810:Handeln
+2025-11-02 23:47:08:820:Lumberjack
+2025-11-02 23:47:08:850:Lernen
+2025-11-02 23:47:08:855:Bauen,Werft
+2025-11-02 23:47:08:860:Requestinfo
+2025-11-02 23:47:08:862:Beschreibung
+2025-11-02 23:47:08:864->Manager:TradeAreaHandler
+2025-11-02 23:47:08:900:Statistik
 
 
   /**

@@ -20,6 +20,8 @@ public class Request extends MatPoolScript{
 	
 	private ArrayList<String> specs=null;
 	
+	private MatPoolRequest mpr = null;
+	
 	
 	/**
 	 * Parameterloser Constructor
@@ -211,8 +213,20 @@ public class Request extends MatPoolScript{
 			outText.addOutLine("!!! Region=ja und TransporterDefs gesetzt !!! (" + this.unitDesc() + ")", true);		
 		}
 		
+		this.mpr = m;
 		this.addMatPoolRequest(m);
 	}
+	
+	
+	public MatPoolRequest getMPR() {
+		if (this.mpr!=null) {
+			return this.mpr;
+		}
+		
+		
+		return null;
+	}
+	
 	
 	/**
 	private void check(){

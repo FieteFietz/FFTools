@@ -41,6 +41,8 @@ public class FFToolsOptionParser {
 	
 	private ArrayList<String> afterComments = new ArrayList<String>();
 	
+	public boolean enable_noScript_parsing=false; // sucht nicht nur // script Filer sondern auch // Filter
+	
 	
 	/**
 	 * Konstruktor
@@ -97,8 +99,19 @@ public class FFToolsOptionParser {
 						this.parseOptionLine(myOrder);
 					}
 				}
+				
+				if (this.enable_noScript_parsing) {
+					if (order.toLowerCase().startsWith("// " + filter.toLowerCase())){
+						// treffer
+						String myOrder = order.substring(("// " + filter.toLowerCase()).length()+1);
+						if (myOrder.length()>0 && myOrder.indexOf("=")>0){
+							this.parseOptionLine(myOrder);
+						}
+					}
+				}
 			}
 		}
+		
 		/*
 		if (this.afterComments.size()>0) {
 			for (String s2 :this.afterComments) {
@@ -136,7 +149,7 @@ public class FFToolsOptionParser {
 	private void parseSingleOption(String s){
 		String[] pair = s.split("=");
 		if (pair.length!=2){
-			outText.addOutLine("!!Optionenparser Fehler:" + s + " (" + this.scriptUnit.getUnit().toString(true) + ")");
+			outText.addOutLine("!!Optionenparser Fehler:" + s + " (" + this.scriptUnit.getUnit().toString(true) + ") | length=" + pair.length);
 			return;
 		}
 		String key = pair[0];
@@ -153,6 +166,7 @@ public class FFToolsOptionParser {
 		
 		// this.options.put(key.toLowerCase(), value.toLowerCase());
 		this.options.put(key.toLowerCase(), value);
+		// outText.addOutLine("new option added:" + key.toLowerCase() + " -> " + value);
 	}
 	
 	/**

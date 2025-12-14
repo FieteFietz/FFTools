@@ -8,11 +8,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
-import magellan.client.Client;
-import magellan.client.event.SelectionEvent;
-import magellan.client.event.SelectionListener;
-import magellan.library.Unit;
-
 import com.fftools.demo.actions.MenuAction;
 import com.fftools.demo.actions.lernfix.LernfixTalentAction;
 import com.fftools.demo.actions.unit.BauarbeiterAction;
@@ -21,7 +16,6 @@ import com.fftools.demo.actions.unit.DepotAction;
 import com.fftools.demo.actions.unit.DepotWahrnehmerAction;
 import com.fftools.demo.actions.unit.HandelnAction;
 import com.fftools.demo.actions.unit.KlonenAction;
-import com.fftools.demo.actions.unit.KräuterAction;
 import com.fftools.demo.actions.unit.MaterialAction;
 import com.fftools.demo.actions.unit.PferdeAction;
 import com.fftools.demo.actions.unit.RohstoffAction;
@@ -33,6 +27,11 @@ import com.fftools.demo.actions.unit.WahrnehmerAction;
 import com.fftools.demo.actions.unit.ZupferAction;
 import com.fftools.utils.FFToolsArrayList;
 import com.fftools.utils.FFToolsUnits;
+
+import magellan.client.Client;
+import magellan.client.event.SelectionEvent;
+import magellan.client.event.SelectionListener;
+import magellan.library.Unit;
 
 public class UnitSubmenu extends JMenu implements SelectionListener {
 	private static final long serialVersionUID = 1L;
@@ -68,7 +67,7 @@ public class UnitSubmenu extends JMenu implements SelectionListener {
 		addMenuItem(this,new TransporterAction(this.selectionObserver));
 		addMenuItem(this,new UnterhaltenAction(this.selectionObserver));
 		addMenuItem(this,new WahrnehmerAction(this.selectionObserver));
-		addMenuItem(this,new KräuterAction(this.selectionObserver));
+		// addMenuItem(this,new KräuterAction(this.selectionObserver));
 		addMenuItem(this,new ZupferAction(this.selectionObserver));
 		addMenuItem(this,new PferdeAction(this.selectionObserver));
 		addMenuItem(this,new RohstoffAction(this.selectionObserver));

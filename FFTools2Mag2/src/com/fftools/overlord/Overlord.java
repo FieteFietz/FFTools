@@ -17,6 +17,7 @@ import com.fftools.pools.bau.WerftManager;
 import com.fftools.pools.circus.CircusPoolManager;
 import com.fftools.pools.heldenregionen.HeldenRegionsManager;
 import com.fftools.pools.matpool.MatPoolManager;
+import com.fftools.pools.matpool.MaterialHubManager_MHM;
 import com.fftools.pools.pferde.PferdeManager;
 import com.fftools.pools.seeschlangen.MonsterJagdManager_MJM;
 import com.fftools.pools.seeschlangen.SeeschlangenJagdManager_SJM;
@@ -78,6 +79,7 @@ public class Overlord {
 	private SeeschlangenJagdManager_SJM SJM = null;
 	private MonsterJagdManager_MJM MJM = null;
 	private SeeWerftManager_SWM SWM = null;
+	private MaterialHubManager_MHM MHM = null;
 	
 	
 	/**
@@ -566,6 +568,17 @@ public class Overlord {
 		return this.alchemistManager;
 	}
 	
+	/**
+	 * 
+	 * @return the MHM
+	 */
+	public MaterialHubManager_MHM getMaterialHubManager(){
+		if (this.MHM==null){
+			this.MHM = new MaterialHubManager_MHM(this);
+			this.addRunner(this.MHM);
+		}
+		return this.MHM;
+	}
 	
 	/**
 	 * 

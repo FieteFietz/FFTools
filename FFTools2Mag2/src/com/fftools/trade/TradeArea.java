@@ -11,6 +11,7 @@ import java.util.List;
 
 import com.fftools.OutTextClass;
 import com.fftools.ReportSettings;
+import com.fftools.ScriptUnit;
 import com.fftools.overlord.Overlord;
 import com.fftools.pools.bau.TradeAreaBauManager;
 import com.fftools.pools.circus.CircusPool;
@@ -122,6 +123,22 @@ public class TradeArea {
 	 */
 	private double Profit=2;
 	
+	private ScriptUnit materialHub = null;
+	
+	public void setMaterialHub (ScriptUnit u) {
+		this.materialHub = u;
+	}
+	
+	public boolean hasMaterialHub() {
+		if (this.materialHub!=null) {
+			return true;
+		}
+		return false;
+	}
+	
+	public ScriptUnit getMaterialHub() {
+		return this.materialHub;
+	}
 	
 	public boolean isHasInsektenTransporter() {
 		return hasInsektenTransporter;

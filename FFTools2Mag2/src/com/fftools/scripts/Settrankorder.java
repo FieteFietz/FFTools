@@ -13,7 +13,11 @@ import com.fftools.pools.alchemist.AlchemistManager;
 public class Settrankorder extends Script{
 	
 	
-	private static final int Durchlauf = 10;
+	private static final int Durchlauf = 17;
+	/*
+	 * nach den IFs (14,15,16)
+	 * vor dem Alchemist 54 und AlchemistManager 
+	 */
 	
 	/**
 	 * Parameterloser Constructor

@@ -23,6 +23,7 @@ public class Sailto extends Script{
 	private static final Logger log = Logger.getInstance(Sailto.class);
 	
 	public Region nextShipStop = null;
+	public int turns_exact = -1;
 	
 	// Parameterloser constructor
 	public Sailto() {
@@ -144,9 +145,9 @@ public class Sailto extends Script{
 				d = Regions.getMapMetric(this.gd_Script).toDirection(this.scriptUnit.getUnit().getModifiedShip().getShoreId());
 			}
 
-			int turns_exact = FFToolsRegions.getShipPathSizeTurns_Virtuell_Ports(u.getRegion().getCoordinate(),d, dest, this.gd_Script, speed, null);
-			if (turns_exact!=turns_easy){
-				this.addComment("ETA due ports and land regions in " + turns_exact + " turns.");
+			this.turns_exact = FFToolsRegions.getShipPathSizeTurns_Virtuell_Ports(u.getRegion().getCoordinate(),d, dest, this.gd_Script, speed, null);
+			if (this.turns_exact!=turns_easy){
+				this.addComment("ETA due ports and land regions in " + this.turns_exact + " turns.");
 			}
 			this.nextShipStop = FFToolsRegions.nextShipStop;
 			if (this.nextShipStop!=null) {
