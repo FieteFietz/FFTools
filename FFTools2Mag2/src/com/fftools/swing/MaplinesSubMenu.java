@@ -9,10 +9,12 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
 import com.fftools.demo.actions.MenuAction;
+import com.fftools.demo.actions.map.HideMaplinesMHM_Move_Action;
 import com.fftools.demo.actions.map.HideMaplinesMJM_Move_Action;
 import com.fftools.demo.actions.map.HideMaplinesSSJM_Move_Action;
 import com.fftools.demo.actions.map.HideMaplinesSWM_Move_Action;
 import com.fftools.demo.actions.map.HideMaplinesTAC_Action;
+import com.fftools.demo.actions.map.ShowMaplinesMHM_Move_Action;
 import com.fftools.demo.actions.map.ShowMaplinesMJM_Move_Action;
 import com.fftools.demo.actions.map.ShowMaplinesSSJM_Move_Action;
 import com.fftools.demo.actions.map.ShowMaplinesSWM_Move_Action;
@@ -39,6 +41,9 @@ public class MaplinesSubMenu extends JMenu {
 	    
 	    addMenuItem(this,new ShowMaplinesSWM_Move_Action(client));
 	    addMenuItem(this,new HideMaplinesSWM_Move_Action(client));
+	    
+	    addMenuItem(this,new ShowMaplinesMHM_Move_Action(client));
+	    addMenuItem(this,new HideMaplinesMHM_Move_Action(client));
 	  
 	}
 	

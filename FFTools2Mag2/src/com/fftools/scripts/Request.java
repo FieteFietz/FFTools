@@ -185,6 +185,7 @@ public class Request extends MatPoolScript{
 			this.specs = new ArrayList<String>();
 			for (int i=0;i<specsArray.length;i++){
 				String s2 = specsArray[i];
+				s2 = FFToolsGameData.translateItemShortform(s2);
 				this.specs.add(s2);
 				m.addSpec(s2);
 			}
@@ -213,6 +214,14 @@ public class Request extends MatPoolScript{
 			outText.addOutLine("!!! Region=ja und TransporterDefs gesetzt !!! (" + this.unitDesc() + ")", true);		
 		}
 		
+		if (OP.getOptionBoolean("MH", false) || OP.getOptionBoolean("MHM", false) || OP.getOptionBoolean("MaterialHub", false) || OP.getOptionBoolean("MaterialHubManager", false)) {
+			m.setMH(true);
+		}
+		
+		if (OP.getOptionString("info").length()>0) {
+			m.setKommentar(OP.getOptionString("info"));
+		}
+		
 		this.mpr = m;
 		this.addMatPoolRequest(m);
 	}
@@ -222,59 +231,9 @@ public class Request extends MatPoolScript{
 		if (this.mpr!=null) {
 			return this.mpr;
 		}
-		
-		
 		return null;
 	}
-	
-	
-	/**
-	private void check(){
-		Collection myRequests = this.getRequests();
-		if (myRequests==null){
-			//be fail safe..something's gone wrong
-			outText.addOutLine("!!! Request does not find it´s own request!");
-			return;
-		}
-		// durch alle Requests dieser Unit durchgehen
-		for (Iterator iter = myRequests.iterator();iter.hasNext();){
-			// wir erhalten prinzipiell vom iterator ein object
-			MatPoolRequest o = (MatPoolRequest)iter.next();
-			// wenn dies eine Instanz von RequestRelation ist (keine andere MatPoolRelation)
-			if (o.getScript().equals(this)){
-				// und wie früher checken
-				check_mpr(o);
-			}
-		}
-	}
-	**/
-	
-	/**
-	 * Sollte bei Bedarf ueberschrieben werden
-	 * wird aufgerufen, sobald MatPool die MatPoolRelation vollstaendig 
-	 * in dem aktuellen Durchlauf bearbeitet hat.
-	 * 
-	 * 
-	 * @param _mpr
-	 */
-	/**
-	public void check_mpr(MatPoolRequest _mpr){
-		// zu testzwecken erfolg kurz mitteilen...
-		
-		// einschränken,,,wenn nicht "alles" gefordert wurde
-		if (!this.request_alles) {
-			if (_mpr.getBearbeitet()<_mpr.getOriginalGefordert()){
-				// nicht voll erfüllt
-				super.addComment("Request nach " + _mpr.getOriginalGefordert() + " " + _mpr.getOriginalGegenstand() + "(Prio " + _mpr.getPrio() +  ") nicht voll erfüllt (" + _mpr.getBearbeitet() + ")", true);
-			} else {
-				// wenn alles schön, nix ausgeben,
-				// fein, Marc?
-			}
-		}
-		// wenn mit alles angefordert wurde, derzeit keine Ausgabe...
-	}
-	**/
-	
+
 	/**
 	 * sollte falsch liefern, wenn nur jeweils einmal pro scriptunit
 	 * dieserart script registriert werden soll

@@ -342,6 +342,7 @@ public void runScript(int scriptDurchlauf){
 		
 		// Entweder für alle Waffentalente waffen anfordern oder nur für das Argument(Itemgroup oder Item)
 		FFToolsOptionParser OP = new FFToolsOptionParser(this.scriptUnit,"Treiben");
+		OP.addOptionList(this.getArguments());
 		
 		if (OP.getOptionInt("WaffenPrio", -1)>0){
 			this.WaffenPrio = OP.getOptionInt("WaffenPrio", this.WaffenPrio);

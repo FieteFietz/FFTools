@@ -2,9 +2,19 @@ package com.fftools;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.StringTokenizer;
+
+import com.fftools.overlord.Overlord;
+import com.fftools.pools.matpool.MatPool;
+import com.fftools.pools.matpool.relations.MatPoolOffer;
+import com.fftools.pools.matpool.relations.MatPoolRequest;
+import com.fftools.scripts.Rekrutieren;
+import com.fftools.scripts.Script;
+import com.fftools.scripts.Setlernplan;
+import com.fftools.scripts.Settrankorder;
 
 import magellan.client.Client;
 import magellan.client.event.UnitOrdersEvent;
@@ -24,15 +34,6 @@ import magellan.library.rules.ItemType;
 import magellan.library.rules.Race;
 import magellan.library.rules.RegionType;
 import magellan.library.rules.SkillType;
-
-import com.fftools.overlord.Overlord;
-import com.fftools.pools.matpool.MatPool;
-import com.fftools.pools.matpool.relations.MatPoolOffer;
-import com.fftools.pools.matpool.relations.MatPoolRequest;
-import com.fftools.scripts.Rekrutieren;
-import com.fftools.scripts.Script;
-import com.fftools.scripts.Setlernplan;
-import com.fftools.scripts.Settrankorder;
 
 
 /**
@@ -170,6 +171,9 @@ public class ScriptUnit {
 	 */
 	public int sortValue=0;
 	public int sortValue_2=0; // wird genutzt, wenn sortValue bei beiden SU gleich ist
+	
+	
+	public boolean hasBetreteAkaOrder = false; // wird vom AM gesetzt, verhindert BETRETE BURG Kommandos durch Jagemonster mode=auto
 	
 	
 	/**
@@ -515,36 +519,48 @@ public class ScriptUnit {
 		}
 		
 		// for (Iterator<Script> iter = this.foundScriptList.iterator();iter.hasNext();){
-		for (Script sc : this.foundScriptList) {
-			timeX=System.currentTimeMillis();
-			tDiffX =0;
-			tDiffX = timeX - time1;
-			this.getOverlord().Zeitsumme6+=tDiffX;	
-			// boolean b1 = isInRegionSelected(this.unit.getRegion());
-			boolean b1 = this.isInClientSelectedRegions;
-			timeX=System.currentTimeMillis();
-			tDiffX =0;
-			tDiffX = timeX - time1;
-			this.getOverlord().Zeitsumme7+=tDiffX;
-			boolean b2 = isAlwaysRunScript(sc);
-			timeX=System.currentTimeMillis();
-			tDiffX =0;
-			tDiffX = timeX - time1;
-			this.getOverlord().Zeitsumme8+=tDiffX;
-			if (b1 || b2){
+		Script sc_save = null;
+		try {
+			for (Script sc : this.foundScriptList) {
+				sc_save = sc;
 				timeX=System.currentTimeMillis();
 				tDiffX =0;
 				tDiffX = timeX - time1;
-				this.getOverlord().Zeitsumme9+=tDiffX;	
-			   if (sc.shouldRun(scriptDurchlauf)){	
-				   sc.runScript(scriptDurchlauf);
-			   } 
-			} else {
+				this.getOverlord().Zeitsumme6+=tDiffX;	
+				// boolean b1 = isInRegionSelected(this.unit.getRegion());
+				boolean b1 = this.isInClientSelectedRegions;
 				timeX=System.currentTimeMillis();
 				tDiffX =0;
 				tDiffX = timeX - time1;
-				this.getOverlord().Zeitsumme10+=tDiffX;
+				this.getOverlord().Zeitsumme7+=tDiffX;
+				boolean b2 = isAlwaysRunScript(sc);
+				timeX=System.currentTimeMillis();
+				tDiffX =0;
+				tDiffX = timeX - time1;
+				this.getOverlord().Zeitsumme8+=tDiffX;
+				if (b1 || b2){
+					timeX=System.currentTimeMillis();
+					tDiffX =0;
+					tDiffX = timeX - time1;
+					this.getOverlord().Zeitsumme9+=tDiffX;	
+				   if (sc.shouldRun(scriptDurchlauf)){	
+					   sc.runScript(scriptDurchlauf);
+				   } 
+				} else {
+					timeX=System.currentTimeMillis();
+					tDiffX =0;
+					tDiffX = timeX - time1;
+					this.getOverlord().Zeitsumme10+=tDiffX;
+				}
 			}
+		}  catch (ConcurrentModificationException e) {
+		    System.out.println("ConcurrentModificationException aufgetreten");
+		    System.out.println("run=" + scriptDurchlauf);
+		    System.out.println("betroffene Unit: " + this.toString());
+		    e.printStackTrace();
+		    outText.addOutLine("!!!!!! ConcurrentModificationException, run " + scriptDurchlauf + " ist fehlerhaft!!!!!");
+		    outText.addOutLine("last save script: " + sc_save.toString());
+		    outText.addOutLine("betroffene Unit: " + this.toString());
 		}
 		timeX=System.currentTimeMillis();
 		tDiffX =0;
@@ -556,6 +572,9 @@ public class ScriptUnit {
 			this.foundScriptList.addAll(this.addScriptList);
 			this.addScriptList.clear();
 		}
+		
+		// und jetzt eventuelle zu löschende scripte entfernen - !!nach der Schleife!! 
+		processScriptDeletions();
 		
 		timeX=System.currentTimeMillis();
 		tDiffX =0;

@@ -521,6 +521,19 @@ public class Depot extends TransportScript{
 					this.addComment("Bauerncheck: " + actPersonen + " von " + maxPersonen + " Bauern in der Region. OK");
 				}
 			}
+			
+			if (this.mitBauernCheck) {
+				// Bauern und verfügbares Silber in Region zum arbeiten prüfen
+				int actBauern = r.getModifiedPeasants();
+				int actSilber = r.getSilver();
+				int SicherheitsRundenFaktor = 3;
+				int SicherheitsBestand = (int)Math.ceil(actBauern + (actBauern * 0.01)) * 10  * SicherheitsRundenFaktor;
+				if (SicherheitsBestand >= actSilber && actBauern>0) {
+					this.doNotConfirmOrders("!!!Das Silber in der Region geht aus - die Bauern werden verhungern (" + actSilber + "<=" + SicherheitsBestand + ", bei " + SicherheitsRundenFaktor + " Runden)");
+				} else {
+					this.addComment("Das Silber in der Region reicht (arbeitende Einheiten unberücksichtigt): " + actSilber + ">" + SicherheitsBestand + " Silber (" + SicherheitsRundenFaktor + " Runden betrachtet");				
+				}
+			}
 		}
 		
 		

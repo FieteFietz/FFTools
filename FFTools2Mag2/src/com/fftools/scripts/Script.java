@@ -107,7 +107,7 @@ public class Script implements ScriptInterface,OverlordInfo{
 		if (arguments==null){
 			return "";
 		}
-		if (arguments.size()<i){
+		if (arguments.size()<=i){
 			addOutLine("Argument angefordert welches nicht uebergeben wurde (Anzahl)");
 			return "";
 		}

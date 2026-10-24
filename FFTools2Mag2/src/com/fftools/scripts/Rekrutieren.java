@@ -38,6 +38,8 @@ public class Rekrutieren extends MatPoolScript{
 	
 	private boolean ConfirmLessRecruitment=false;
 	
+	private boolean ConfirmFullStaff=true;  // Standardmässig unbestätigt, wenn ziel=target erreicht
+	
 	private int recruitCosts = 10;
 	
 	private int anzahlGeplant=0;
@@ -179,6 +181,11 @@ public class Rekrutieren extends MatPoolScript{
 			this.addComment("Option erkannt: ConfirmLessRecruitment -> es wird rekrutiert, soweit das Silber reicht.");
 		}
 		
+		this.ConfirmFullStaff = OP.getOptionBoolean("ConfirmFullStaff", this.ConfirmFullStaff);
+		if (!this.ConfirmFullStaff) {
+			this.addComment("Option erkann: ConfirmFullStaff = false -> keine Bestätigung beim Erreichen voller Mannstärke");
+		}
+		
 		// RegionMax -> anzahl
 		int regionsBestand=OP.getOptionInt("regionsBestand", -1);
 		if (regionsBestand>-1){
@@ -226,11 +233,19 @@ public class Rekrutieren extends MatPoolScript{
 				}
 				this.addComment("Anzahl Rekruten angepasst auf: " + this.anzahlGeplant);
 				if (this.anzahlGeplant==0) {
-					this.addComment("!!!Rekrutieren: Ziel bereits erreicht -> Einheit rekrutiert nicht und verbleibt unbestätigt");
-					this.doNotConfirmOrders("!!!Rekrutieren: Ziel bereits erreicht -> Einheit rekrutiert nicht und verbleibt unbestätigt");
+					if (this.ConfirmFullStaff) {
+						this.addComment("!!!Rekrutieren: Ziel bereits erreicht -> Einheit rekrutiert nicht und verbleibt unbestätigt");
+						this.doNotConfirmOrders("!!!Rekrutieren: Ziel bereits erreicht -> Einheit rekrutiert nicht und verbleibt unbestätigt");
+					} else {
+						this.addComment("Rekrutieren: Ziel bereits erreicht -> Einheit rekrutiert nicht - ohne Meldung (ConfirmFullStaff=false)");
+					}
 				} else {
-					this.addComment("Rekrutieren: Ziel wird erreicht -> Einheit verbleibt unbestätigt");
-					this.doNotConfirmOrders("Rekrutieren: Ziel wird erreicht -> Einheit verbleibt unbestätigt");
+					if (this.ConfirmFullStaff) {
+						this.addComment("Rekrutieren: Ziel wird erreicht -> Einheit verbleibt unbestätigt");
+						this.doNotConfirmOrders("Rekrutieren: Ziel wird erreicht -> Einheit verbleibt unbestätigt");
+					} else {
+						this.addComment("Rekrutieren: Ziel wird erreicht -> Einheit ohne Meldung (ConfirmFullStaff=false)");
+					}
 				}
 			}
 		}

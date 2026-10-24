@@ -10,7 +10,7 @@ import magellan.library.rules.ItemType;
 public class Maxbestand extends MatPoolScript{
 	
 	
-	private int Durchlauf_NachMatPool = 620;
+	private int Durchlauf_NachMatPool = 710;
 	
 	private int[] runners = {Durchlauf_NachMatPool};
 	

@@ -490,20 +490,20 @@ public void runScript(int scriptDurchlauf){
 		if (this.actTyp == Bauen.BUILDING){
 			
 			s = OP.getOptionString("Typ");
-			if (this.actTyp == Bauen.BUILDING){
-				// Typ muss GebäudeType enthalten
-				
-				if (s.length()<2){
-					s = OP.getOptionString("Type");
-				}
-				this.buildingType = this.gd_Script.getRules().getBuildingType(s,false);
-				if (this.buildingType==null){
-					// Abbruch
-					statusInfo+="Fehler: unbekanntes Gebäude: " + s;
-					this.doNotConfirmOrders("Bauen: unbekanntes Gebäude: " + s);
-					return;
-				}
+			
+			// Typ muss GebäudeType enthalten
+			
+			if (s.length()<2){
+				s = OP.getOptionString("Type");
 			}
+			this.buildingType = this.gd_Script.getRules().getBuildingType(s,false);
+			if (this.buildingType==null){
+				// Abbruch
+				statusInfo+="Fehler: unbekanntes Gebäude: " + s;
+				this.doNotConfirmOrders("Bauen: unbekanntes Gebäude: " + s);
+				return;
+			}
+			
 			
 			// wenn keine maxGrösse angegeben im Type wird grösse erwartet
 			if (this.buildingType.getMaxSize()>0){

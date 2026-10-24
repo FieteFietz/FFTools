@@ -3,6 +3,7 @@ package com.fftools.scripts;
 import java.util.ArrayList;
 
 import com.fftools.utils.FFToolsOptionParser;
+import com.fftools.utils.FFToolsUnits;
 
 import magellan.library.Item;
 import magellan.library.Order;
@@ -18,6 +19,8 @@ public class Bewachen extends Script{
 	private static final int Durchlauf = 725;
 	
 	private boolean noWeaponACK = false;
+	
+	public String bestStand = ""; 
 	
 	/**
 	 * Parameterloser Constructor
@@ -133,90 +136,10 @@ public class Bewachen extends Script{
 		}
 		
 		// Talente und Waffen
-		// private final String[] talentNamen = {"Hiebwaffen","Stangenwaffen","Bogenschießen","Armbrustschießen","Katapultbedienung"};
 		
-		class bewTalent {
-			public String TalentName = "";
-			public String stand = "";
-		}
 		
-		ArrayList<bewTalent> bewTalente = new ArrayList<bewTalent>();
-		bewTalent T1 = new bewTalent();
-		T1.TalentName = "Hiebwaffen";
-		T1.stand = "";
-		bewTalente.add(T1);
-		
-		T1 = new bewTalent();
-		T1.TalentName = "Stangenwaffen";
-		T1.stand = "";
-		bewTalente.add(T1);
-		
-		T1 = new bewTalent();
-		T1.TalentName = "Bogenschießen";
-		T1.stand = "HINTEN";
-		bewTalente.add(T1);
-		
-		T1 = new bewTalent();
-		T1.TalentName = "Armbrustschießen";
-		T1.stand = "HINTEN";
-		bewTalente.add(T1);
-		
-		T1 = new bewTalent();
-		T1.TalentName = "Katapultbedienung";
-		T1.stand = "HINTEN";
-		bewTalente.add(T1);
-		
-		boolean mayGuard =false;
-		String bestStand="";
-		for (bewTalent bewTalent : bewTalente) {
-			SkillType actST = this.gd_Script.getRules().getSkillType(bewTalent.TalentName, false);
-			if (actST == null) {
-				this.doNotConfirmOrders("!!!Bewache: SkillType nicht gefunden:" + bewTalent.TalentName);
-			} else {
-				Skill s = this.getUnit().getSkill(actST);
-				if (s!=null) {
-					if (s.getLevel()>0) {
-						// unit hat ein Kampftalent
-						this.addComment("Bewachen: Kampftalent gefunden: " + actST.getName());
-						
-						for (ItemType iT :  this.gd_Script.getRules().getItemTypes()){
-							if (iT.getUseSkill()!=null) {
-								if (iT.getUseSkill().getSkillType().equals(actST)) {
-									Item ii = this.getUnit().getModifiedItem(iT);
-									if (ii != null) {
-										if (ii.getAmount()>0) {
-											// passt
-											 mayGuard =true;
-											 bestStand = bewTalent.stand;
-											this.addComment("Bewache: passende Waffe gefunden: " + ii.getAmount() + " " + iT.getName());
-										} else {
-											// this.addComment("Debug - scriptfremd: checke " + iT.getName() + ", Anzahl: " + ii.getAmount());
-										}
-									} else {
-										// this.addComment("Debug - scriptfremd: checke " + iT.getName() + ", nicht vorhanden.");
-									}
-									
-									ii = this.scriptUnit.getModifiedItem(iT);
-									if (ii != null) {
-										if (ii.getAmount()>0) {
-											// passt
-											 mayGuard =true;
-											 bestStand = bewTalent.stand;
-											 this.addComment("Bewache: passende Waffe gefunden: " + ii.getAmount() + " " + iT.getName());
-										} else {
-											// this.addComment("Debug - inscript: checke " + iT.getName() + ", Anzahl: " + ii.getAmount());
-										}
-									} else {
-										// this.addComment("Debug - inscript: checke " + iT.getName() + ", nicht vorhanden.");
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		
+		boolean mayGuard = FFToolsUnits.hasWeaponToFight(this);
+
 		if (!mayGuard) {
 			this.addComment("!!!Bewache: Einheit hat keine geeignete Waffe und/oder Talent!!!");
 			if (!noWeaponACK) {
@@ -226,12 +149,10 @@ public class Bewachen extends Script{
 			}
 			return;
 		}
-		
-		
-		
+		// this.bestStand wird durch FFToolsUnits.hasWeaponToFight(this) mit "" oder HINTEN belegt
 		if (this.getUnit().getModifiedCombatStatus()==this.getUnit().getCombatStatus() && this.getUnit().getModifiedCombatStatus()>=4) {
 			this.addComment("Bewache: befehle neuen Kampfstatus");
-			this.addOrder("KÄMPFE " + bestStand + " ;Bewachen", true);
+			this.addOrder("KÄMPFE " + this.bestStand + " ;Bewachen", true);
 		}
 		
 		// bis hierhin gekommen - also bewache neu befehlen...

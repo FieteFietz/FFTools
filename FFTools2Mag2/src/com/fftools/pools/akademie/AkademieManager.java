@@ -91,6 +91,7 @@ import magellan.library.Rules;
 			        			}
 			        			if (needEnterOrder){
 			        				AR.getScriptUnit().addOrder("BETRETEN BURG " + AR.getAkademieFromAM().getID() + " ; AkaPool-> " + AR.getAkademieFromAM().toString(), true);
+			        				AR.getScriptUnit().hasBetreteAkaOrder=true;
 			        				AR.setOrderedNewAka(true);
 			        			}
 			        		}

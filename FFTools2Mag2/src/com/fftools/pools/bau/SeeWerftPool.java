@@ -93,13 +93,20 @@ private ArrayList<Ship2Repair> SchiffListe = new ArrayList<Ship2Repair>();
 							// outText.addOutLine("Werft: beauftrage Werft " + w.scriptUnit.toString(), true);
 							// ok..bauen lassen
 							oldRepairPunkte = RepairPunkte;
-							RepairPunkte = RepairPunkte - w.getBauPunkteMitHolz(s.s.getShipType());
-							w.addOrder("machen schiff " + s.s.getID() + "; Werft-Script: verbaue " + w.getBauPunkteMitHolz(s.s.getShipType()) + ", verbleibend " + RepairPunkte,true);
+							int BauPunkteMitHolz = w.getBauPunkteMitHolz(s.s.getShipType());
+							RepairPunkte = RepairPunkte - BauPunkteMitHolz;
+							w.addOrder("machen schiff " + s.s.getID() + "; Werft-Script: verbaue " + BauPunkteMitHolz + ", verbleibend " + RepairPunkte,true);
 							workList.add(w);
 							if (su!=null){
 								su.addComment("An Schiff wird diese Runde gebaut: " + w.getBauPunkteMitHolz(s.s.getShipType()) + " von " + w.scriptUnit.toString() + "[" + oldRepairPunkte + "->" + RepairPunkte + "]");
 							}
 							ActiveWerftList.remove(w);
+							
+							if (BauPunkteMitHolz > 0 && BauPunkteMitHolz>=w.getBauPunkteMitHolz()) {
+								// wir verbauen alles
+								w.addComment("SWP: wir werden unser gesammtes Holz verbauen...RTB");
+								w.needNewWood=true;
+							}
 							break;
 						}
 					}

@@ -5,21 +5,22 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.fftools.ReportSettings;
-import com.fftools.ScriptUnit;
 import com.fftools.pools.matpool.MaterialHubManager_MHM;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.utils.FFToolsOptionParser;
+import com.fftools.utils.FFToolsRegions;
 import com.fftools.utils.FFToolsUnits;
 
 import magellan.library.CoordinateID;
 import magellan.library.Item;
 import magellan.library.Order;
+import magellan.library.Ship;
 import magellan.library.Unit;
 import magellan.library.rules.ItemType;
 
 
 /**
- * Verkehrt zwischen MaterialHUbs (MH) und transportiert durch // script Material benötigte Waren
+ * Verkehrt zwischen MaterialHUbs (MH) Depot(HOME)-Regionen und transportiert durch // script Material benötigte Waren
  * @author Fiete
  *
  */
@@ -27,7 +28,7 @@ public class Materialtransport extends MatPoolScript {
 	private static final ReportSettings reportSettings = ReportSettings.getInstance();
 	
 	private static final int Durchlauf_01 = 22; // nach Depot, vor Sailto, nach MH
-	private static final int Durchlauf_01_01 = 30; // nach MatPool -> Anmeldung beim ZielMH
+	private static final int Durchlauf_01_01 = 61; // nach MatPool -> Anmeldung beim ZielMH | benötigt vorher request [52] + Matpool [57]
 	private static final int Durchlauf_02 = 520; // nach MHM und MatPool - Silbercheck / Lernen (?)
 	
 	private int[] runners = {Durchlauf_01,Durchlauf_01_01,Durchlauf_02};
@@ -38,12 +39,15 @@ public class Materialtransport extends MatPoolScript {
 	private int startRunde = 0;
 	private int ETA = 0;
 	
-	private boolean MaterialHubTransporterSettings_found = false;
+	private int available_capacity = 0;
+	
 	private boolean announce_me_in_target_region = false; 
 	
 	public CoordinateID targetRegionCoord = null;
 	public CoordinateID actRegionCoord = null;
 	public CoordinateID HomeRegionCoord = null;
+	
+	public boolean isLearning = false;
 	
 	public Materialtransport(){
 		super.setRunAt(this.runners);
@@ -64,7 +68,6 @@ public class Materialtransport extends MatPoolScript {
 	}
 	
 	private void run_01(){
-		
 		super.addVersionInfo();
 		
 		// Optionen einlesen
@@ -103,7 +106,7 @@ public class Materialtransport extends MatPoolScript {
 		
 		
 		/*
-		 * // MaterialHubTransporterSettings Target=X,Y StartRunde=xxxx	ETA=XXXX ;doNotEdit
+		 * // MaterialHubTransporterSettings Target=X,Y StartRunde=xxxx	ETA=XXXX info=doNotEdit
 		 * Zeile suchen, Ergebnisse Eintragen
 		 */
 		// outText.addOutLine("MT: new OP");
@@ -130,15 +133,22 @@ public class Materialtransport extends MatPoolScript {
 		this.startRunde = OP_settings.getOptionInt("startRunde",0);
 		this.ETA = OP_settings.getOptionInt("ETA",0);
 		
+		// Anmeldung beim MHM
+		MaterialHubManager_MHM MHM = this.getOverlord().getMaterialHubManager();
+		MHM.addMT(this);
+		
 		if (this.startRunde>0 && this.ETA>0 && this.targetRegionCoord!=null) {
-			this.MaterialHubTransporterSettings_found= true;
 			this.addComment("MT: MaterialHubTransporterSettings gefunden");
 			this.process_with_Settings();
 		} else {
 			this.addComment("MT: MaterialHubTransporterSettings NICHT gefunden(" + this.startRunde + " | " + this.ETA + ")");
+			if (OP_settings.afterComments.size()>0) {
+				for (String s2 :OP_settings.afterComments) {
+					this.addComment(s2,false);
+				}
+			}
 			this.process_withOUT_Settings();
 		}
-			
 	}
 	
 	private void process_with_Settings() {
@@ -149,7 +159,9 @@ public class Materialtransport extends MatPoolScript {
 				- SailTo ausführen und Umsetzen, DIST ermitteln (in Runden)
 			 */
 			this.addComment("MT: setze Kurs zur Zielregion " + this.targetRegionCoord.toString());
-			super.scriptUnit.findScriptClass("Sailto",this.targetRegionCoord.toString(","));
+			super.scriptUnit.findScriptClass("Sailto",this.targetRegionCoord.toString(","),true);
+			
+			FFToolsRegions.addMapLine(this.getUnit().getRegion(), this.targetRegionCoord, MaterialHubManager_MHM.MAPLINE_RGB_R, MaterialHubManager_MHM.MAPLINE_RGB_G, MaterialHubManager_MHM.MAPLINE_RGB_B, 5, MaterialHubManager_MHM.MAPLINE_TAG);
 			
 			// Todo Anmeldung beim MH der Zielregion!
 			this.announce_me_in_target_region=true;
@@ -161,8 +173,8 @@ public class Materialtransport extends MatPoolScript {
 		if (this.actRegionCoord.equals(this.targetRegionCoord) && !this.actRegionCoord.equals(this.HomeRegionCoord)) {
 			/*
 			 * - Zeile // MaterialHubTransporter Target=X,Y StartRunde=xxxx	ETA=XXXX umbenennen in // MaterialHubTransporter_endRunde_xxxx Target=X,Y StartRunde=xxxx	ETA=XXXX
-			- alle // script requests mit ;MaterialHubTransporter<-doNotRemove umbenennen in // oldMH_request_Runde_xxxx request [...] ;MaterialHubTransporter<-youCanRemove
-			- alle Request-Scripte mit originalOrder incl ;MaterialHubTransporter<-doNotRemove wieder aus der Scriptunit entfernen
+			- alle // script requests mit info=MaterialHubTransporter<-doNotRemove umbenennen in // oldMH_request_Runde_xxxx request [...] info=MaterialHubTransporter<-youCanRemove
+			- alle Request-Scripte mit originalOrder incl info=MaterialHubTransporter<-doNotRemove wieder aus der Scriptunit entfernen
 			- Sailto nach HomeRegion setzen und durchführen!, Anzahl Runden ermitteln
 			- Silbercheck durchführen
 			- Route Zielregion -> HomeRegion beim MHM anmelden (ToDo)
@@ -186,16 +198,17 @@ public class Materialtransport extends MatPoolScript {
 		  	    		isOK=false;
 		  	    		String oldOrderText = o.getText();
 		  	    		
-		  	    		String newOrderText = oldOrderText.replace("MaterialHubTransporterSettings", "MHTS_endRunde_" + actGameRunde) + "<-youCanRemove(" + actGameRunde + ")";
+		  	    		String newOrderText = oldOrderText.replace("MaterialHubTransporterSettings", "MHTS_endRunde_" + actGameRunde);
+		  	    		newOrderText = newOrderText.replace("info=doNotEdit", "info=youCanRemove(" + actGameRunde + ")");
 		  	    		replacedOrders.add(newOrderText);
 		  	    	}
-		  	    	checkS = "MaterialHubTransporter<-doNotRemove";
+		  	    	checkS = "info=MaterialHubTransporter<-doNotRemove";
 		  	    	checkS = checkS.toUpperCase();
 		  	    	if (o.getText().toUpperCase().indexOf(checkS)>0 && o.getText().toUpperCase().startsWith("// SCRIPT REQUEST ")) {
 		  	    		isOK=false;
 		  	    		String oldOrderText = o.getText();
-		  	    		String newOrderText = oldOrderText.replace("MaterialHubTransporter<-doNotRemove", "MaterialHubTransporter<-youCanRemove(" + actGameRunde + ")");
-		  	    		newOrderText = newOrderText.replace("script request", "oldMH_request_runde_" + actGameRunde);
+		  	    		String newOrderText = oldOrderText.replace("info=MaterialHubTransporter<-doNotRemove", "info=MaterialHubTransporter<-youCanRemove(" + actGameRunde + ")");
+		  	    		newOrderText = newOrderText.replace("script request", "oldMT_request_runde_" + actGameRunde);
 		  	    		replacedOrders.add(newOrderText);
 		  	    	}
 		  	    	
@@ -225,27 +238,22 @@ public class Materialtransport extends MatPoolScript {
 	  	    
 	  	    // the request-scripts aus der ScriptUnit entfernen
 	  	    // outText.addOutLine("MT: checking for request scripts to remove");
-			for (ScriptUnit scu:super.scriptUnit.getScriptMain().getScriptUnits().values()){
-				if (scu.getFoundScriptList()!=null){
-					for (Script s:scu.getFoundScriptList()){
-						if (s instanceof Request){
-							Request r = (Request)s;
-							ArrayList<String> args = r.getArguments();
-							for (String a:args) {
-								if (a.equalsIgnoreCase(";MaterialHubTransporter<-doNotRemove")) {
-									scu.delAScript(r);
-									// outText.addOutLine("MT: removed: " + r.toString());
-								}
+			
+			if (this.scriptUnit.getFoundScriptList()!=null){
+				for (Script s:this.scriptUnit.getFoundScriptList()){
+					if (s instanceof Request){
+						Request r = (Request)s;
+						ArrayList<String> args = r.getArguments();
+						for (String a:args) {
+							if (a.equalsIgnoreCase("info=MaterialHubTransporter<-doNotRemove")) {
+								this.scriptUnit.delAScript(r);
 							}
 						}
 					}
-					scu.processScriptDeletions();
 				}
 			}
-	  	    
-	  	    
+
 	  	    // jetzt weiter, als hätten wir keine Settingszeile
-	  	    this.MaterialHubTransporterSettings_found=false;
 	  	    this.process_withOUT_Settings();
 		}
 		
@@ -267,7 +275,7 @@ public class Materialtransport extends MatPoolScript {
 		  	    		// outText.addOutLine("MHTS Zeile erkannt");
 		  	    		isOK=false;
 		  	    	}
-		  	    	checkS = "MaterialHubTransporter<-doNotRemove";
+		  	    	checkS = "info=MaterialHubTransporter<-doNotRemove";
 		  	    	checkS = checkS.toUpperCase();
 		  	    	if (o.getText().toUpperCase().indexOf(checkS)>0 && o.getText().toUpperCase().startsWith("// SCRIPT REQUEST ")) {
 		  	    		isOK=false;
@@ -283,43 +291,43 @@ public class Materialtransport extends MatPoolScript {
 	  	  
 	  	    // the request-scripts aus der ScriptUnit entfernen
 	  	    // outText.addOutLine("MT: checking for request scripts to remove");
-			for (ScriptUnit scu:super.scriptUnit.getScriptMain().getScriptUnits().values()){
-				if (scu.getFoundScriptList()!=null){
-					for (Script s:scu.getFoundScriptList()){
-						if (s instanceof Request){
-							Request r = (Request)s;
-							ArrayList<String> args = r.getArguments();
-							for (String a:args) {
-								if (a.equalsIgnoreCase(";MaterialHubTransporter<-doNotRemove")) {
-									scu.delAScript(r);
-									// outText.addOutLine("MT: removed: " + r.toString());
-								}
+			
+			if (this.scriptUnit.getFoundScriptList()!=null){
+				for (Script s:this.scriptUnit.getFoundScriptList()){
+					if (s instanceof Request){
+						Request r = (Request)s;
+						ArrayList<String> args = r.getArguments();
+						for (String a:args) {
+							if (a.equalsIgnoreCase("info=MaterialHubTransporter<-doNotRemove")) {
+								this.scriptUnit.delAScript(r);
 							}
 						}
 					}
-					scu.processScriptDeletions();
 				}
 			}
+			
 	  	    
+			// target Region zurücksetzen
+			this.targetRegionCoord=null;
 	  	    
+			
 	  	    // jetzt weiter, als hätten wir keine Settingszeile
-	  	    this.MaterialHubTransporterSettings_found=false;
 	  	    this.process_withOUT_Settings();
 		}
 	}
 	
 	private void process_withOUT_Settings() {
-		
-		
 		// wenn wir nicht in der HomeRegion sind:
 		if (!this.actRegionCoord.equals(this.HomeRegionCoord)) {
 		
 			this.addComment("MT: processing phase withOUT settings  - wir sind NICHT in HomeRegion - also hin!");
 			this.addComment("MT: setze Kurs zur HomeRegion " + this.HomeRegionCoord.toString());
-			super.scriptUnit.findScriptClass("Sailto",this.HomeRegionCoord.toString(","));
+			super.scriptUnit.findScriptClass("Sailto",this.HomeRegionCoord.toString(","), true);
+			FFToolsRegions.addMapLine(this.getUnit().getRegion(), this.HomeRegionCoord, MaterialHubManager_MHM.MAPLINE_RGB_R, MaterialHubManager_MHM.MAPLINE_RGB_G, MaterialHubManager_MHM.MAPLINE_RGB_B, 5, MaterialHubManager_MHM.MAPLINE_TAG);
 		} else {
 			// wenn wir in der HomeRegion sind
 			this.addComment("MT: processing phase withOUT settings  - wir sind IN HomeRegion - Beim MHM (MaterialHubManager) melden.");
+			// bereits für jeden MT zuvor geschehen
 		}
 	}
 	
@@ -348,18 +356,58 @@ public class Materialtransport extends MatPoolScript {
 			}
 		} else {
 			this.addComment("MT: kein SailTo erkannt");
+			if (this.targetRegionCoord==null) {
+				// wir haben kein SailTo und haben kein Ziel
+				// (vermutlich sind wir in der HOME und haben keinen Auftrag bekommen)
+				// lass uns lernen
+				this.addComment("MT: keine TargetRegion -> Lernen");
+				this.Lerne();
+			}
 		}
 	}
 	
 	
 	private void run_01_01() {
+		
+		// einschub - Kapa
+		// Kapazitätsberechnung
+		Ship ship = this.scriptUnit.getUnit().getModifiedShip();
+		if (ship!=null){
+			// Kapitän?
+			if (FFToolsUnits.checkShip(this)){
+				// alles fein
+				int benutzerWeight = ship.getMaxCapacity();
+				if (benutzerWeight>0){
+					benutzerWeight=(int) Math.floor(((double)benutzerWeight)/100);
+					int kapaPolicy = MatPoolRequest.KAPA_weight;
+					int kapaUser=benutzerWeight;
+					this.addComment("MT: Schiff hat " + benutzerWeight + " GE");
+					this.scriptUnit.setIncludeSailorsWeight(true);
+					this.scriptUnit.setSetKapaPolicy(kapaPolicy);
+					this.available_capacity = this.scriptUnit.getFreeKapaMatPool2(kapaPolicy, kapaUser);
+					this.addComment("MT: erkannte Kapazität: " + this.available_capacity + " GE");
+				} else {
+					this.doNotConfirmOrders("!!! MT: -> Schiff: Schiff hat ungültige Kapazität (" + benutzerWeight + ")");
+				}
+			} else {
+				// Kein Kapitän
+				this.doNotConfirmOrders("!!! MT: -> Schiff: unit ist nicht Kapitän");
+			}
+		} else {
+			// ist gar nicht auf einem Schiff
+			this.doNotConfirmOrders("!!! MT: -> Schiff: unit ist nicht auf einem Schiff");
+		}
+		
+		
 		// nur anmelden beim MH in der Zielregion
 		if (!this.announce_me_in_target_region) {
+			this.addComment("MT: keine Anmeldung in der Zielregion am dortigen MH");
 			return;
 		}
 		
 		if (this.targetRegionCoord==null) {
 			this.doNotConfirmOrders("MT run_01_01: kein Ziel bekannt");
+			this.addComment("MT: keine Anmeldung in der Zielregion am dortigen MH - keine Zielkoordinaten bekannt");
 			return;
 		}
 		
@@ -370,34 +418,42 @@ public class Materialtransport extends MatPoolScript {
 			return;
 		}
 		
-		targetMH.addComment("MT unterwegs, ETA " + this.ETA + " Schiff " + this.scriptUnit.toString() + " mit diesen Waren:");
-		
+		String SchiffInfo = "unbekanntes Schiff";
+		if (this.scriptUnit.getUnit().getModifiedShip()!=null) {
+			SchiffInfo = this.scriptUnit.getUnit().getModifiedShip().toString(false);
+		}
+		if (targetMH.getTalkLevel()==1) {
+			targetMH.addComment("MT unterwegs, ETA " + this.ETA + ", Schiff " + SchiffInfo + ", Kapitän " + this.scriptUnit.toString());
+			this.addComment("MT: target MH ist über Ankunft informiert. (MH-Talklevel " + targetMH.getTalkLevel() + ")");
+		}
+		if (targetMH.getTalkLevel()>=2) {
+			targetMH.addComment("MT unterwegs, ETA " + this.ETA + ", Schiff " + SchiffInfo + ", Kapitän " + this.scriptUnit.toString() + " mit diesen Waren: ");
+			this.addComment("MT: target MH wird über Ankunft im Detail informiert. (MH-Talklevel " + targetMH.getTalkLevel() + ")");
+		}
 		// the request-scripts aus der MT-ScriptUnit durchgehen
   	    // outText.addOutLine("MT: checking for request scripts to remove");
-		for (ScriptUnit scu:super.scriptUnit.getScriptMain().getScriptUnits().values()){
-			if (scu.getFoundScriptList()!=null){
-				for (Script s:scu.getFoundScriptList()){
-					if (s instanceof Request){
-						Request r = (Request)s;
-						ArrayList<String> args = r.getArguments();
-						for (String a:args) {
-							if (a.equalsIgnoreCase(";MaterialHubTransporter<-doNotRemove")) {
-								MatPoolRequest mpr = r.getMPR();
-								if (mpr!=null) {
-									targetMH.addComment(mpr.getBearbeitet() + " " + mpr.getOriginalGegenstand() + " ( von " + mpr.getOriginalGefordert() + ")");
-								} else {
-									this.doNotConfirmOrders("Fehler bei der MPR bestimmung");
+		if (this.scriptUnit.getFoundScriptList()!=null){
+			for (Script s:this.scriptUnit.getFoundScriptList()){
+				if (s instanceof Request){
+					Request r = (Request)s;
+					ArrayList<String> args = r.getArguments();
+					for (String a:args) {
+						if (a.equalsIgnoreCase("info=MaterialHubTransporter<-doNotRemove")) {
+							MatPoolRequest mpr = r.getMPR();
+							if (mpr!=null) {
+								if (targetMH.getTalkLevel()>=2) {
+									targetMH.addComment(mpr.getOriginalGegenstand() + ": " + mpr.getBearbeitet() + "/" + mpr.getOriginalGefordert());
 								}
+								// Eintrag in delivery List beim Ziel-MH
+								targetMH.addDelivery(mpr.getOriginalGegenstand(), mpr.getBearbeitet());
+							} else {
+								this.doNotConfirmOrders("Fehler bei der MPR bestimmung");
 							}
 						}
 					}
 				}
-				scu.processScriptDeletions();
 			}
 		}
-		
-		
-		
 	}
 	
 	
@@ -411,5 +467,48 @@ public class Materialtransport extends MatPoolScript {
 	public boolean allowMultipleScripts(){
 		return false;
 	}
+
+	public int getAvailable_capacity() {
+		return available_capacity;
+	}
+	
+	public void reduceAvailable_capacity(int abgang) {
+		this.available_capacity-=abgang;
+		if (this.available_capacity<0) {
+			this.available_capacity=0;
+		}
+	}
+	
+	
+	
+	private void Lerne() {
+		String LernfixOrder=null;
+		if (this.Lernplan.length()>2) {
+			LernfixOrder="Lernplan=" + this.Lernplan;
+		}
+		if (LernfixOrder==null && this.Lerntalent.length()>2) {
+			LernfixOrder="Talent=" + this.Lerntalent;
+		}
+		if (LernfixOrder==null) {
+			this.doNotConfirmOrders("MT soll Lernen, aber was denn?");
+			return;
+		}
+		this.addComment("Lernfix wird initialisiert mit dem Parameter: " + LernfixOrder);
+		Lernfix L = new Lernfix();
+		ArrayList<String> order = new ArrayList<String>();
+		order.add(LernfixOrder);
+		L.setArguments(order);
+		L.setScriptUnit(this.scriptUnit);
+		L.setGameData(this.scriptUnit.getScriptMain().gd_ScriptMain);
+		if (this.scriptUnit.getScriptMain().client!=null){
+			L.setClient(this.scriptUnit.getScriptMain().client);
+		}
+		L.scriptStart();
+		this.scriptUnit.addAScript(L);
+		
+		this.isLearning=true;
+	}
+	
+	
 	
 }

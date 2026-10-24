@@ -10,6 +10,7 @@ import javax.swing.JTextArea;
 import com.fftools.overlord.Overlord;
 import com.fftools.pools.bau.SeeWerftManager_SWM;
 import com.fftools.pools.circus.CircusPoolManager;
+import com.fftools.pools.matpool.MaterialHubManager_MHM;
 import com.fftools.pools.seeschlangen.MonsterJagdManager_MJM;
 import com.fftools.pools.seeschlangen.SeeschlangenJagdManager_SJM;
 import com.fftools.pools.treiber.TreiberPoolManager;
@@ -563,6 +564,12 @@ public class ScriptMain {
 			FFToolsRegions.activateMapLine(this.client.getData(), SeeWerftManager_SWM.MAPLINE_TAG);
 		}
 		
+		if (FFToolsRegions.exists_Mapline(this.client.getData(), MaterialHubManager_MHM.MAPLINE_TAG)) {
+			outText.addOutLine("refreshing MHM lines");
+			FFToolsRegions.deActivateMapLine(this.client.getData(), MaterialHubManager_MHM.MAPLINE_TAG);
+			FFToolsRegions.activateMapLine(this.client.getData(), MaterialHubManager_MHM.MAPLINE_TAG);
+		}
+		
 		outText.addOutLine("refreshing MAP lines....finished");
 	}
 	
@@ -941,7 +948,17 @@ public class ScriptMain {
 			}
 		}
 		return regionsScriptUnits;
-		
+	}
+	
+	// Liefert das Depot einer Region, falls vorhanden, oder null
+	public ScriptUnit getRegionDepot(Region _region) {
+		for (Iterator<ScriptUnit> iter = this.scriptUnits.values().iterator(); iter.hasNext();){
+			ScriptUnit kandidat = (ScriptUnit) iter.next();
+			if (kandidat.getUnit().getRegion().equals(_region) && kandidat.isDepot()){
+				return kandidat;
+			}
+		}
+		return null;
 	}
 
 /**

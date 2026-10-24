@@ -39,7 +39,7 @@ public class FFToolsOptionParser {
 	 */
 	private ScriptUnit scriptUnit = null;
 	
-	private ArrayList<String> afterComments = new ArrayList<String>();
+	public ArrayList<String> afterComments = new ArrayList<String>();
 	
 	public boolean enable_noScript_parsing=false; // sucht nicht nur // script Filer sondern auch // Filter
 	
@@ -126,8 +126,10 @@ public class FFToolsOptionParser {
 	 * @param s alles hinter dem script namen
 	 */
 	private void parseOptionLine(String s){
+		this.afterComments.add("debug OP, parseOptionLine " + s);
 		// zerlegen in durch space getrennte abschnitte
 		String[] pairs = s.split(" ");
+		this.afterComments.add("debug OP, pairs length " + pairs.length);
 		for (int i=0;i<pairs.length;i++){
 			String s2 = pairs[i];
 			this.afterComments.add("debug OP, parsing " + s2);

@@ -107,6 +107,9 @@ public class MJM_HighCommand  {
     			if (JM2.getRole()==Jagemonster.role_Support) {
     				text += " (Support)";
     			}
+    			if (!JM2.HasWeaponToFight() && !JM2.isTactican() && JM2.getRole()!=Jagemonster.role_Support && JM2.getRole()!=Jagemonster.role_Undef) {
+    				text += " (!unbewaffnet!)";
+    			}
     			JM.addComment(text);
     		}
     	}

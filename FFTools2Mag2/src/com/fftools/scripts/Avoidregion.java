@@ -11,9 +11,10 @@ import magellan.library.Region;
 
 public class Avoidregion extends Script {
 	
-	private int Durchlauf1 = 5;
+	private final int Durchlauf1 = 5;
+	private final int Durchlauf2 = 6;
 	
-	private int[] runners = {Durchlauf1};
+	private int[] runners = {Durchlauf1, Durchlauf2};
 	
 	
 	
@@ -22,7 +23,18 @@ public class Avoidregion extends Script {
 		super.setRunAt(this.runners);
 	}
 	
-	public void runScript(int scriptDurchlauf){		
+	public void runScript(int scriptDurchlauf){
+		switch (scriptDurchlauf) {
+		case Durchlauf1:
+			runScript_1();
+			break;
+		case Durchlauf2:
+			runScript_2();
+			break;
+		}
+	}
+	
+	private void runScript_1(){		
 		// hier code fuer GoTo
 		// addOutLine("....start GoTo mit " + super.getArgCount() + " Argumenten");
 		
@@ -72,10 +84,15 @@ public class Avoidregion extends Script {
 		}
 	}
 	
+	
 	private void zielParseFehler() {
 		super.scriptUnit.doNotConfirmOrders("Ungueltiges Ziel beim Aufruf von AvoidRegion!");
 		super.addComment("Unit wurde durch AvoidRegion NICHT bestaetigt", true);
 		addOutLine("X....ungültiges AvoidRegion bei " + this.scriptUnit.getUnit().toString(true) + " in " + this.scriptUnit.getUnit().getRegion().toString());
+	}
+	
+	private void runScript_2(){	
+		
 	}
 	
 	public boolean allowMultipleScripts(){

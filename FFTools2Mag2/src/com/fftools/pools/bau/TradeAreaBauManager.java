@@ -295,18 +295,24 @@ public class TradeAreaBauManager {
 		boolean istGeeignet=false;
 		availableBauarbeiter.clear();
 		for (Bauen arbeiter:autoBauer){
+			// b.addComment("Debug: Suche nach Unterstützer (iddle) in der Region: " + arbeiter.unitDesc() + " wird geprüft");
+			istGeeignet=true;
 			if (!arbeiter.hasPlan() && arbeiter.scriptUnit.getSkillLevel(actTalentName)>=level_needed && arbeiter.region().equals(b.region())){
 				// Insektenprüfung
 				if (b.getUnit().getRegion().getRegionType().getName().equalsIgnoreCase("Gletscher") && arbeiter.scriptUnit.isInsekt()) {
-					// arbeiter.addComment("checkForIddleSupporterInRegion: Nicht geeignet für Gletscher (Insekt)");
+					arbeiter.addComment("checkForIddleSupporterInRegion: Nicht geeignet für Gletscher (Insekt)");
+					// b.addComment("Debug: checkForIddleSupporterInRegion: Nicht geeignet für Gletscher (Insekt)");
 					istGeeignet=false;
 				} else {
-					// arbeiter.addComment("checkForIddleSupporterInRegion: Geeignet für Gletscher (kein Insekt)");
+					arbeiter.addComment("checkForIddleSupporterInRegion (" + arbeiter.unitDesc() + "): entweder kein Gletscher oder Geeignet für Gletscher (kein Insekt)");
+					// b.addComment("Debug: checkForIddleSupporterInRegion (" + arbeiter.unitDesc() + "): entweder kein Gletscher oder Geeignet für Gletscher (kein Insekt)");
 				}
 				if (istGeeignet) {
 					availableBauarbeiter.add(arbeiter);
 					// b.addComment("Debug: Suche nach Unterstützer in der Region: " + arbeiter.unitDesc() + " kommt in Frage.");
 				}
+			} else {
+				// b.addComment("Debug: Suche nach Unterstützer in der Region: " + arbeiter.unitDesc() + " hat Bereits einen Auftrag, ist zu schlecht oder nicht in der Region");
 			}
 		}
 		

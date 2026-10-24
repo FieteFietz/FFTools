@@ -137,7 +137,6 @@ public class SeeWerftManager_SWM implements OverlordRun,OverlordInfo {
 				Direction d = Direction.INVALID;
 				d = Regions.getMapMetric(this.overLord.getScriptMain().gd_ScriptMain).toDirection(pS.s.getShoreId());
 				Reisewochen = FFToolsRegions.getShipPathSizeTurns_Virtuell_Ports(pS.s.getRegion().getCoordinate(),d, r.HomeRegionCoord, this.overLord.getScriptMain().gd_ScriptMain, speed, null);
-				String reiseInfo = "(kein Weg gefunden)";
 				if (Reisewochen>=0 && Reisewochen<=r.maxWeeks) {
 					// reiseInfo = " (Entf: " + Reisewochen + " Wochen)";
 					// r.addComment("SWM - beschädigt: " + pS.s.toString() + " in " + pS.s.getRegion().toString() + reiseInfo + " [" + pS.repairsNeeded + "]");
@@ -192,6 +191,12 @@ public class SeeWerftManager_SWM implements OverlordRun,OverlordInfo {
 			}
 		}
 		
+		
+		// Check, ob nicht alle Werften eines RS Holz brauchen.
+		for (Reparaturschiff RS:this.availableReparaturSchiffe) {
+			RS.CheckRTB_2();
+			// falls dass so ist, werden die nicht weiter unten verplant, weil target bereits gesetzt ist
+		}
 		
 		// Ziele für die einzelnen Reparaturschiffe finden
 		planReparaturschiffe();

@@ -15,6 +15,7 @@ import com.fftools.ScriptUnit;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
 import com.fftools.scripts.TransportScript;
 import com.fftools.scripts.WithGotoInfo;
+import com.fftools.utils.FFToolsGameData;
 import com.fftools.utils.FFToolsOptionParser;
 import com.fftools.utils.FFToolsRegions;
 import com.fftools.utils.GotoInfo;
@@ -274,6 +275,7 @@ public class Transporter {
 			this.specs = new ArrayList<String>();
 			for (int i=0;i<specsArray.length;i++){
 				String s2 = specsArray[i];
+				s2 = FFToolsGameData.translateItemShortform(s2);
 				this.specs.add(s2);
 				this.scriptUnit.addComment("debug: als spec ergänzt: " + s2);
 			}

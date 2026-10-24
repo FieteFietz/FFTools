@@ -42,6 +42,8 @@ public class Reparaturschiff extends Script implements Comparable<Reparaturschif
 	private String Lernplan="";
 	private String Lerntalent="";
 	
+	private ArrayList<Seewerft> SeeWerftListe = new ArrayList<Seewerft>(0);
+	
 	/**
 	 * Parameterloser Constructor
 	 * Drinne Lassen fuer die Instanzierung des Objectes
@@ -128,6 +130,7 @@ public class Reparaturschiff extends Script implements Comparable<Reparaturschif
 						// Bingo
 						countSeewerften++;
 						Seewerft SW = (Seewerft)o;
+						this.SeeWerftListe.add(SW);
 						if (SW.needNewWood) {
 							countSeewerftenNeedWood++;
 						}
@@ -226,6 +229,40 @@ public class Reparaturschiff extends Script implements Comparable<Reparaturschif
 		this.getOverlord().getSWM().addReparaturschiff(this);
 		
 	}
+	
+	/*
+	 * check nach SWM, falls SW ihren Holzvorrat komplett verbauen -> dann nicht weiter Schiffe reparieren wollen
+	 */
+	public void CheckRTB_2() {
+		if (this.SeeWerftListe.size()==0) {
+			return;
+		}
+		int countSeewerftenNeedWood = 0;
+		for(Seewerft SW:this.SeeWerftListe){
+			if (SW.needNewWood) {
+				countSeewerftenNeedWood++;
+			}
+		}
+		
+		if (countSeewerftenNeedWood==this.SeeWerftListe.size()) {
+			// alle SW wollen nach Hause
+			
+			// RTB
+			this.actTargetRegionID = this.HomeRegionCoord;
+			if (countSeewerftenNeedWood==1) {
+				this.addComment("Reparaturschiff (nach SWM): Seewerft meldet Holzbedarf -> RTB");
+			} else {
+				this.addComment("Reparaturschiff (nach SWM): " + countSeewerftenNeedWood + " (alle) Seewerften melden Holzbedarf -> RTB");
+			}
+			if (this.s.getRegion().getCoordinate().equals(this.HomeRegionCoord)) {
+				this.addComment("Reparaturschiff (nach SWM): wir sind in der Home Region - Lernen");
+				this.Lernen();
+			} else {
+				this.makeOrderNach();
+			}
+		}
+	}
+	
 	
 	/**
 	 * zu wenig Silber an Bord

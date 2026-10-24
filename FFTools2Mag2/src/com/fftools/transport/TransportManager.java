@@ -677,7 +677,7 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		// die einzelnen Offers abarbeiten, bis request erfüllt oder offers alle
 		for (Iterator<TransportOffer> iter = offers.iterator();iter.hasNext();){
 			TransportOffer offer = (TransportOffer)iter.next();
-			if (offer.getAnzahl_nochOfferiert()>0 && request.containsItemType(offer.getItem().getItemType())){
+			if (offer.getAnzahl_nochOfferiert()>0 && request.containsItemType(offer.getItem().getItemType()) && offer.getActDist()>=0){
 				this.processRequestAndOffer(request, offer);
 			}
 			// abbruch, wenn request erfüllt

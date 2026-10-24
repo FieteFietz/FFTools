@@ -28,8 +28,9 @@ public class Jagemonster extends TradeAreaScript{
 	private static final int Durchlauf_1 = 36;
 	private static final int Durchlauf_2 = 38;
 	private static final int Durchlauf_3 = 215;
+	private static final int Durchlauf_4 = 668;
 	
-	private int[] runners = {Durchlauf_1,Durchlauf_2,Durchlauf_3};
+	private int[] runners = {Durchlauf_1,Durchlauf_2,Durchlauf_3,Durchlauf_4};
 	
 	
 	/**
@@ -74,7 +75,12 @@ public class Jagemonster extends TradeAreaScript{
 	}
 	
 	private boolean Ready4AttackThisWeek = false;
+	private boolean hasWeaponToFight = false;
 
+
+	public boolean HasWeaponToFight() {
+		return hasWeaponToFight;
+	}
 
 	public boolean isReady4AttackThisWeek() {
 		return Ready4AttackThisWeek;
@@ -137,6 +143,8 @@ public class Jagemonster extends TradeAreaScript{
 	 */
 	private boolean info_MJM_Region = false;
 	
+	private boolean PlanBetreteBiggestCastle=false;
+	
 	public boolean wants_info_MJM_Region() {
 		return this.info_MJM_Region;
 	}
@@ -176,7 +184,9 @@ public class Jagemonster extends TradeAreaScript{
 		if (scriptDurchlauf==Durchlauf_3){
 			this.orderMove();
 		}
-		
+		if (scriptDurchlauf==Durchlauf_4){
+			this.BetreteBiggestCastle();
+		}
 	}
 	
 	private void scriptStart(){
@@ -380,6 +390,12 @@ public class Jagemonster extends TradeAreaScript{
 		this.isTactican = OP.getOptionBoolean("tactican", this.isTactican);
 		this.isTactican = OP.getOptionBoolean("tactic", this.isTactican);
 		
+		// Einschub 08.02.2026 - stelle fest, ob Du bewaffnet bist ;-)
+		this.hasWeaponToFight = FFToolsUnits.hasWeaponToFight(this);
+		if (!this.hasWeaponToFight) {
+			this.addComment("Hinweis: Waffencheck hat ergeben - ich kann nicht angreifen.");
+		}
+		
 		if (!this.automode) {
 			/*
 			 * *******************     T A S K   *****************************************
@@ -406,9 +422,15 @@ public class Jagemonster extends TradeAreaScript{
 					// MJM prüft, ob Bedingungen erfüllt sind
 					//	- genug Angreifer
 					//  - kein BACK ohne FRONT
-					this.Ready4AttackThisWeek=true;
-					this.addComment("Melde dem MJM: bereit zum Angriff");
-					this.getOverlord().getMJM().addJäger(this);
+					if (this.hasWeaponToFight) {
+						this.Ready4AttackThisWeek=true;
+						this.addComment("Melde dem MJM: bereit zum Angriff");
+						this.getOverlord().getMJM().addJäger(this);
+					} else {
+						this.addComment("Ich habe keine Waffe, keine Bereitschaftsmeldung an den MJM.");
+						this.addComment("Ich schütze mit meinem Körper die Zivilisten.");
+						this.AttackLerne();
+					}
 				} else {
 					// wir müssen zum Ziel
 					this.moveTo(this.targetUnit.getRegion().getCoordinate(), MonsterJagdManager_MJM.MAPLINE_ATTACK_TAG);
@@ -418,6 +440,10 @@ public class Jagemonster extends TradeAreaScript{
 		} else {
 			this.addComment("JM: ich erwarte Befehle vom MJM_HC (HighCommand)");
 		}
+		
+		
+		
+		
 	}
 	
 	/**
@@ -432,7 +458,7 @@ public class Jagemonster extends TradeAreaScript{
 		this.AttackLerne();
 		if (MJM_setAttack) {
 			// Angreifen - ATTACKIERE und FOLGE sind schon gesetzt, BEWACHE kommt von BEWACHE ?! Nope, wir bewachen auch
-			if (!this.isTactican && this.getRole()!=Jagemonster.role_Support && this.getRole()!=Jagemonster.role_Undef) {
+			if (!this.isTactican && this.getRole()!=Jagemonster.role_Support && this.getRole()!=Jagemonster.role_Undef && this.hasWeaponToFight) {
 				this.addOrder("BEWACHEN ;Jagemonster - angreifende Einheiten bewachen.", true);
 			}
 		} else {
@@ -507,11 +533,18 @@ public class Jagemonster extends TradeAreaScript{
 		this.scriptUnit.addAScript(L);
 		
 		// 20210627: betrete die grösste Burg
-		Building b = FFToolsRegions.getBiggestCastle(this.region());
-		if (b!=null && this.automode && !b.equals(this.getUnit().getModifiedBuilding())) {
-			// Betreten
-			this.addOrder("Betrete BURG " + b.getID().toString() + " ; Jagemonster (auto)", true);
-		} 
+		this.PlanBetreteBiggestCastle=true;
+	}
+	
+	private void BetreteBiggestCastle() {
+		if (!this.scriptUnit.hasBetreteAkaOrder && this.PlanBetreteBiggestCastle) {
+			// 20210627: betrete die grösste Burg
+			Building b = FFToolsRegions.getBiggestCastle(this.region());
+			if (b!=null && this.automode && !b.equals(this.getUnit().getModifiedBuilding())) {
+				// Betreten
+				this.addOrder("Betrete BURG " + b.getID().toString() + " ; Jagemonster (auto)", true);
+			}
+		}
 	}
 
 	public boolean isHC_ready() {

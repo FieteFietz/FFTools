@@ -250,15 +250,19 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
 		
 		for(Unit u: r.units()) {
 			if (u.getFaction()!=null && u.getFaction().getID().toString().equals("ii")) {
-				if (JM.getRole()!=Jagemonster.role_Support) {
-					JM.addOrder("ATTACKIERE " + u.getID().toString() + " ;MJM checked", true);
-				}
-				if (!this.attackedMonsterUnits.contains(u)) {
-					this.attackedMonsterUnits.add(u);
-				}
-				if (u.getPersons()>maxMonsterCount) {
-					maxMonsterCount=u.getPersons();
-					maxMonsterID=u.getID().toString();
+				if (JM.getRole()!=Jagemonster.role_Support && JM.getRole()!=Jagemonster.role_Undef) {
+					if (JM.HasWeaponToFight()) {
+						JM.addOrder("ATTACKIERE " + u.getID().toString() + " ;MJM checked", true);
+						if (!this.attackedMonsterUnits.contains(u)) {
+							this.attackedMonsterUnits.add(u);
+						}
+						if (u.getPersons()>maxMonsterCount) {
+							maxMonsterCount=u.getPersons();
+							maxMonsterID=u.getID().toString();
+						}
+					} else {
+						JM.addComment("ATTACKIERE Befehl vom MJM wird nicht umgesetzt: keine Waffen");
+					}
 				}
 			}
 		}
@@ -301,7 +305,8 @@ public class MonsterJagdManager_MJM implements OverlordRun,OverlordInfo {
 		for (Jagemonster jm : Jäger) {
 			Region r_jm = jm.getUnit().getRegion();
 			if (r_jm.equals(r) && jm.getRole()==rolle) {
-				// gleiche Region und richtige Rolle
+				if (rolle == Jagemonster.role_Support || rolle == Jagemonster.role_Undef || jm.HasWeaponToFight() || jm.isTactican())
+				// gleiche Region und richtige Rolle und ggf Waffe in der Hand
 				erg += jm.getUnit().getPersons();
 			}
 		}

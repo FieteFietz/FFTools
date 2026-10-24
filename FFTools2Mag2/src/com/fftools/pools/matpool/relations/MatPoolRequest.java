@@ -138,6 +138,12 @@ public class MatPoolRequest extends MatPoolRelation  implements Comparable<MatPo
 	 */
 	private boolean prioChange = true;
 	
+	
+	/**
+	 * soll bei Nicht-Erfüllung dieses Requests der Fehlbestand an den MHM weiter geleitet werden?
+	 */
+	private boolean MH = false;
+	
 	/**
 	 * Legt neuen Request an
 	 * @param _script
@@ -756,6 +762,14 @@ public class MatPoolRequest extends MatPoolRelation  implements Comparable<MatPo
 	 */
 	public void setPrioChange(boolean prioChange) {
 		this.prioChange = prioChange;
+	}
+
+	public boolean isMH() {
+		return MH;
+	}
+
+	public void setMH(boolean mH) {
+		MH = mH;
 	}
 	
 }

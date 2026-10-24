@@ -82,6 +82,10 @@ public class Requestinfo extends MatPoolScript{
 					s+=" (prioTM " + MPR.getPrioTM() + ")";
 				}
 				
+				if (MPR.isMH()) {
+					s+="(MH)";
+				}
+				
 				s += ", " + MPR.getKommentar();
 				this.addComment(s);
 			}

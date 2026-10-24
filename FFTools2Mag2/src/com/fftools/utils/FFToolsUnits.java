@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import com.fftools.ReportSettings;
 import com.fftools.ScriptUnit;
+import com.fftools.scripts.Bewachen;
 import com.fftools.scripts.Script;
 
 import magellan.library.Building;
@@ -36,7 +37,7 @@ public class FFToolsUnits {
 	 */
 	public static int calcMagieLernKosten(Unit u, GameData data){
 		int erg = 0;
-		SkillType mageSkillType = data.rules.getSkillType("Magie",false);
+		SkillType mageSkillType = data.getRules().getSkillType("Magie",false);
 		Skill mageLevel = u.getModifiedSkill(mageSkillType);
 		int raceBonus = 0;
 		
@@ -359,6 +360,108 @@ public class FFToolsUnits {
 		su.addComment("effPers: " + erg);
 
 		return erg;
+	}
+	
+	/**
+	 * Prüft, ob eine Waffe im Besitz ist, mit der angegriffen werden könnte und die zum besten Kampftalent passt
+	 * @param s
+	 * @return
+	 */
+	public static boolean hasWeaponToFight(Script sc) {
+		
+		class bewTalent {
+			public String TalentName = "";
+			public String stand = "";
+		}
+		
+		boolean mayGuard =false;
+		
+		ArrayList<bewTalent> bewTalente = new ArrayList<bewTalent>();
+		bewTalent T1 = new bewTalent();
+		T1.TalentName = "Hiebwaffen";
+		T1.stand = "";
+		bewTalente.add(T1);
+		
+		T1 = new bewTalent();
+		T1.TalentName = "Stangenwaffen";
+		T1.stand = "";
+		bewTalente.add(T1);
+		
+		T1 = new bewTalent();
+		T1.TalentName = "Bogenschießen";
+		T1.stand = "HINTEN";
+		bewTalente.add(T1);
+		
+		T1 = new bewTalent();
+		T1.TalentName = "Armbrustschießen";
+		T1.stand = "HINTEN";
+		bewTalente.add(T1);
+		
+		T1 = new bewTalent();
+		T1.TalentName = "Katapultbedienung";
+		T1.stand = "HINTEN";
+		bewTalente.add(T1);
+		
+		
+		Bewachen b = null;
+		if (sc instanceof Bewachen) {
+			b = (Bewachen)sc;
+		}
+		
+		for (bewTalent bewTalent : bewTalente) {
+			SkillType actST = sc.gd_Script.getRules().getSkillType(bewTalent.TalentName, false);
+			if (actST == null) {
+				sc.doNotConfirmOrders("!!!hasWeaponToFight: SkillType nicht gefunden:" + bewTalent.TalentName);
+			} else {
+				Skill s = sc.getUnit().getSkill(actST);
+				if (s!=null) {
+					if (s.getLevel()>0) {
+						// unit hat ein Kampftalent
+						sc.addComment("hasWeaponToFight: Kampftalent gefunden: " + actST.getName());
+						
+						for (ItemType iT :  sc.gd_Script.getRules().getItemTypes()){
+							if (iT.getUseSkill()!=null) {
+								if (iT.getUseSkill().getSkillType().equals(actST)) {
+									Item ii = sc.getUnit().getModifiedItem(iT);
+									if (ii != null) {
+										if (ii.getAmount()>0) {
+											// passt
+											 mayGuard =true;
+											 if (b != null) {
+												 b.bestStand = bewTalent.stand;
+											 }
+											 sc.addComment("hasWeaponToFight: passende Waffe gefunden: " + ii.getAmount() + " " + iT.getName());
+										} else {
+											// sc.addComment("Debug hasWeaponToFight - scriptfremd: checke " + iT.getName() + ", Anzahl: " + ii.getAmount());
+										}
+									} else {
+										// sc.addComment("Debug hasWeaponToFight - scriptfremd: checke " + iT.getName() + ", nicht vorhanden.");
+									}
+									
+									ii = sc.scriptUnit.getModifiedItem(iT);
+									if (ii != null) {
+										if (ii.getAmount()>0) {
+											// passt
+											 mayGuard =true;
+											 if (b != null) {
+												 b.bestStand = bewTalent.stand;
+											 }
+											 sc.addComment("hasWeaponToFight: passende Waffe gefunden: " + ii.getAmount() + " " + iT.getName());
+										} else {
+											// sc.addComment("Debug hasWeaponToFight - inscript: checke " + iT.getName() + ", Anzahl: " + ii.getAmount());
+										}
+									} else {
+										// sc.addComment("Debug hasWeaponToFight - inscript: checke " + iT.getName() + ", nicht vorhanden.");
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		return mayGuard;
 	}
 	
 

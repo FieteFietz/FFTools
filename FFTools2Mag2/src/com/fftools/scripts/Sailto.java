@@ -3,6 +3,9 @@ package com.fftools.scripts;
 
 import java.util.List;
 
+import com.fftools.utils.FFToolsRegions;
+import com.fftools.utils.FFToolsUnits;
+
 import magellan.library.CoordinateID;
 import magellan.library.Region;
 import magellan.library.Unit;
@@ -10,12 +13,6 @@ import magellan.library.rules.ShipType;
 import magellan.library.utils.Direction;
 import magellan.library.utils.Regions;
 import magellan.library.utils.logging.Logger;
-
-import com.fftools.magellan2.ConnectorPlugin;
-import com.fftools.utils.FFToolsRegions;
-import com.fftools.utils.FFToolsUnits;
-
-import jdk.internal.org.jline.reader.LineReader.RegionType;
 
 public class Sailto extends Script{
 	private static final int Durchlauf = 42;
@@ -28,6 +25,13 @@ public class Sailto extends Script{
 	// Parameterloser constructor
 	public Sailto() {
 		super.setRunAt(Durchlauf);
+	}
+	
+	/**
+	 * Zum manuellen Aufruf des Scriptes aus anderen Scripten
+	 */
+	public void run_Sailto_intern() {
+		runScript(Sailto.Durchlauf);
 	}
 	
 	public void runScript(int scriptDurchlauf){

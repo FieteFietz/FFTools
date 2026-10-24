@@ -144,15 +144,29 @@ public class Lernen extends MatPoolScript{
 				
 				
 				// Koste das Lernen was?
+				// Berücksichtigt Magiekosten *und* Akademieplatz
 				int Kosten = this.getLernKosten(actSkill); 
 				if(Kosten>0){
 				    // Silber anfordern!
 					this.workLernkosten();
 				}
 				
+				
+				// Hier für Auto *nur* die Talentkosten ermitteln
+				SkillType _skillType = null;
+				_skillType = actSkill.getSkillType();
+				int basicCost = 0;
+				if (_skillType!=null) {
+					basicCost = _skillType.getCost(1);
+				}
+				
 				String Befehl="LERNEN " + talent;
 				if (this.LerneAuto) {
 					Befehl = "LERNEN AUTO " + talent;
+					if (basicCost>0) {
+						Befehl="LERNEN " + talent;
+						this.addComment("Lernen: AUTO nicht für teure Talente geeignet");
+					}
 				}
 				if (Kosten>0) {
 					Befehl += " " + Kosten;
