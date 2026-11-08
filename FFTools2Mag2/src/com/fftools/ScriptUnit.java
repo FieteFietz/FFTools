@@ -11,10 +11,13 @@ import com.fftools.overlord.Overlord;
 import com.fftools.pools.matpool.MatPool;
 import com.fftools.pools.matpool.relations.MatPoolOffer;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
+import com.fftools.scripts.Jagemonster;
 import com.fftools.scripts.Rekrutieren;
 import com.fftools.scripts.Script;
 import com.fftools.scripts.Setlernplan;
 import com.fftools.scripts.Settrankorder;
+import com.fftools.scripts.Vorrat;
+import com.fftools.utils.FFToolsRegions;
 
 import magellan.client.Client;
 import magellan.client.event.UnitOrdersEvent;
@@ -768,6 +771,54 @@ public class ScriptUnit {
 			this.doNotConfirmOrders("Einheit hungert!! (und checkHunger ist aktiviert)");
 		}
 	}
+	
+	/**
+	 * An Land, mit Monster in der Region, nicht am ende der runde in einer Burg, kein Monsterjäger
+	 */
+	public void check4Monster_Land() {
+		
+		// nur an Land
+		if (!this.getUnit().getRegion().getRegionType().isLand()) {
+			return;
+		}
+		
+		// Monster in der Region?
+		String enemyUnit = FFToolsRegions.isMonsterInRegion(this.getUnit().getRegion(),null,false);
+		if (enemyUnit.equals("")) {
+			return;
+		}
+		
+		// Jagemonster-Einheiten ausnehmen
+		if (this.getFoundScriptList()!=null){
+			for (Script s:this.getFoundScriptList()){
+				if (s instanceof Jagemonster){
+					return;
+				}
+			}
+		}
+		
+		// sich bewegende Einheiten ausschliessen
+		if (this.hasOrder("NACH ")) {
+			return;
+		}
+		
+		// angreifende einheiten ausschliessen
+		if (this.hasOrder("ATTACKIERE")) {
+			return;
+		}
+		
+		// Einheiten in einer Burg ausschliessen
+		if (this.getUnit().getModifiedBuilding()!=null) {
+			return;
+		}
+		
+		if (FFToolsRegions.getBiggestCastle(this.getUnit().getRegion())!=null) {
+			this.doNotConfirmOrders("!!! Monster in der Region und Einheit nicht in der Burg");
+		} else {
+			this.doNotConfirmOrders("!!! Monster in der Region, Flucht der Einheit empfohlen (keine rettende Burg vorhanden)");
+		}
+	}
+	
 	
 	/**
 	 * ueberprueft, ob eines der scripte 

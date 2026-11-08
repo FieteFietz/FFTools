@@ -310,13 +310,18 @@ public class TradeAreaHandler implements OverlordRun,OverlordInfo{
 			
 			
 			if (TradeUtils.onSameIsland(r, actOriginRegion, this.data)) {
-				String path = Regions.getDirections(this.data, actOriginRegion.getID() , r.getID(), excludeMap,1);
-				if (path!=null && path.length()>0) {
-					// weg gefunden
-					// länge bestimmen = Anzahl der richtungen
-					String[] zeichen = path.split(" ");
-					int i = zeichen.length;
-					matches.put(tA, Integer.valueOf(i));
+				/*
+				 * 25.10.2026: nicht wenn actOriginRegion in den excluded Regions ist
+				 */
+				if (Regions.excludedRegions==null || !Regions.excludedRegions.contains(actOriginRegion)) {
+					String path = Regions.getDirections(this.data, actOriginRegion.getID() , r.getID(), excludeMap,1);
+					if (path!=null && path.length()>0) {
+						// weg gefunden
+						// länge bestimmen = Anzahl der richtungen
+						String[] zeichen = path.split(" ");
+						int i = zeichen.length;
+						matches.put(tA, Integer.valueOf(i));
+					}
 				}
 			}
 		}

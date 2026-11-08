@@ -1,6 +1,7 @@
 package com.fftools.scripts;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -241,10 +242,12 @@ public class Materialhub extends MatPoolScript {
 		return "error_NO_TA";
 	}
 	
-	
+	private ArrayList<String> ScoreDetailsList = new ArrayList<String>();
 	
 	public double getScoreOfMPR_mprMap_AFTER_HOME_Decisions(ScriptUnit su, int loopIndex) {
 		MaterialHubManager_MHM MHM = this.getOverlord().getMaterialHubManager();
+		String s;
+		ScoreDetailsList = new ArrayList<String>();
     	double res = 0.0;
     	if (su!=null && talklevel>=2) {
     		su.addComment("MHM - Berechnung Score Material Anforderung: (loop " + loopIndex + ")");
@@ -253,19 +256,26 @@ public class Materialhub extends MatPoolScript {
     		double score = MHM.getMaterialScore(entry.getKey());
     		double add = score * entry.getValue();
     		res += add;
+    		s = entry.getKey() +  ": " + dfTausend.format(add) + " (" + dfTausend.format(score) + " x " + entry.getValue() + ")";
+    		ScoreDetailsList.add(s);
     		if (su!=null && talklevel>=2) {
-    			su.addComment(entry.getKey() +  ": " + dfTausend.format(add) + " (" + dfTausend.format(score) + " x " + entry.getValue() + ")");
+    			su.addComment(s);
     		}
 		}
-    	
+    	s = "MHM - score final: " + dfTausend.format(res) + " (loop " + loopIndex + ")";
+    	ScoreDetailsList.add(s);
     	if (su!=null && talklevel>=2) {
-    		su.addComment("MHM - score final: " + dfTausend.format(res) + " (loop " + loopIndex + ")");
+    		su.addComment(s);
     	}
     	
     	this.actMaterialScore = res;
     	
     	return res;
     }
+	
+	public ArrayList<String> getScoreDetailsList(){
+		return this.ScoreDetailsList;
+	}
 	
 	
 	

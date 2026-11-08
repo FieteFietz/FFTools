@@ -14,6 +14,7 @@ import com.fftools.utils.FFToolsUnits;
 import magellan.library.CoordinateID;
 import magellan.library.Item;
 import magellan.library.Order;
+import magellan.library.Region;
 import magellan.library.Ship;
 import magellan.library.Unit;
 import magellan.library.rules.ItemType;
@@ -507,6 +508,37 @@ public class Materialtransport extends MatPoolScript {
 		this.scriptUnit.addAScript(L);
 		
 		this.isLearning=true;
+	}
+	
+	
+	public String get1LineInfo() {
+		String erg = "";
+		if (this.isLearning) {
+			return "is learning";
+		}
+		
+		if (this.targetRegionCoord!=null) {
+			Region r = this.gd_Script.getRegion(this.targetRegionCoord);
+			if (r!=null) {
+				erg += ", Ziel: " + r.toString();
+				if (this.targetRegionCoord.equals(this.HomeRegionCoord)) {
+					erg += " (HOME)";
+				}
+			} else {
+				erg += ", unbekanntes Ziel (!)";
+			}
+		}
+		
+		if (this.startRunde>0) {
+			erg += ", Start in " + this.startRunde;
+		}
+		if (this.ETA>0) {
+			erg += ", ETA in " + this.ETA;
+		}
+		
+		erg += ", Kapa = " + this.available_capacity + " GE";
+		
+		return erg;
 	}
 	
 	

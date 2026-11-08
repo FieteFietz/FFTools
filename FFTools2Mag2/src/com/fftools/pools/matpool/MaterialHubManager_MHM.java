@@ -236,6 +236,20 @@ public class MaterialHubManager_MHM implements OverlordRun,OverlordInfo {
 			MH.inform_HOME_Decisions();
 		}
 		
+		
+		// Übersicht, wie sich die scores zusammensetzen:
+		outText.addOutLine("Übersicht Scores der MHs:");
+		for (Materialhub MH: this.MHs) {
+			if (MH.getHOME_Region()!=null) {
+				double res = MH.getScoreOfMPR_mprMap_AFTER_HOME_Decisions(MH.scriptUnit, loopcounter);
+				outText.addOutLine("-- TA: " + MH.getTAName() + ": " + dfTausend.format(res) + " | MH:" + MH.scriptUnit.toString());
+				for (String s:MH.getScoreDetailsList()) {
+					outText.addOutLine("-- -- " + s);
+				}
+			}
+		}
+		
+		
 		// kurze Statistik über Lernende MTs - also alle, die in HOME sind aber keinen Auftrag bekommen haben
 		outText.addOutLine("Übersicht lernende MTs:");
 		for (Materialtransport MT: this.MTs) {
@@ -264,6 +278,19 @@ public class MaterialHubManager_MHM implements OverlordRun,OverlordInfo {
 			}
 			
 			outText.addOutLine("Home " + Home_Reg.toString() +  ": " + count_MH + " MHs | " + count_MT + " MTs");
+		}
+		
+		// Statistiken zu den HOMEs: wieviele MTs verbunden - Details
+		outText.addOutLine("Übersicht HOMEs and MT (Details):");
+		for (CoordinateID homeC_ID:this.HOME_Regions) {
+			Region Home_Reg = this.overLord.getScriptMain().gd_ScriptMain.getRegion(homeC_ID);
+			outText.addOutLine("Home " + Home_Reg.toString() +  ": ");
+			// MT Details
+			for (Materialtransport MT:this.MTs) {
+				if (MT.HomeRegionCoord.equals(homeC_ID)) {
+					outText.addOutLine("-- MT " + MT.scriptUnit.toString() + " - " + MT.get1LineInfo());
+				}
+			}
 		}
 		
 		outText.addOutLine("MHM  - exiting");

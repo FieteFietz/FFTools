@@ -351,6 +351,7 @@ public class ScriptMain {
 			scrU.checkNACHOK(); // 20161015 FF
 			scrU.checkOverallCommand(); // 20190216 FF
 			scrU.check4hunger(); // 20250202 FF
+			scrU.check4Monster_Land(); // 20261025 FF
 			scrU.setFinalConfim();
 			// autoTags
 			scrU.autoTags();

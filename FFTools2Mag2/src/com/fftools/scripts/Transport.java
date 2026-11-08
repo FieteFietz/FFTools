@@ -4,6 +4,7 @@ import magellan.library.Item;
 import magellan.library.Skill;
 import magellan.library.rules.ItemType;
 import magellan.library.rules.SkillType;
+import magellan.library.utils.Regions;
 
 import com.fftools.ReportSettings;
 import com.fftools.pools.matpool.relations.MatPoolRequest;
@@ -311,6 +312,15 @@ public class Transport extends TransportScript{
 	 *
 	 */
 	private void scriptEnd(){
+		
+		/*
+		 * 25.10.2026
+		 * unbestätigt lassen wenn in avoidRegion
+		 */
+		if (Regions.excludedRegions!=null && Regions.excludedRegions.contains(this.getUnit().getRegion())) {
+			this.doNotConfirmOrders("!!! Transporter in gefährlicher Region - (AvoidRegion)");
+		}
+		
 		if (this.transporter.isLearning()){return ;}
 		this.transporter.generateTransporterRequests(this);
 		if (this.transporter.getGotoInfo()==null && this.transporter.getMode()==Transporter.transporterMode_fullautomatic ){

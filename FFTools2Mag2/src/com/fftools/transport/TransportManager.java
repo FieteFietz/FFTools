@@ -7,9 +7,11 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import magellan.library.CoordinateID;
 import magellan.library.Item;
 import magellan.library.Region;
 import magellan.library.rules.ItemType;
+import magellan.library.utils.Regions;
 
 import com.fftools.OutTextClass;
 import com.fftools.ReportSettings;
@@ -581,7 +583,6 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		long lastInfoT = 0;
 		for (Iterator<TransportRequest> iter = requests.iterator();iter.hasNext();){
 			TransportRequest actRequest = (TransportRequest)iter.next();
-			
 			ArrayList<TransportOffer> actOffers = new ArrayList<TransportOffer>();
 			for (Iterator<TransportOffer> iter2 = offers.iterator();iter2.hasNext();){
 				TransportOffer actOffer = (TransportOffer) iter2.next();
@@ -748,24 +749,29 @@ public class TransportManager implements OverlordInfo,OverlordRun{
 		
 		in allen Fällen
 			incBearbeitet bei offer und Request
+			
+			20261025: nur wenn offer nicht in avoidRegion liegt - weil da wollen wir nicht hin fahren müssen
 		*/
-		long start2 = System.currentTimeMillis();
-		// erst nur in der Region
-		this.searchForAvailableFreeTransports(request, offer,true);
-		// hier einstigesstelle für TMoptimize2
-		// in der Region gibt es keinen Transport
-		// bevor freier genutzt wird, die Transporte durchsuchen
-		// die nächste Runde *hier* sein werden und genutzt werden können
 		
-		
-		
-		// dann überall
-		this.searchForAvailableFreeTransports(request, offer,false);
-		long end2 = System.currentTimeMillis();
-		if (!this.reportOFF) {
-			outText.addOutLine("Suche nach freien Ts:" + (end2-start2) + " ms.");
+		Region r = offer.getRegion();
+		if (Regions.excludedRegions==null || !Regions.excludedRegions.contains(r)) {
+			long start2 = System.currentTimeMillis();
+			// erst nur in der Region
+			this.searchForAvailableFreeTransports(request, offer,true);
+			// hier einstigesstelle für TMoptimize2
+			// in der Region gibt es keinen Transport
+			// bevor freier genutzt wird, die Transporte durchsuchen
+			// die nächste Runde *hier* sein werden und genutzt werden können
+			
+			
+			
+			// dann überall
+			this.searchForAvailableFreeTransports(request, offer,false);
+			long end2 = System.currentTimeMillis();
+			if (!this.reportOFF) {
+				outText.addOutLine("Suche nach freien Ts:" + (end2-start2) + " ms.");
+			}
 		}
-		
 	}
 	
 	/**
